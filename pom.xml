@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project
+		xmlns="http://maven.apache.org/POM/4.0.0"
+		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		xsi:schemaLocation="
+			 http://maven.apache.org/POM/4.0.0		http://maven.apache.org/xsd/maven-4.0.0.xsd
+		"
+	>
+
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>cz.znj.kvr.sw.pof.concurrent</groupId>
+	<artifactId>concurrent-pof</artifactId>
+	<packaging>pom</packaging>
+	<version>0.0.1</version>
+	<name>Zbynek concurrent POFs</name>
+	<description>Parent of Zbynek concurrent POFs</description>
+
+	<properties>
+		<javac.version>1.8</javac.version>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<junit.version>4.11</junit.version>
+		<jmock-junit4.version>2.5.1</jmock-junit4.version>
+		<log4j.version>2.2</log4j.version>
+		<mockito.version>1.9.5</mockito.version>
+		<commons-lang3.version>3.4</commons-lang3.version>
+		<commons-codec.version>1.10</commons-codec.version>
+		<commons-collections.version>3.2.1</commons-collections.version>
+		<commons-io.version>2.4</commons-io.version>
+		<maven-compiler-plugin.version>3.3</maven-compiler-plugin.version>
+	</properties>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>${maven-compiler-plugin.version}</version>
+				<configuration>
+					<source>${javac.version}</source>
+					<target>${javac.version}</target>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>junit</groupId>
+				<artifactId>junit</artifactId>
+				<version>${junit.version}</version>
+				<scope>test</scope>
+			</dependency>
+
+			<dependency>
+				<groupId>org.apache.logging.log4j</groupId>
+				<artifactId>log4j-api</artifactId>
+				<version>${log4j.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.logging.log4j</groupId>
+				<artifactId>log4j-core</artifactId>
+				<version>${log4j.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.apache.commons</groupId>
+				<artifactId>commons-lang3</artifactId>
+				<version>${commons-lang3.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>commons-io</groupId>
+				<artifactId>commons-io</artifactId>
+				<version>${commons-io.version}</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
+</project>
