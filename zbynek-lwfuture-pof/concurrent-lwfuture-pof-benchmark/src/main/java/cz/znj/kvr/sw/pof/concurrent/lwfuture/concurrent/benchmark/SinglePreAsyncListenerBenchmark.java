@@ -9,9 +9,11 @@ import org.openjdk.jmh.annotations.Warmup;
 import org.springframework.util.concurrent.ListenableFutureCallback;
 
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 
-public class SinglePreListenerBenchmark
+public class SinglePreAsyncListenerBenchmark
 {
 	public static final int         WARMUP_ITERATIONS = BenchmarkSupport.WARMUP_ITERATIONS;
 	public static final int         COUNT = BenchmarkSupport.COUNT;
@@ -22,12 +24,13 @@ public class SinglePreListenerBenchmark
 	@Fork(warmups = 1, value = 1)
 	public void                     benchmarkJdk() throws Exception
 	{
-		for (long i = 0; i < COUNT; ++i) {
-			FutureTask<Integer> future = new FutureTask<Integer>(() -> {
-				return 0;
-			});
-			future.run();
-			future.get();
+		FutureTask[] array = BenchmarkSupport.populateJdkFutureArray(COUNT);
+		for (FutureTask<Integer> f: array) {
+			// nothing to add, no listenable
+		}
+		BenchmarkSupport.threadedRunFutures(array);
+		for (FutureTask<Integer> f: array) {
+			f.get();
 		}
 	}
 
@@ -37,13 +40,14 @@ public class SinglePreListenerBenchmark
 	@Fork(warmups = 1, value = 1)
 	public void                     benchmarkLwfuture() throws ExecutionException, InterruptedException
 	{
-		for (long i = 0; i < COUNT; ++i) {
-			cz.znj.kvr.sw.pof.concurrent.lwfuture.concurrent.ListenableFutureTask<Integer> future = new cz.znj.kvr.sw.pof.concurrent.lwfuture.concurrent.ListenableFutureTask<Integer>(() -> {
-				return 0;
-			});
-			future.addListener(new DistinguishFutureListener<Integer>());
-			future.run();
-			future.get();
+		cz.znj.kvr.sw.pof.concurrent.lwfuture.concurrent.ListenableFutureTask[] array = BenchmarkSupport.populateLwFutureArray(COUNT);
+		for (cz.znj.kvr.sw.pof.concurrent.lwfuture.concurrent.ListenableFutureTask f: array) {
+			f.addListener(new DistinguishFutureListener());
+		}
+		BenchmarkSupport.threadedRunFutures(array);
+		for (cz.znj.kvr.sw.pof.concurrent.lwfuture.concurrent.ListenableFutureTask f: array) {
+			// don't get again, we already got in listener
+			//f.get();
 		}
 	}
 
@@ -53,23 +57,25 @@ public class SinglePreListenerBenchmark
 	@Fork(warmups = 1, value = 1)
 	public void                     benchmarkGuava() throws ExecutionException, InterruptedException
 	{
-		for (long i = 0; i < COUNT; ++i) {
-			com.google.common.util.concurrent.ListenableFutureTask<Integer> future = com.google.common.util.concurrent.ListenableFutureTask.create(() -> {
-				return 0;
-			});
-			future.addListener(() -> {
+		Executor directExecutor = MoreExecutors.directExecutor();
+		com.google.common.util.concurrent.ListenableFutureTask[] array = BenchmarkSupport.populateGuavaFutureArray(COUNT);
+		for (com.google.common.util.concurrent.ListenableFutureTask f: array) {
+			final Future<Integer> ff = f;
+			f.addListener(() -> {
 				try {
-					future.get();
+					ff.get();
 				}
 				catch (InterruptedException e) {
 					throw new RuntimeException(e);
 				}
 				catch (ExecutionException e) {
-					throw new RuntimeException(e);
 				}
-			}, MoreExecutors.directExecutor());
-			future.run();
-			future.get();
+			}, directExecutor);
+		}
+		BenchmarkSupport.threadedRunFutures(array);
+		for (com.google.common.util.concurrent.ListenableFutureTask f: array) {
+			// don't get again, we already got in listener
+			//f.get();
 		}
 	}
 
@@ -79,11 +85,9 @@ public class SinglePreListenerBenchmark
 	@Fork(warmups = 1, value = 1)
 	public void                     benchmarkSpring() throws ExecutionException, InterruptedException
 	{
-		for (long i = 0; i < COUNT; ++i) {
-			org.springframework.util.concurrent.ListenableFutureTask<Integer> future = new org.springframework.util.concurrent.ListenableFutureTask<Integer>(() -> {
-				return 0;
-			});
-			future.addCallback(new ListenableFutureCallback<Integer>() {
+		org.springframework.util.concurrent.ListenableFutureTask[] array = BenchmarkSupport.populateSpringFutureArray(COUNT);
+		for (org.springframework.util.concurrent.ListenableFutureTask f: array) {
+			f.addCallback(new ListenableFutureCallback<Integer>() {
 				@Override
 				public void onFailure(Throwable ex) {
 				}
@@ -92,8 +96,11 @@ public class SinglePreListenerBenchmark
 				public void onSuccess(Integer result) {
 				}
 			});
-			future.run();
-			future.get();
+		}
+		BenchmarkSupport.threadedRunFutures(array);
+		for (org.springframework.util.concurrent.ListenableFutureTask f: array) {
+			// don't get again, we already got in listener
+			//f.get();
 		}
 	}
 }

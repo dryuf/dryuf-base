@@ -13,8 +13,8 @@ import java.util.concurrent.FutureTask;
 
 public class MixedListenerBenchmark
 {
-	public static final int         WARMUP_ITERATIONS = 5;
-	public static final long        COUNT = 100000;
+	public static final int         WARMUP_ITERATIONS = BenchmarkSupport.WARMUP_ITERATIONS;
+	public static final int         COUNT = BenchmarkSupport.COUNT;
 
 	@Benchmark
 	@Warmup(iterations = WARMUP_ITERATIONS)

@@ -13,10 +13,11 @@ import java.util.concurrent.FutureTask;
 
 public class DoublePreListenerBenchmark
 {
-	public static final long        COUNT = 1000000;
+	public static final int         WARMUP_ITERATIONS = BenchmarkSupport.WARMUP_ITERATIONS;
+	public static final int         COUNT = BenchmarkSupport.COUNT;
 
 	@Benchmark
-	@Warmup(iterations = 0)
+	@Warmup(iterations = WARMUP_ITERATIONS)
 	@Measurement(iterations = 1, batchSize = 1)
 	@Fork(warmups = 1, value = 1)
 	public void                     benchmarkJdk() throws Exception
@@ -31,7 +32,7 @@ public class DoublePreListenerBenchmark
 	}
 
 	@Benchmark
-	@Warmup(iterations = 0)
+	@Warmup(iterations = WARMUP_ITERATIONS)
 	@Measurement(iterations = 1, batchSize = 1)
 	@Fork(warmups = 1, value = 1)
 	public void                     benchmarkLwfuture() throws ExecutionException, InterruptedException
@@ -48,7 +49,7 @@ public class DoublePreListenerBenchmark
 	}
 
 	@Benchmark
-	@Warmup(iterations = 0)
+	@Warmup(iterations = WARMUP_ITERATIONS)
 	@Measurement(iterations = 1, batchSize = 1)
 	@Fork(warmups = 1, value = 1)
 	public void                     benchmarkGuava() throws ExecutionException, InterruptedException
@@ -85,7 +86,7 @@ public class DoublePreListenerBenchmark
 	}
 
 	@Benchmark
-	@Warmup(iterations = 0)
+	@Warmup(iterations = WARMUP_ITERATIONS)
 	@Measurement(iterations = 1, batchSize = 1)
 	@Fork(warmups = 1, value = 1)
 	public void                     benchmarkSpring() throws ExecutionException, InterruptedException
