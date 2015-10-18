@@ -24,7 +24,6 @@ public class NoListenerBenchmark
 				return 0;
 			});
 			future.run();
-			future.get();
 		}
 	}
 
@@ -32,14 +31,13 @@ public class NoListenerBenchmark
 	@Warmup(iterations = WARMUP_ITERATIONS)
 	@Measurement(iterations = 2, batchSize = 1)
 	@Fork(warmups = 1, value = 1)
-	public void                     benchmarkLwfuture() throws ExecutionException, InterruptedException
+	public void                     benchmarkLwFuture() throws ExecutionException, InterruptedException
 	{
 		for (long i = 0; i < COUNT; ++i) {
 			cz.znj.kvr.sw.pof.concurrent.lwfuture.concurrent.ListenableFutureTask<Integer> future = new cz.znj.kvr.sw.pof.concurrent.lwfuture.concurrent.ListenableFutureTask<Integer>(() -> {
 				return 0;
 			});
 			future.run();
-			future.get();
 		}
 	}
 
@@ -54,7 +52,6 @@ public class NoListenerBenchmark
 				return 0;
 			});
 			future.run();
-			future.get();
 		}
 	}
 
@@ -69,7 +66,6 @@ public class NoListenerBenchmark
 				return 0;
 			});
 			future.run();
-			future.get();
 		}
 	}
 }
