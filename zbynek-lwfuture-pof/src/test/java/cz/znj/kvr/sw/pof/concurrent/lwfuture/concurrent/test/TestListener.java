@@ -1,10 +1,10 @@
 package cz.znj.kvr.sw.pof.concurrent.lwfuture.concurrent.test;
 
-import cz.znj.kvr.sw.pof.concurrent.lwfuture.concurrent.DistinguishFutureListener;
+import cz.znj.kvr.sw.pof.concurrent.lwfuture.concurrent.AbstractFutureListener;
 
 import java.util.concurrent.CancellationException;
 
-public class TestListener extends DistinguishFutureListener<Object>
+public class TestListener extends AbstractFutureListener<Object>
 {
 	public static final CancellationException CANCELLED = new CancellationException();
 

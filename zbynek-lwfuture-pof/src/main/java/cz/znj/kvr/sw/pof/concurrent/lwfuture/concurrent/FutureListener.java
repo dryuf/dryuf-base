@@ -5,5 +5,9 @@ import java.util.concurrent.Future;
 
 public interface FutureListener<V>
 {
-	void                            run(Future<V> future);
+	public void			onSuccess(V result);
+
+	public void			onFailure(Throwable ex);
+
+	public void                     onCancelled();
 }

@@ -1,7 +1,7 @@
 package cz.znj.kvr.sw.pof.concurrent.lwfuture.concurrent.benchmark;
 
 import com.google.common.util.concurrent.MoreExecutors;
-import cz.znj.kvr.sw.pof.concurrent.lwfuture.concurrent.DistinguishFutureListener;
+import cz.znj.kvr.sw.pof.concurrent.lwfuture.concurrent.AbstractFutureListener;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.Fork;
 import org.openjdk.jmh.annotations.Measurement;
@@ -41,8 +41,8 @@ public class DoublePreListenerBenchmark
 			cz.znj.kvr.sw.pof.concurrent.lwfuture.concurrent.ListenableFutureTask<Integer> future = new cz.znj.kvr.sw.pof.concurrent.lwfuture.concurrent.ListenableFutureTask<Integer>(() -> {
 				return 0;
 			});
-			future.addListener(new DistinguishFutureListener<Integer>());
-			future.addListener(new DistinguishFutureListener<Integer>());
+			future.addListener(new AbstractFutureListener<Integer>());
+			future.addListener(new AbstractFutureListener<Integer>());
 			future.run();
 			future.get();
 		}

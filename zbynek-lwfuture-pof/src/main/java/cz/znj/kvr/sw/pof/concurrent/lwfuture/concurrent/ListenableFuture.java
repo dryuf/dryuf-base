@@ -6,6 +6,8 @@ import java.util.function.Function;
 
 public interface ListenableFuture<V> extends Future<V>
 {
+	void                            setDelayedCancel();
+
 	ListenableFuture<V>		addListener(Runnable listener);
 
 	ListenableFuture<V>             addListener(Function<Future<V>, Void> listener);
