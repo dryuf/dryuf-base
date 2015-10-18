@@ -10,19 +10,40 @@ import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 import java.util.function.Function;
 
 
+/**
+ * Base implementation of Future.
+ *
+ * @param <V>
+ *      future result type
+ */
 public class AbstractFuture<V> implements ListenableFuture<V>
 {
-	public                          AbstractFuture()
+	/**
+	 * Initializes instance of AbstractFuture with state ST_RUNNING.
+	 */
+	protected                       AbstractFuture()
 	{
 		this(true);
 	}
 
-	public                          AbstractFuture(boolean isRunning)
+	/**
+	 * Initializes instance of AbstractFuture with provided state.
+	 *
+	 * @param isRunning
+	 *      sets state to ST_RUNNING if isRunning is true
+	 */
+	protected                       AbstractFuture(boolean isRunning)
 	{
 		this(isRunning ? ST_RUNNING : 0);
 	}
 
-	public                          AbstractFuture(int initialStatus)
+	/**
+	 * Initializes instance of AbstractFuture with provided state.
+	 *
+	 * @param initialStatus
+	 *      state to set as initial
+	 */
+	protected                       AbstractFuture(int initialStatus)
 	{
 		setStatusLazy(initialStatus);
 	}
@@ -32,7 +53,7 @@ public class AbstractFuture<V> implements ListenableFuture<V>
 	{
 		int old;
 		if ((old = updateStatusFinal(ST_CANCELLED)) < ST_FINISHED) {
-			if ((old&ST_RUNNING) != 0)
+			if (b && (old&ST_RUNNING) != 0)
 				interruptTask();
 			if ((old&ST_DELAYED_CANCEL) == 0)
 				processListenersCancelled();
@@ -99,12 +120,12 @@ public class AbstractFuture<V> implements ListenableFuture<V>
 	}
 
 	@Override
-	public void                     setDelayedCancel()
+	public ListenableFuture<V>      setDelayedCancel()
 	{
 		int localStatus = 0;
 		for (;;) {
 			if (casStatus(localStatus, localStatus|ST_DELAYED_CANCEL))
-				return;
+				return this;
 			localStatus = getStatusLazy();
 			if ((localStatus&ST_CANCELLED) != 0)
 				throw new IllegalStateException("Future delayed cannot be changed once the future was cancelled.");
@@ -114,7 +135,7 @@ public class AbstractFuture<V> implements ListenableFuture<V>
 	@Override
 	public ListenableFuture<V>	addListener(final Runnable listener)
 	{
-		addListenerNode(new RegularListenerNode<V>() {
+		addListenerNode(new RegularListenerNode() {
 			@Override
 			public void executeSet() {
 				listener.run();
@@ -136,7 +157,7 @@ public class AbstractFuture<V> implements ListenableFuture<V>
 	@Override
 	public ListenableFuture<V>	addListener(final Function<Future<V>, Void> listener)
 	{
-		addListenerNode(new RegularListenerNode<V>() {
+		addListenerNode(new RegularListenerNode() {
 			@Override
 			public void executeSet() {
 				listener.apply(AbstractFuture.this);
@@ -158,7 +179,7 @@ public class AbstractFuture<V> implements ListenableFuture<V>
 	@Override
 	public ListenableFuture<V>      addListener(final FutureListener<V> listener)
 	{
-		addListenerNode(new RegularListenerNode<V>() {
+		addListenerNode(new RegularListenerNode() {
 			@Override
 			public void executeSet() {
 				listener.onSuccess(result);
@@ -177,24 +198,65 @@ public class AbstractFuture<V> implements ListenableFuture<V>
 		return this;
 	}
 
+	/**
+	 * Customizable method to interrupt running task.
+	 *
+	 * The method is called only in case the task was running and after the state was successfully set to CANCELLED.
+	 */
 	protected void                  interruptTask()
 	{
 	}
 
-	protected void                  set(V result)
+	/**
+	 * Sets the result of this future.
+	 *
+	 * @param result
+	 *      result of this future
+	 *
+	 * @return true
+	 *      if the task was not yet cancelled
+	 * @return false
+	 *      if the task was already cancelled
+	 */
+	protected boolean               set(V result)
 	{
 		this.result = result;
-		if (updateStatusFinished(ST_FINISHED) < ST_FINISHED)
+		if (updateStatusFinished(ST_FINISHED) < ST_FINISHED) {
 			processListenersSet();
+			return true;
+		}
+		return false;
 	}
 
-	protected void                  setException(Throwable ex)
+	/**
+	 * Sets the result of this future.
+	 *
+	 * @param ex
+	 *      exception that caused this future failure
+	 *
+	 * @return true
+	 *      if the task was not yet cancelled
+	 * @return false
+	 *      if the task was already cancelled
+	 */
+	protected boolean               setException(Throwable ex)
 	{
 		this.excepted = ex;
-		if (updateStatusFinished(ST_FINISHED) < ST_FINISHED)
+		if (updateStatusFinished(ST_FINISHED) < ST_FINISHED) {
 			processListenersExcepted();
+			return true;
+		}
+		return false;
 	}
 
+	/**
+	 * Sets this future to running state.
+	 *
+	 * @return true
+	 *      if the task was not yet cancelled nor finished
+	 * @return false
+	 *      if the task was already cancelled or finished
+	 */
 	protected final boolean         setRunning()
 	{
 		int localStatus = 0;
@@ -207,6 +269,17 @@ public class AbstractFuture<V> implements ListenableFuture<V>
 		}
 	}
 
+	/**
+	 * Sets the status to some finished (successful or exception) state.
+	 *
+	 * Runs cancelled notification if this future was already cancelled and delayed cancel notification was configured.
+	 *
+	 * @param finalStatus
+	 *      the new status value (state part)
+	 *
+	 * @return
+	 *      old status value
+	 */
 	private final int               updateStatusFinished(int finalStatus)
 	{
 		int old = updateStatusFinal(finalStatus);
@@ -215,6 +288,15 @@ public class AbstractFuture<V> implements ListenableFuture<V>
 		return old;
 	}
 
+	/**
+	 * Sets the status to final state (successful, exception, cancelled) state.
+	 *
+	 * @param finalStatus
+	 *      the new status value (state part)
+	 *
+	 * @return
+	 *      old status value
+	 */
 	private final int               updateStatusFinal(int finalStatus)
 	{
 		int localStatus = ST_RUNNING;
@@ -234,7 +316,15 @@ public class AbstractFuture<V> implements ListenableFuture<V>
 		return localStatus;
 	}
 
-	protected final void            addListenerNode(ListenerNode listenerNode)
+	/**
+	 * Adds single listener node.
+	 *
+	 * The listener is immediately executed if the listeners were already executed.
+	 *
+	 * @param listenerNode
+	 *      listener to be added
+	 */
+	private final void              addListenerNode(ListenerNode listenerNode)
 	{
 		if (casListeners(null, listenerNode))
 			return;
@@ -260,7 +350,13 @@ public class AbstractFuture<V> implements ListenableFuture<V>
 		}
 	}
 
-	private final void              executeLateListener(ListenerNode<V> listener)
+	/**
+	 * Executes lately coming listener.
+	 *
+	 * @param listener
+	 *      listener to be executed
+	 */
+	private final void              executeLateListener(ListenerNode listener)
 	{
 		switch (getStatusLazy()&(ST_FINISHED|ST_CANCELLED)) {
 		case ST_FINISHED:
@@ -280,32 +376,19 @@ public class AbstractFuture<V> implements ListenableFuture<V>
 		}
 	}
 
-	private final ListenerNode<V>   swapListenersQueue(ListenerNode<V> last)
-	{
-		if (last == null || last.getNextNode() == null)
-			return last;
-		ListenerNode<V> next = last.getNextNode();
-		last.nextNode = null;
-		for (ListenerNode<V> current = next; current != null; current = next) {
-			next = current.getNextNode();
-			current.nextNode = last;
-			last = current;
-		}
-		return last;
-	}
-
+	/**
+	 * Processes listeners by notifying about successful completion.
+	 */
 	private final void              processListenersSet()
 	{
 		ListenerNode lastListener = xchgListeners(MARKER_PROCESSING);
 		for (;;) {
-			if (lastListener != null) {
-				for (lastListener = swapListenersQueue(lastListener); lastListener != null; lastListener = lastListener.nextNode) {
-					try {
-						lastListener.executeSet();
-					}
-					catch (Exception ex) {
-						// ignore exceptions from listeners
-					}
+			for (lastListener = ListenerNode.reverseListenersQueue(lastListener); lastListener != null; lastListener = lastListener.nextNode) {
+				try {
+					lastListener.executeSet();
+				}
+				catch (Exception ex) {
+					// ignore exceptions from listeners
 				}
 			}
 			if (casListeners(MARKER_PROCESSING, MARKER_FINISHED))
@@ -314,18 +397,19 @@ public class AbstractFuture<V> implements ListenableFuture<V>
 		}
 	}
 
+	/**
+	 * Processes listeners by notifying about exception.
+	 */
 	private final void              processListenersExcepted()
 	{
 		ListenerNode lastListener = xchgListeners(MARKER_PROCESSING);
 		for (;;) {
-			if (lastListener != null) {
-				for (lastListener = swapListenersQueue(lastListener); lastListener != null; lastListener = lastListener.nextNode) {
-					try {
-						lastListener.executeExcepted();
-					}
-					catch (Exception ex) {
-						// ignore exceptions from listeners
-					}
+			for (lastListener = ListenerNode.reverseListenersQueue(lastListener); lastListener != null; lastListener = lastListener.nextNode) {
+				try {
+					lastListener.executeExcepted();
+				}
+				catch (Exception ex) {
+					// ignore exceptions from listeners
 				}
 			}
 			if (casListeners(MARKER_PROCESSING, MARKER_FINISHED))
@@ -334,18 +418,19 @@ public class AbstractFuture<V> implements ListenableFuture<V>
 		}
 	}
 
+	/**
+	 * Processes listeners by notifying about cancellation
+	 */
 	private final void              processListenersCancelled()
 	{
 		ListenerNode lastListener = xchgListeners(MARKER_PROCESSING);
 		for (;;) {
-			if (lastListener != null) {
-				for (lastListener = swapListenersQueue(lastListener); lastListener != null; lastListener = lastListener.nextNode) {
-					try {
-						lastListener.executeCancelled();
-					}
-					catch (Exception ex) {
-						// ignore exceptions from listeners
-					}
+			for (lastListener = ListenerNode.reverseListenersQueue(lastListener); lastListener != null; lastListener = lastListener.nextNode) {
+				try {
+					lastListener.executeCancelled();
+				}
+				catch (Exception ex) {
+					// ignore exceptions from listeners
 				}
 			}
 			if (casListeners(MARKER_PROCESSING, MARKER_FINISHED))
@@ -409,28 +494,84 @@ public class AbstractFuture<V> implements ListenableFuture<V>
 		return listenersUpdater.getAndSet(this, set);
 	}
 
+	/**
+	 * Basic Listener node providing linking functions.
+	 */
 	protected static abstract class ListenerNode<V>
 	{
+		/** Regular listener */
 		public static final int         NT_REGULAR                      = 0;
+		/** Currently processing queue */
 		public static final int         NT_MARKER_PROCESSING            = 1;
+		/** Queue processing finished and closed */
 		public static final int         NT_MARKER_FINISHED              = 2;
 
-		public                          ListenerNode(int nodeType)
+		/**
+		 * Constructs new instance with specified node type.
+		 *
+		 * @param nodeType
+		 *      node type
+		 */
+		protected                       ListenerNode(int nodeType)
 		{
 			this.nodeType = nodeType;
 		}
 
+		/**
+		 * Reverses listeners queue.
+		 *
+		 * @param last
+		 *      lastly registered listener
+		 *
+		 * @return
+		 *      reversed list
+		 */
+		public static <V> ListenerNode<V> reverseListenersQueue(ListenerNode last)
+		{
+			if (last == null || last.getNextNode() == null)
+				return last;
+			ListenerNode next = last.getNextNode();
+			last.nextNode = null;
+			for (ListenerNode current = next; current != null; current = next) {
+				next = current.getNextNode();
+				current.nextNode = last;
+				last = current;
+			}
+			return last;
+		}
+
+		/**
+		 * Executes set notification.
+		 */
 		public abstract void		executeSet();
 
+		/**
+		 * Executes failure notification.
+		 */
 		public abstract void		executeExcepted();
 
+		/**
+		 * Executes cancelled notification.
+		 */
 		public abstract void		executeCancelled();
 
+		/**
+		 * Gets next node.
+		 *
+		 * @return
+		 *      next node
+		 */
 		public final ListenerNode	getNextNode()
 		{
 			return nextNode;
 		}
 
+		/**
+		 * Gets node type.
+		 *
+		 * @return
+		 *      node type
+		 */
 		public final int                getNodeType()
 		{
 			return nodeType;
@@ -438,19 +579,35 @@ public class AbstractFuture<V> implements ListenableFuture<V>
 
 		private final int               nodeType;
 
-		protected ListenerNode		nextNode;
+		private ListenerNode		nextNode;
 	}
 
+	/**
+	 * Listener node providing abstraction over various kind of listeners.
+	 */
 	protected static abstract class RegularListenerNode<V> extends ListenerNode<V>
 	{
+		/**
+		 * Construct new instance with node type regular.
+		 */
 		public                          RegularListenerNode()
 		{
 			super(NT_REGULAR);
 		}
 	}
 
+	/**
+	 * Marker listener node, marking states of processing the listeners queue.
+	 * @param <V>
+	 */
 	protected static class MarkerListenerNode<V> extends ListenerNode<V>
 	{
+		/**
+		 * Constructs new instance with specified node type.
+		 *
+		 * @param nodeType
+		 *      node type
+		 */
 		public                          MarkerListenerNode(int nodeType)
 		{
 			super(nodeType);
@@ -475,23 +632,42 @@ public class AbstractFuture<V> implements ListenableFuture<V>
 		}
 	}
 
+	/**
+	 * Result of this future. Does not need to be volatile as reads/writes are surrounded by other memory barriers.
+	 */
 	private V                       result = null;
 
+	/**
+	 * Failure cause if not null. Does not need to be volatile as reads/writes are surrounded by other memory barriers.
+	 */
 	private Throwable               excepted = null;
 
+	/**
+	 * Status of this future, may be ORs of ST_* constants.
+	 */
 	private volatile int		status;
 
-	private volatile ListenerNode   listeners = null;
+	/**
+	 * Listeners queue.
+	 */
+	private volatile ListenerNode<V> listeners = null;
 
-	protected static final int      ST_DELAYED_CANCEL               = 1;
-	protected static final int	ST_RUNNING                      = 2;
-	protected static final int	ST_WAITING                      = 4;
-	protected static final int	ST_FINISHED                     = 8;
-	protected static final int	ST_CANCELLED                    = 16;
+	/** Delayed cancel notifications flag */
+	private static final int        ST_DELAYED_CANCEL               = 1;
+	/** Waiting flag, indicating there are threads blocked in get() */
+	private static final int        ST_WAITING                      = 2;
+	/** Running state */
+	private static final int        ST_RUNNING                      = 4;
+	/** Finished state (task really finished) */
+	private static final int        ST_FINISHED                     = 8;
+	/** Cancelled requested */
+	private static final int        ST_CANCELLED                    = 16;
 
-	protected static final ListenerNode MARKER_PROCESSING = new MarkerListenerNode(ListenerNode.NT_MARKER_PROCESSING);
-	protected static final ListenerNode MARKER_FINISHED = new MarkerListenerNode(ListenerNode.NT_MARKER_FINISHED);
+	/** Marks currently processed listener queue */
+	private static final ListenerNode MARKER_PROCESSING = new MarkerListenerNode(ListenerNode.NT_MARKER_PROCESSING);
+	/** Marks closed listener queue */
+	private static final ListenerNode MARKER_FINISHED = new MarkerListenerNode(ListenerNode.NT_MARKER_FINISHED);
 
-	protected static final AtomicIntegerFieldUpdater<AbstractFuture> statusUpdater = AtomicIntegerFieldUpdater.newUpdater(AbstractFuture.class, "status");
-	protected static final AtomicReferenceFieldUpdater<AbstractFuture, ListenerNode> listenersUpdater = AtomicReferenceFieldUpdater.newUpdater(AbstractFuture.class, ListenerNode.class, "listeners");
+	private static final AtomicIntegerFieldUpdater<AbstractFuture> statusUpdater = AtomicIntegerFieldUpdater.newUpdater(AbstractFuture.class, "status");
+	private static final AtomicReferenceFieldUpdater<AbstractFuture, ListenerNode> listenersUpdater = AtomicReferenceFieldUpdater.newUpdater(AbstractFuture.class, ListenerNode.class, "listeners");
 }

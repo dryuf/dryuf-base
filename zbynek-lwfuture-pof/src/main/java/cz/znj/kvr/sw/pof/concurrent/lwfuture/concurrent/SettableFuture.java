@@ -1,23 +1,21 @@
 package cz.znj.kvr.sw.pof.concurrent.lwfuture.concurrent;
 
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
-import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 
-
+/**
+ * Asynchronous Future that can be finished externally.
+ *
+ * @param <V>
+ *      future result type
+ */
 public class SettableFuture<V> extends AbstractFuture<V>
 {
-	public void                     set(V result)
+	public boolean                  set(V result)
 	{
-		super.set(result);
+		return super.set(result);
 	}
 
-	public void                     setException(Throwable ex)
+	public boolean                  setException(Throwable ex)
 	{
-		super.setException(ex);
+		return super.setException(ex);
 	}
 }
