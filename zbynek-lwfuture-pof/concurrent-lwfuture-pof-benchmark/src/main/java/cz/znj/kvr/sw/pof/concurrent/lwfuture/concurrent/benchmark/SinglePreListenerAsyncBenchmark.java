@@ -13,7 +13,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 
-public class SinglePreAsyncListenerBenchmark
+public class SinglePreListenerAsyncBenchmark
 {
 	public static final int         WARMUP_ITERATIONS = BenchmarkSupport.WARMUP_ITERATIONS;
 	public static final int         COUNT = BenchmarkSupport.COUNT;
@@ -38,7 +38,7 @@ public class SinglePreAsyncListenerBenchmark
 	@Warmup(iterations = WARMUP_ITERATIONS)
 	@Measurement(iterations = 2, batchSize = 1)
 	@Fork(warmups = 1, value = 1)
-	public void                     benchmarkLwfuture() throws ExecutionException, InterruptedException
+	public void                     benchmarkLwFuture() throws ExecutionException, InterruptedException
 	{
 		cz.znj.kvr.sw.pof.concurrent.lwfuture.concurrent.ListenableFutureTask[] array = BenchmarkSupport.populateLwFutureArray(COUNT);
 		for (cz.znj.kvr.sw.pof.concurrent.lwfuture.concurrent.ListenableFutureTask f: array) {
