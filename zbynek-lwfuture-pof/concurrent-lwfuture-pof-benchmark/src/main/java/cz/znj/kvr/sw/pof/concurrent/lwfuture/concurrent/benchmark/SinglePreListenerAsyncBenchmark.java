@@ -47,7 +47,6 @@ public class SinglePreListenerAsyncBenchmark
 		BenchmarkSupport.threadedRunFutures(array);
 		for (cz.znj.kvr.sw.pof.concurrent.lwfuture.concurrent.ListenableFutureTask f: array) {
 			// don't get again, we already got in listener
-			//f.get();
 		}
 	}
 
@@ -75,7 +74,6 @@ public class SinglePreListenerAsyncBenchmark
 		BenchmarkSupport.threadedRunFutures(array);
 		for (com.google.common.util.concurrent.ListenableFutureTask f: array) {
 			// don't get again, we already got in listener
-			//f.get();
 		}
 	}
 
@@ -100,7 +98,6 @@ public class SinglePreListenerAsyncBenchmark
 		BenchmarkSupport.threadedRunFutures(array);
 		for (org.springframework.util.concurrent.ListenableFutureTask f: array) {
 			// don't get again, we already got in listener
-			//f.get();
 		}
 	}
 }
