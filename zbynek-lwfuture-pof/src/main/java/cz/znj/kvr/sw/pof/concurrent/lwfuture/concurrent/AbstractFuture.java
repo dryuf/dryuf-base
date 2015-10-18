@@ -106,8 +106,8 @@ public class AbstractFuture<V> implements ListenableFuture<V>
 			if (statusUpdater.compareAndSet(this, localStatus, localStatus|ST_DELAYED_CANCEL))
 				return;
 			localStatus = status;
-			if (localStatus >= ST_FINISHED)
-				throw new IllegalStateException("Future delayed cannot be changed once the future was started.");
+			if ((localStatus&ST_CANCELLED) != 0)
+				throw new IllegalStateException("Future delayed cannot be changed once the future was cancelled.");
 		}
 	}
 
