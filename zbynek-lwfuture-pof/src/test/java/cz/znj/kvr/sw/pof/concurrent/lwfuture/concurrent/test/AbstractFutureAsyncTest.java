@@ -14,6 +14,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 
 
+/**
+ * In these tests we want to raise probability of race condition as high as possible.
+ *
+ * We start the threads at the beginning than they meet on CyclicBarrier and after 2 milliseconds of busy loops we finally give a green to them.
+ *
+ * Each of the tests is repeated 100 times.
+ */
 public class AbstractFutureAsyncTest
 {
 	protected static class ThreadGroup implements AutoCloseable
@@ -37,7 +44,7 @@ public class AbstractFutureAsyncTest
 			fineBarrier = new AtomicBoolean(false);
 			threadBarrier = new CyclicBarrier(count, () -> {
 				try {
-					Thread.sleep(10);
+					Thread.sleep(2);
 				}
 				catch (InterruptedException e) {
 					throw new RuntimeException(e);
@@ -67,6 +74,7 @@ public class AbstractFutureAsyncTest
 				catch (BrokenBarrierException e) {
 					throw new RuntimeException(e);
 				}
+				while (!fineBarrier.get()) {}
 				runner.run();
 			});
 			thread.start();
@@ -109,7 +117,7 @@ public class AbstractFutureAsyncTest
 	@Test
 	public void                     testSuccessMatchProcessors() throws ExecutionException, InterruptedException
 	{
-		for (int tries = 0; tries < 20; ++tries) {
+		for (int tries = 0; tries < 100; ++tries) {
 			SettableFuture<Void> future = new SettableFuture<>();
 			long hit[] = new long[2];
 			try (ThreadGroup group = new ThreadGroup(Math.max(1, Runtime.getRuntime().availableProcessors()-1), 20)) {
@@ -144,7 +152,7 @@ public class AbstractFutureAsyncTest
 	@Test
 	public void                     testSuccessOverloadedProcessors() throws ExecutionException, InterruptedException
 	{
-		for (int tries = 0; tries < 20; ++tries) {
+		for (int tries = 0; tries < 200; ++tries) {
 			SettableFuture<Void> future = new SettableFuture<>();
 			long hit[] = new long[2];
 			try (ThreadGroup group = new ThreadGroup(Math.max(1, Runtime.getRuntime().availableProcessors()*4), 20)) {
