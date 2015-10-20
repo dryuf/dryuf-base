@@ -13,36 +13,33 @@
 	<artifactId>concurrent-lwfuture-pof</artifactId>
 	<version>0.0.1</version>
 
-	<parent>
-		<groupId>cz.znj.kvr.sw.pof.concurrent</groupId>
-		<artifactId>concurrent-pof</artifactId>
-		<version>0.0.1</version>
-		<relativePath>../pom.xml</relativePath>
-	</parent>
+	<properties>
+		<javac.version>1.7</javac.version>
+                <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+                <maven-compiler-plugin.version>3.3</maven-compiler-plugin.version>
+                <junit.version>4.11</junit.version>
+	</properties>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>${maven-compiler-plugin.version}</version>
+				<configuration>
+					<source>${javac.version}</source>
+					<target>${javac.version}</target>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
 
 	<dependencies>
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
+			<version>${junit.version}</version>
 			<scope>test</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>org.apache.logging.log4j</groupId>
-			<artifactId>log4j-api</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.logging.log4j</groupId>
-			<artifactId>log4j-core</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>org.apache.commons</groupId>
-			<artifactId>commons-lang3</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>commons-io</groupId>
-			<artifactId>commons-io</artifactId>
 		</dependency>
 	</dependencies>
 

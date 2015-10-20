@@ -18,7 +18,6 @@ package cz.znj.kvr.sw.pof.concurrent.lwfuture.concurrent.test;
 
 
 import cz.znj.kvr.sw.pof.concurrent.lwfuture.concurrent.ListenableFutureTask;
-import cz.znj.kvr.sw.pof.concurrent.lwfuture.concurrent.SettableFuture;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -27,35 +26,42 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
+
 public class AbstractFutureCancelTest
 {
 	@Test(timeout = 1000)
 	public void                     testCancel() throws  InterruptedException
 	{
 		Executor executor = Executors.newSingleThreadExecutor();
-		LinkedBlockingQueue<Integer> queue = new LinkedBlockingQueue<Integer>();
-		ListenableFutureTask<Integer> future = new ListenableFutureTask<Integer>(() -> {
-			try {
-				queue.put(0);
-				Thread.sleep(86400000);
-			}
-			catch (InterruptedException e) {
+		final LinkedBlockingQueue<Integer> queue = new LinkedBlockingQueue<Integer>();
+		ListenableFutureTask<Integer> future = new ListenableFutureTask<Integer>(new Runnable() {
+			@Override
+			public void run() {
 				try {
-					queue.put(1);
-					Thread.sleep(2000);
-					queue.put(2);
+					queue.put(0);
+					Thread.sleep(86400000);
 				}
-				catch (InterruptedException e1) {
-					throw new RuntimeException(e1);
+				catch (InterruptedException e) {
+					try {
+						queue.put(1);
+						Thread.sleep(2000);
+						queue.put(2);
+					}
+					catch (InterruptedException e1) {
+						throw new RuntimeException(e1);
+					}
 				}
 			}
 		}, null);
-		future.addListener(() -> {
-			try {
-				queue.put(1);
-			}
-			catch (InterruptedException e) {
-				throw new RuntimeException(e);
+		future.addListener(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					queue.put(1);
+				}
+				catch (InterruptedException e) {
+					throw new RuntimeException(e);
+				}
 			}
 		});
 		executor.execute(future);
@@ -70,29 +76,35 @@ public class AbstractFutureCancelTest
 	public void                     testDelayedCancel() throws  InterruptedException
 	{
 		Executor executor = Executors.newSingleThreadExecutor();
-		LinkedBlockingQueue<Integer> queue = new LinkedBlockingQueue<Integer>();
-		ListenableFutureTask<Integer> future = new ListenableFutureTask<Integer>(() -> {
-			try {
-				queue.put(0);
-				Thread.sleep(86400000);
-			}
-			catch (InterruptedException e) {
+		final LinkedBlockingQueue<Integer> queue = new LinkedBlockingQueue<Integer>();
+		ListenableFutureTask<Integer> future = new ListenableFutureTask<Integer>(new Runnable() {
+			@Override
+			public void run() {
 				try {
-					queue.put(1);
-					Thread.sleep(20);
-					queue.put(2);
+					queue.put(0);
+					Thread.sleep(86400000);
 				}
-				catch (InterruptedException e1) {
-					throw new RuntimeException(e1);
+				catch (InterruptedException e) {
+					try {
+						queue.put(1);
+						Thread.sleep(20);
+						queue.put(2);
+					}
+					catch (InterruptedException e1) {
+						throw new RuntimeException(e1);
+					}
 				}
 			}
 		}, null);
-		future.addListener(() -> {
-			try {
-				queue.put(3);
-			}
-			catch (InterruptedException e) {
-				throw new RuntimeException(e);
+		future.addListener(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					queue.put(3);
+				}
+				catch (InterruptedException e) {
+					throw new RuntimeException(e);
+				}
 			}
 		});
 		future.setDelayedCancel();
@@ -109,29 +121,35 @@ public class AbstractFutureCancelTest
 	public void                     testDelayedCancelAfter() throws  InterruptedException
 	{
 		Executor executor = Executors.newSingleThreadExecutor();
-		LinkedBlockingQueue<Integer> queue = new LinkedBlockingQueue<Integer>();
-		ListenableFutureTask<Integer> future = new ListenableFutureTask<Integer>(() -> {
-			try {
-				queue.put(0);
-				Thread.sleep(86400000);
-			}
-			catch (InterruptedException e) {
+		final LinkedBlockingQueue<Integer> queue = new LinkedBlockingQueue<Integer>();
+		ListenableFutureTask<Integer> future = new ListenableFutureTask<Integer>(new Runnable() {
+			@Override
+			public void run() {
 				try {
-					queue.put(1);
-					Thread.sleep(20);
-					queue.put(2);
+					queue.put(0);
+					Thread.sleep(86400000);
 				}
-				catch (InterruptedException e1) {
-					throw new RuntimeException(e1);
+				catch (InterruptedException e) {
+					try {
+						queue.put(1);
+						Thread.sleep(20);
+						queue.put(2);
+					}
+					catch (InterruptedException e1) {
+						throw new RuntimeException(e1);
+					}
 				}
 			}
 		}, null);
-		future.addListener(() -> {
-			try {
-				queue.put(3);
-			}
-			catch (InterruptedException e) {
-				throw new RuntimeException(e);
+		future.addListener(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					queue.put(3);
+				}
+				catch (InterruptedException e) {
+					throw new RuntimeException(e);
+				}
 			}
 		});
 		future.setDelayedCancel();
@@ -148,29 +166,35 @@ public class AbstractFutureCancelTest
 	public void                     testDelayedCancelLate() throws  InterruptedException
 	{
 		Executor executor = Executors.newSingleThreadExecutor();
-		LinkedBlockingQueue<Integer> queue = new LinkedBlockingQueue<Integer>();
-		ListenableFutureTask<Integer> future = new ListenableFutureTask<Integer>(() -> {
-			try {
-				queue.put(0);
-				Thread.sleep(86400000);
-			}
-			catch (InterruptedException e) {
+		final LinkedBlockingQueue<Integer> queue = new LinkedBlockingQueue<Integer>();
+		ListenableFutureTask<Integer> future = new ListenableFutureTask<Integer>(new Runnable() {
+			@Override
+			public void run() {
 				try {
-					queue.put(1);
-					Thread.sleep(20);
-					queue.put(2);
+					queue.put(0);
+					Thread.sleep(86400000);
 				}
-				catch (InterruptedException e1) {
-					throw new RuntimeException(e1);
+				catch (InterruptedException e) {
+					try {
+						queue.put(1);
+						Thread.sleep(20);
+						queue.put(2);
+					}
+					catch (InterruptedException e1) {
+						throw new RuntimeException(e1);
+					}
 				}
 			}
 		}, null);
-		future.addListener(() -> {
-			try {
-				queue.put(3);
-			}
-			catch (InterruptedException e) {
-				throw new RuntimeException(e);
+		future.addListener(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					queue.put(3);
+				}
+				catch (InterruptedException e) {
+					throw new RuntimeException(e);
+				}
 			}
 		});
 		future.setDelayedCancel();

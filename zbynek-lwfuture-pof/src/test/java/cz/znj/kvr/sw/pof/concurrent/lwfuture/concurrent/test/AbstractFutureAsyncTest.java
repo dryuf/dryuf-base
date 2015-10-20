@@ -27,7 +27,6 @@ import java.util.concurrent.CancellationException;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Function;
 
 
 /**
@@ -58,40 +57,52 @@ public class AbstractFutureAsyncTest
 		public void                     init(int count)
 		{
 			fineBarrier = new AtomicBoolean(false);
-			threadBarrier = new CyclicBarrier(count, () -> {
-				try {
-					Thread.sleep(2);
+			threadBarrier = new CyclicBarrier(count, new Runnable() {
+				@Override
+				public void run() {
+					try {
+						Thread.sleep(2);
+					}
+					catch (InterruptedException e) {
+						throw new RuntimeException(e);
+					}
+					fineBarrier.set(true);
 				}
-				catch (InterruptedException e) {
-					throw new RuntimeException(e);
-				}
-				fineBarrier.set(true);
 			});
 			threads = new LinkedList<>();
 		}
 
-		public void                     startGroupThreads(Function<Integer, Void> runner)
+		public void                     startGroupThreads(final CallProc<Integer> runner)
 		{
 			for (int i = 0; i < result.length; ++i) {
 				final int id = i;
-				startThread(() -> runner.apply(id));
+				startThread(new Runnable() {
+					@Override
+					public void run() {
+						runner.run(id);
+					}
+				});
 			}
 		}
 
-		public Thread                   startThread(Runnable runner)
+		public Thread                   startThread(final Runnable runner)
 		{
-			Thread thread = new Thread(() -> {
-				try {
-					threadBarrier.await();
+			Thread thread = new Thread(new Runnable() {
+				@Override
+				public void run() {
+					try {
+						threadBarrier.await();
+					}
+					catch (InterruptedException e) {
+						throw new RuntimeException(e);
+					}
+					catch (BrokenBarrierException e) {
+						throw new RuntimeException(e);
+					}
+					while (!fineBarrier.get()) {
+					}
+					runner.run();
 				}
-				catch (InterruptedException e) {
-					throw new RuntimeException(e);
-				}
-				catch (BrokenBarrierException e) {
-					throw new RuntimeException(e);
-				}
-				while (!fineBarrier.get()) {}
-				runner.run();
 			});
 			thread.start();
 			threads.add(thread);
@@ -134,29 +145,47 @@ public class AbstractFutureAsyncTest
 	public void                     testSuccessMatchProcessors() throws ExecutionException, InterruptedException
 	{
 		for (int tries = 0; tries < 100; ++tries) {
-			SettableFuture<Void> future = new SettableFuture<>();
-			long hit[] = new long[2];
+			final SettableFuture<Void> future = new SettableFuture<>();
+			final long hit[] = new long[2];
 			try (ThreadGroup group = new ThreadGroup(Math.max(1, Runtime.getRuntime().availableProcessors()-1), 20)) {
 				group.init(group.result.length+1);
-				group.startGroupThreads((Integer id) -> {
-					long[] r = group.result[id];
-					for (int i = 0; i < r.length; ++i) {
-						final int aid = i;
-						future.addListener(() -> {
-							r[aid] = 1;
+				group.startGroupThreads(new CallProc<Integer>() {
+					@Override
+					public void run(Integer id) {
+						final long[] r = group.result[id];
+						for (int i = 0; i < r.length; ++i) {
+							final int aid = i;
+							future.addListener(new Runnable()
+							{
+								@Override
+								public void run()
+								{
+									r[aid] = 1;
+								}
+							});
+						}
+						;
+					}
+				});
+				group.startThread(new Runnable() {
+					@Override
+					public void run() {
+						future.addListener(new Runnable() {
+							@Override
+							public void run()
+							{
+								hit[0] = 1;
+							}
+						});
+						future.set(null);
+						future.addListener(new Runnable() {
+							@Override
+							public void run()
+							{
+								hit[1] = 1;
+							}
 						});
 					}
-					;
-					return null;
-				});
-				group.startThread(() -> {
-					future.addListener(() -> {
-						hit[0] = 1;
-					});
-					future.set(null);
-					future.addListener(() -> {
-						hit[1] = 1;
-					});
 				});
 				group.waitThreads();
 				group.assertResult();
@@ -169,29 +198,45 @@ public class AbstractFutureAsyncTest
 	public void                     testSuccessOverloadedProcessors() throws ExecutionException, InterruptedException
 	{
 		for (int tries = 0; tries < 200; ++tries) {
-			SettableFuture<Void> future = new SettableFuture<>();
-			long hit[] = new long[2];
+			final SettableFuture<Void> future = new SettableFuture<>();
+			final long hit[] = new long[2];
 			try (ThreadGroup group = new ThreadGroup(Math.max(1, Runtime.getRuntime().availableProcessors()*4), 20)) {
 				group.init(group.result.length+1);
-				group.startGroupThreads((Integer id) -> {
-					long[] r = group.result[id];
-					for (int i = 0; i < r.length; ++i) {
-						final int aid = i;
-						future.addListener(() -> {
-							r[aid] = 1;
+				group.startGroupThreads(new CallProc<Integer>() {
+					@Override
+					public void run(Integer id) {
+						final long[] r = group.result[id];
+						for (int i = 0; i < r.length; ++i) {
+							final int aid = i;
+							future.addListener(new Runnable()
+							{
+								@Override
+								public void run()
+								{
+									r[aid] = 1;
+								}
+							});
+						}
+						;
+					}
+				});
+				group.startThread(new Runnable() {
+					@Override
+					public void run() {
+						future.addListener(new Runnable() {
+							@Override
+							public void run() {
+								hit[0] = 1;
+							}
+						});
+						future.set(null);
+						future.addListener(new Runnable() {
+							@Override
+							public void run() {
+								hit[1] = 1;
+							}
 						});
 					}
-					;
-					return null;
-				});
-				group.startThread(() -> {
-					future.addListener(() -> {
-						hit[0] = 1;
-					});
-					future.set(null);
-					future.addListener(() -> {
-						hit[1] = 1;
-					});
 				});
 				group.waitThreads();
 				group.assertResult();

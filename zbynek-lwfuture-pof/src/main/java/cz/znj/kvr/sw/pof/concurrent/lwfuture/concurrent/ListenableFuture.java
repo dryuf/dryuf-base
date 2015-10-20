@@ -17,7 +17,6 @@
 package cz.znj.kvr.sw.pof.concurrent.lwfuture.concurrent;
 
 import java.util.concurrent.Future;
-import java.util.function.Function;
 
 
 /**
@@ -56,7 +55,7 @@ public interface ListenableFuture<V> extends Future<V>
 	 * @return
 	 *      this instance
 	 */
-	ListenableFuture<V>             addListener(Function<Future<V>, Void> listener);
+	<FT extends Future<V>> ListenableFuture<V> addListener(FutureNotifier<FT> listener);
 
 	/**
 	 * Registers new listener as FutureListener instance.

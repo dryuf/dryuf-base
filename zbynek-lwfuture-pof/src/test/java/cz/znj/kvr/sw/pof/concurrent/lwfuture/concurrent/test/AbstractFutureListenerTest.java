@@ -26,26 +26,56 @@ public class AbstractFutureListenerTest
 	public void                     testListenerSetException()
 	{
 		SettableFuture<Void> future = new SettableFuture<Void>();
-		future.addListener(() -> { throw new NullPointerException(); });
+		future.addListener(new Runnable() {
+			@Override
+			public void run() {
+				throw new NullPointerException();
+			}
+		});
 		future.set(null);
-		future.addListener(() -> { throw new NullPointerException(); });
+		future.addListener(new Runnable() {
+			@Override
+			public void run() {
+				throw new NullPointerException();
+			}
+		});
 	}
 
 	@Test
 	public void                     testListenerExceptedException()
 	{
 		SettableFuture<Void> future = new SettableFuture<Void>();
-		future.addListener(() -> { throw new NullPointerException(); });
+		future.addListener(new Runnable() {
+			@Override
+			public void run() {
+				throw new NullPointerException();
+			}
+		});
 		future.setException(new UnsupportedOperationException());
-		future.addListener(() -> { throw new NullPointerException(); });
+		future.addListener(new Runnable() {
+			@Override
+			public void run() {
+				throw new NullPointerException();
+			}
+		});
 	}
 
 	@Test
 	public void                     testListenerCancelledException()
 	{
 		SettableFuture<Void> future = new SettableFuture<Void>();
-		future.addListener(() -> { throw new NullPointerException(); });
+		future.addListener(new Runnable() {
+			@Override
+			public void run() {
+				throw new NullPointerException();
+			}
+		});
 		future.cancel(true);
-		future.addListener(() -> { throw new NullPointerException(); });
+		future.addListener(new Runnable() {
+			@Override
+			public void run() {
+				throw new NullPointerException();
+			}
+		});
 	}
 }
