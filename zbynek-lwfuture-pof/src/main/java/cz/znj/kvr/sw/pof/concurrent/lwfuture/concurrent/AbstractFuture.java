@@ -1,3 +1,19 @@
+/*
+ * Copyright 2015 Zbynek Vyskovsky http://kvr.znj.cz/ http://github.com/kvr000/
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package cz.znj.kvr.sw.pof.concurrent.lwfuture.concurrent;
 
 import java.util.concurrent.CancellationException;
@@ -109,6 +125,7 @@ public class AbstractFuture<V> implements ListenableFuture<V>
 		}
 		switch (localStatus) {
 		case ST_CANCELLED:
+		case ST_CANCELLED|ST_FINISHED:
 			throw new CancellationException();
 
 		case ST_FINISHED:
@@ -124,6 +141,7 @@ public class AbstractFuture<V> implements ListenableFuture<V>
 	@Override
 	public ListenableFuture<V>      setDelayedCancel()
 	{
+		// optimize for the most common case when we set delayed cancel right after the future was created
 		int localStatus = 0;
 		for (;;) {
 			if (casStatus(localStatus, localStatus|ST_DELAYED_CANCEL))
@@ -139,7 +157,9 @@ public class AbstractFuture<V> implements ListenableFuture<V>
 	{
 		addListenerNode(new RegularListenerNode() {
 			@Override
-			public String toString() { return listener.toString(); }
+			public String toString() {
+				return listener.toString();
+			}
 
 			@Override
 			public void executeSet() {
@@ -164,7 +184,9 @@ public class AbstractFuture<V> implements ListenableFuture<V>
 	{
 		addListenerNode(new RegularListenerNode() {
 			@Override
-			public String toString() { return listener.toString(); }
+			public String toString() {
+				return listener.toString();
+			}
 
 			@Override
 			public void executeSet() {
@@ -189,7 +211,9 @@ public class AbstractFuture<V> implements ListenableFuture<V>
 	{
 		addListenerNode(new RegularListenerNode() {
 			@Override
-			public String toString() { return listener.toString(); }
+			public String toString() {
+				return listener.toString();
+			}
 
 			@Override
 			public void executeSet() {
@@ -270,6 +294,7 @@ public class AbstractFuture<V> implements ListenableFuture<V>
 	 */
 	protected final boolean         setRunning()
 	{
+		// optimize for the most common case when we update to RUNNING from initial state
 		int localStatus = 0;
 		for (;;) {
 			if (casStatus(localStatus, localStatus|ST_RUNNING))
@@ -310,12 +335,13 @@ public class AbstractFuture<V> implements ListenableFuture<V>
 	 */
 	private final int               updateStatusFinal(int finalStatus)
 	{
+		// optimize for the most common case when we update to final from RUNNING state
 		int localStatus = ST_RUNNING;
 		for (;;) {
 			int newStatus = localStatus&~(ST_RUNNING|ST_WAITING)|finalStatus;
 			if (casStatus(localStatus, newStatus))
 				break;
-			localStatus = newStatus;
+			localStatus = getStatusLazy();
 			if (localStatus >= ST_FINISHED)
 				return localStatus;
 		}
@@ -337,6 +363,7 @@ public class AbstractFuture<V> implements ListenableFuture<V>
 	 */
 	private final void              addListenerNode(ListenerNode listenerNode)
 	{
+		// optimize for the most common case when there is only single listener registered for the future
 		if (casListeners(null, listenerNode))
 			return;
 		for (;;) {
@@ -361,15 +388,32 @@ public class AbstractFuture<V> implements ListenableFuture<V>
 	{
 		switch (getStatusLazy()&(ST_FINISHED|ST_CANCELLED)) {
 		case ST_FINISHED:
-			if (excepted != null)
-				listener.executeExcepted();
-			else
-				listener.executeSet();
+			if (excepted != null) {
+				try {
+					listener.executeExcepted();
+				}
+				catch (RuntimeException ex) {
+					logger.log(Level.SEVERE, "RuntimeException raised by FutureListener.onSuccess() "+listener, ex);
+				}
+			}
+			else {
+				try {
+					listener.executeSet();
+				}
+				catch (RuntimeException ex) {
+					logger.log(Level.SEVERE, "RuntimeException raised by FutureListener.onFailure() "+listener, ex);
+				}
+			}
 			break;
 
 		case ST_CANCELLED:
 		case ST_CANCELLED|ST_FINISHED:
-			listener.executeCancelled();
+			try {
+				listener.executeCancelled();
+			}
+			catch (RuntimeException ex) {
+				logger.log(Level.SEVERE, "RuntimeException raised by FutureListener.onCancelled() "+listener, ex);
+			}
 			break;
 
 		default:
@@ -389,8 +433,8 @@ public class AbstractFuture<V> implements ListenableFuture<V>
 				try {
 					current.executeSet();
 				}
-				catch (Exception ex) {
-					// ignore exceptions from listeners
+				catch (RuntimeException ex) {
+					logger.log(Level.SEVERE, "RuntimeException raised by FutureListener.onSuccess() "+current, ex);
 				}
 			}
 			if (casListeners(lastListener, LN_MARKER_CLOSED))
@@ -411,8 +455,8 @@ public class AbstractFuture<V> implements ListenableFuture<V>
 				try {
 					current.executeExcepted();
 				}
-				catch (Exception ex) {
-					// ignore exceptions from listeners
+				catch (RuntimeException ex) {
+					logger.log(Level.SEVERE, "RuntimeException raised by FutureListener.onExcepted() "+current, ex);
 				}
 			}
 			if (casListeners(lastListener, LN_MARKER_CLOSED))
@@ -434,7 +478,7 @@ public class AbstractFuture<V> implements ListenableFuture<V>
 					current.executeCancelled();
 				}
 				catch (RuntimeException ex) {
-					logger.log(Level.SEVERE, "RuntimeException raised by FutureListener "+current, ex);
+					logger.log(Level.SEVERE, "RuntimeException raised by FutureListener.onCancelled() "+current, ex);
 				}
 			}
 			if (casListeners(lastListener, LN_MARKER_CLOSED))

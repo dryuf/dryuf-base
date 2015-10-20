@@ -1,19 +1,20 @@
-# Lock free ListenableFuture / Future implementation
+## Lock free ListenableFuture / Future implementation
 
-The project implements java concurrent Future in very cheap and flexible way.
+The project implements java concurrent (Listenable) Future in very cheap and flexible way.
 
 The performance is for obvious reasons (additional support of listeners) slightly lower than original JDK Future but significantly higher than similar implementations in Guava and Spring.
 
-## Flexibility
+### Flexibility
 
 Additionally it solves several design issues from which suffer Guava and Spring implementations:
 - allows several types of listeners, which can just implement Runnable or receive the original Future or receive directly the result to appropriate method
+- distinguishes failure and cancellation when invoking listener
 - distinguishes not started and running state
-- allows delayed cancel notifications, i.e. the notification about cancel can be postponed until the task really exits, this is useful when task occupies some shared resource like internet port
+- allows delayed cancel notifications, i.e. the notification about cancel can be postponed until the task really exits, this is useful when task occupies some shared resource like network port
 
-## Performance
+### Performance
 
-The performance comparison looks like:
+The performance comparison looks like (measured on my low voltage i7 x86_64):
 ```
 Benchmark                                           Mode  Cnt    Score   Error  Units
 SinglePreListenerAsyncBenchmark.benchmarkGuava     thrpt    2   99.828          ops/s
@@ -24,7 +25,7 @@ SinglePreListenerAsyncBenchmark.benchmarkSpring    thrpt    2   82.545          
 
 It's 65% faster than Guava, 100% faster than Spring and 38% slower than JDK (but JDK test runs without  listener).
 
-## Implementations
+### Implementations
 
 Currenty there are two implementations that differ in details how to handle atomic operations. The performance difference is about 10% but may change with JRE version:
 - feature/atomic-field-updaters - uses AtomicFieldUpdaters to manage the atomic fields, should be faster but with current JIT it's slower
