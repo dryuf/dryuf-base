@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Zbynek Vyskovsky http://kvr.znj.cz/ http://github.com/kvr000/
+ * Copyright 2015 Zbynek Vyskovsky mailto:kvr@centrum.cz http://kvr.znj.cz/ http://github.com/kvr000/
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,26 +19,34 @@ package cz.znj.kvr.sw.pof.concurrent.lwfuture.concurrent;
 import java.util.concurrent.Callable;
 import java.util.concurrent.RunnableFuture;
 
+
 /**
- * ListenableFuture implementation which can be used as handling wrapper for actually running the task.
+ * ListenableFuture implementation which can be used as handling wrapper for actually running the
+ * task.
+ *
  * @param <V>
- *         future return type
+ * 	future return type
+ *
+ * @author
+ * 	Zbynek Vyskovsky, mailto:kvr@centrum.cz http://kvr.znj.cz/software/java/ListenableFuture/ http://github.com/kvr000
  */
 public class ListenableFutureTask<V> extends AbstractFuture<V> implements RunnableFuture<V>
 {
 	/**
-	 * Constructs new instance with Runnable reference and provided result.
+	 * Constructs new instance with {@link Runnable} reference and provided {@code result}.
 	 *
 	 * @param runnable
-	 *      function to run
+	 * 	function to run
 	 * @param result
-	 *      provided result
+	 * 	provided result
 	 */
 	public                          ListenableFutureTask(final Runnable runnable, final V result)
 	{
-		this(new Callable<V>() {
+		this(new Callable<V>()
+		{
 			@Override
-			public V call() throws Exception {
+			public V call() throws Exception
+			{
 				runnable.run();
 				return result;
 			}
@@ -46,10 +54,10 @@ public class ListenableFutureTask<V> extends AbstractFuture<V> implements Runnab
 	}
 
 	/**
-	 * Constructs new instance with Callback reference.
+	 * Constructs new instance with {@link Callable} reference.
 	 *
 	 * @param callable
-	 *      function to compute the result
+	 * 	function to compute the result
 	 */
 	public                          ListenableFutureTask(final Callable<V> callable)
 	{
@@ -67,8 +75,8 @@ public class ListenableFutureTask<V> extends AbstractFuture<V> implements Runnab
 	{
 		try {
 			myThread = Thread.currentThread();
-			if (setRunning());
-				set(callable.call());
+			if (setRunning()) ;
+			set(callable.call());
 		}
 		catch (Exception ex) {
 			setException(ex);

@@ -14,27 +14,20 @@
  * limitations under the License.
  */
 
-package cz.znj.kvr.sw.pof.concurrent.lwfuture.concurrent;
+package cz.znj.kvr.sw.pof.concurrent.lwfuture.concurrent.test;
 
 
 /**
- * Asynchronous {@link java.util.concurrent.Future} that can be finished externally.
+ * Generic RuntimeException dedicated solely for testing reasons.
  *
- * @param <V>
- *      future result type
+ * The name is chosen so it does not cause panic when seen in the output.
  *
  * @author
  * 	Zbynek Vyskovsky, mailto:kvr@centrum.cz http://kvr.znj.cz/software/java/ListenableFuture/ http://github.com/kvr000
  */
-public class SettableFuture<V> extends AbstractFuture<V>
+public class TestingRuntimeException extends RuntimeException
 {
-	public boolean                  set(V result)
+	public                          TestingRuntimeException()
 	{
-		return super.set(result);
-	}
-
-	public boolean                  setException(Throwable ex)
-	{
-		return super.setException(ex);
 	}
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Zbynek Vyskovsky http://kvr.znj.cz/ http://github.com/kvr000/
+ * Copyright 2015 Zbynek Vyskovsky mailto:kvr@centrum.cz http://kvr.znj.cz/ http://github.com/kvr000/
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,12 +33,16 @@ public class AbstractFutureSyncTest
 		SettableFuture<Object> future = new SettableFuture<>();
 		future.addListener(listener);
 		Assert.assertNull(listener.getValue());
+		Assert.assertFalse(future.isDone());
+		Assert.assertFalse(future.isCancelled());
 		future.set(0);
 		Assert.assertEquals(0, listener.getValue());
 		TestListener second = new TestListener();
 		future.addListener(second);
 		Assert.assertEquals(0, second.getValue());
 		Assert.assertEquals(0, future.get());
+		Assert.assertTrue(future.isDone());
+		Assert.assertFalse(future.isCancelled());
 	}
 
 	@Test
@@ -48,6 +52,8 @@ public class AbstractFutureSyncTest
 		SettableFuture<Object> future = new SettableFuture<>();
 		future.addListener(listener);
 		Assert.assertNull(listener.getValue());
+		Assert.assertFalse(future.isDone());
+		Assert.assertFalse(future.isCancelled());
 		future.setException(new NumberFormatException());
 		Assert.assertTrue(listener.getValue() instanceof NumberFormatException);
 		TestListener second = new TestListener();
@@ -63,6 +69,8 @@ public class AbstractFutureSyncTest
 		catch (ExecutionException e) {
 			Assert.assertTrue(e.getCause() instanceof NumberFormatException);
 		}
+		Assert.assertTrue(future.isDone());
+		Assert.assertFalse(future.isCancelled());
 	}
 
 	@Test
@@ -72,7 +80,9 @@ public class AbstractFutureSyncTest
 		SettableFuture<Object> future = new SettableFuture<>();
 		future.addListener(listener);
 		Assert.assertNull(listener.getValue());
-		future.cancel(true);
+		Assert.assertFalse(future.isDone());
+		Assert.assertFalse(future.isCancelled());
+		Assert.assertTrue(future.cancel(true));
 		Assert.assertTrue(listener.getValue() instanceof CancellationException);
 		TestListener second = new TestListener();
 		future.addListener(second);
@@ -89,6 +99,8 @@ public class AbstractFutureSyncTest
 		}
 		catch (CancellationException ex) {
 		}
+		Assert.assertTrue(future.isDone());
+		Assert.assertTrue(future.isCancelled());
 	}
 
 	@Test
@@ -98,8 +110,10 @@ public class AbstractFutureSyncTest
 		SettableFuture<Object> future = new SettableFuture<>();
 		future.addListener(listener);
 		Assert.assertNull(listener.getValue());
-		future.cancel(true);
-		future.set(0);
+		Assert.assertFalse(future.isDone());
+		Assert.assertFalse(future.isCancelled());
+		Assert.assertTrue(future.cancel(true));
+		Assert.assertFalse(future.set(0));
 		Assert.assertTrue(listener.getValue() instanceof CancellationException);
 		TestListener second = new TestListener();
 		future.addListener(second);
@@ -116,6 +130,8 @@ public class AbstractFutureSyncTest
 		}
 		catch (CancellationException ex) {
 		}
+		Assert.assertTrue(future.isDone());
+		Assert.assertTrue(future.isCancelled());
 	}
 
 	@Test
@@ -125,8 +141,10 @@ public class AbstractFutureSyncTest
 		SettableFuture<Object> future = new SettableFuture<>();
 		future.addListener(listener);
 		Assert.assertNull(listener.getValue());
-		future.cancel(true);
-		future.setException(new NumberFormatException());
+		Assert.assertFalse(future.isDone());
+		Assert.assertFalse(future.isCancelled());
+		Assert.assertTrue(future.cancel(true));
+		Assert.assertFalse(future.setException(new NumberFormatException()));
 		Assert.assertTrue(listener.getValue() instanceof CancellationException);
 		TestListener second = new TestListener();
 		future.addListener(second);
@@ -143,6 +161,8 @@ public class AbstractFutureSyncTest
 		}
 		catch (CancellationException ex) {
 		}
+		Assert.assertTrue(future.isDone());
+		Assert.assertTrue(future.isCancelled());
 	}
 
 	@Test
@@ -152,13 +172,17 @@ public class AbstractFutureSyncTest
 		SettableFuture<Object> future = new SettableFuture<>();
 		future.addListener(listener);
 		Assert.assertNull(listener.getValue());
-		future.set(0);
-		future.cancel(true);
+		Assert.assertFalse(future.isDone());
+		Assert.assertFalse(future.isCancelled());
+		Assert.assertTrue(future.set(0));
+		Assert.assertFalse(future.cancel(true));
 		Assert.assertEquals(0, listener.getValue());
 		TestListener second = new TestListener();
 		future.addListener(second);
 		Assert.assertEquals(0, second.getValue());
 		Assert.assertEquals(0, future.get());
+		Assert.assertTrue(future.isDone());
+		Assert.assertFalse(future.isCancelled());
 	}
 
 	@Test
@@ -168,8 +192,10 @@ public class AbstractFutureSyncTest
 		SettableFuture<Object> future = new SettableFuture<>();
 		future.addListener(listener);
 		Assert.assertNull(listener.getValue());
-		future.setException(new NumberFormatException());
-		future.cancel(true);
+		Assert.assertFalse(future.isDone());
+		Assert.assertFalse(future.isCancelled());
+		Assert.assertTrue(future.setException(new NumberFormatException()));
+		Assert.assertFalse(future.cancel(true));
 		Assert.assertTrue(listener.getValue() instanceof NumberFormatException);
 		TestListener second = new TestListener();
 		future.addListener(second);
@@ -184,6 +210,7 @@ public class AbstractFutureSyncTest
 		catch (ExecutionException e) {
 			Assert.assertTrue(e.getCause() instanceof NumberFormatException);
 		}
+		Assert.assertTrue(future.isDone());
+		Assert.assertFalse(future.isCancelled());
 	}
-
 }

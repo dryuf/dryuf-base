@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Zbynek Vyskovsky http://kvr.znj.cz/ http://github.com/kvr000/
+ * Copyright 2015 Zbynek Vyskovsky mailto:kvr@centrum.cz http://kvr.znj.cz/ http://github.com/kvr000/
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
 package cz.znj.kvr.sw.pof.concurrent.lwfuture.concurrent.benchmark;
 
 import com.google.common.util.concurrent.MoreExecutors;
-import cz.znj.kvr.sw.pof.concurrent.lwfuture.concurrent.AbstractFutureListener;
+import cz.znj.kvr.sw.pof.concurrent.lwfuture.concurrent.DefaultFutureListener;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.Fork;
 import org.openjdk.jmh.annotations.Measurement;
@@ -40,7 +40,7 @@ public class SinglePostListenerAsyncBenchmark
 	@Fork(warmups = 1, value = 1)
 	public void                     benchmarkJdk() throws Exception
 	{
-		FutureTask[] array = BenchmarkSupport.populateJdkFutureArray(COUNT);
+		FutureTask<Integer>[] array = BenchmarkSupport.populateJdkFutureArray(COUNT);
 		for (FutureTask<Integer> f: array) {
 			// nothing to add, no listenable
 		}
@@ -56,10 +56,10 @@ public class SinglePostListenerAsyncBenchmark
 	@Fork(warmups = 1, value = 1)
 	public void                     benchmarkLwFuture() throws ExecutionException, InterruptedException
 	{
-		cz.znj.kvr.sw.pof.concurrent.lwfuture.concurrent.ListenableFutureTask[] array = BenchmarkSupport.populateLwFutureArray(COUNT);
+		cz.znj.kvr.sw.pof.concurrent.lwfuture.concurrent.ListenableFutureTask<Integer>[] array = BenchmarkSupport.populateLwFutureArray(COUNT);
 		BenchmarkSupport.threadedRunFutures(array);
-		for (cz.znj.kvr.sw.pof.concurrent.lwfuture.concurrent.ListenableFutureTask f: array) {
-			f.addListener(new AbstractFutureListener<Integer>());
+		for (cz.znj.kvr.sw.pof.concurrent.lwfuture.concurrent.ListenableFutureTask<Integer> f: array) {
+			f.addListener(new DefaultFutureListener<Integer>());
 		}
 		// skip futures.get() as we already handled in listeners
 	}
@@ -71,9 +71,9 @@ public class SinglePostListenerAsyncBenchmark
 	public void                     benchmarkGuava() throws ExecutionException, InterruptedException
 	{
 		Executor directExecutor = MoreExecutors.directExecutor();
-		com.google.common.util.concurrent.ListenableFutureTask[] array = BenchmarkSupport.populateGuavaFutureArray(COUNT);
+		com.google.common.util.concurrent.ListenableFutureTask<Integer>[] array = BenchmarkSupport.populateGuavaFutureArray(COUNT);
 		BenchmarkSupport.threadedRunFutures(array);
-		for (com.google.common.util.concurrent.ListenableFutureTask f: array) {
+		for (com.google.common.util.concurrent.ListenableFutureTask<Integer> f: array) {
 			final Future<Integer> ff = f;
 			f.addListener(() -> {
 				try {
@@ -95,9 +95,9 @@ public class SinglePostListenerAsyncBenchmark
 	@Fork(warmups = 1, value = 1)
 	public void                     benchmarkSpring() throws ExecutionException, InterruptedException
 	{
-		org.springframework.util.concurrent.ListenableFutureTask[] array = BenchmarkSupport.populateSpringFutureArray(COUNT);
+		org.springframework.util.concurrent.ListenableFutureTask<Integer>[] array = BenchmarkSupport.populateSpringFutureArray(COUNT);
 		BenchmarkSupport.threadedRunFutures(array);
-		for (org.springframework.util.concurrent.ListenableFutureTask f: array) {
+		for (org.springframework.util.concurrent.ListenableFutureTask<Integer> f: array) {
 			f.addCallback(new ListenableFutureCallback<Integer>() {
 				@Override
 				public void onFailure(Throwable ex) {

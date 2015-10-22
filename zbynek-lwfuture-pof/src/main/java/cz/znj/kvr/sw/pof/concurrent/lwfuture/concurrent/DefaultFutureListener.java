@@ -14,54 +14,32 @@
  * limitations under the License.
  */
 
-package cz.znj.kvr.sw.pof.concurrent.lwfuture.concurrent.test;
-
-import cz.znj.kvr.sw.pof.concurrent.lwfuture.concurrent.DefaultFutureListener;
-
-import java.util.concurrent.CancellationException;
+package cz.znj.kvr.sw.pof.concurrent.lwfuture.concurrent;
 
 
 /**
- * Testing listener storing the future result in instance variable.
+ * Default {@link FutureListener} implementation taking no action for any of the notifications.
+ *
+ * @param <V>
+ *      future result type
  *
  * @author
  * 	Zbynek Vyskovsky, mailto:kvr@centrum.cz http://kvr.znj.cz/software/java/ListenableFuture/ http://github.com/kvr000
  */
-public class TestListener extends DefaultFutureListener<Object>
+public class DefaultFutureListener<V> implements FutureListener<V>
 {
-	public static final CancellationException CANCELLED = new CancellationException();
-
 	@Override
-	public void                     onSuccess(Object result)
+	public void			onSuccess(V result)
 	{
-		this.value = result;
 	}
 
 	@Override
-	public void                     onFailure(Throwable ex)
+	public void			onFailure(Throwable ex)
 	{
-		this.value = ex;
 	}
 
 	@Override
 	public void                     onCancelled()
 	{
-		this.value = CANCELLED;
 	}
-
-	/**
-	 * Gets the value of result, exception or cancellation.
-	 *
-	 * @return
-	 *      future result, either result, exception or cancellation
-	 */
-	public Object                   getValue()
-	{
-		return value;
-	}
-
-	/**
-	 * Result value, exception or cancellation.
-	 */
-	protected Object                value;
 }

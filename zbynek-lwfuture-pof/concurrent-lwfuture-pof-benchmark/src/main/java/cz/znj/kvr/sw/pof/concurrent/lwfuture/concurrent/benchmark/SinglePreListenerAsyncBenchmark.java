@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Zbynek Vyskovsky http://kvr.znj.cz/ http://github.com/kvr000/
+ * Copyright 2015 Zbynek Vyskovsky mailto:kvr@centrum.cz http://kvr.znj.cz/ http://github.com/kvr000/
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
 package cz.znj.kvr.sw.pof.concurrent.lwfuture.concurrent.benchmark;
 
 import com.google.common.util.concurrent.MoreExecutors;
-import cz.znj.kvr.sw.pof.concurrent.lwfuture.concurrent.AbstractFutureListener;
+import cz.znj.kvr.sw.pof.concurrent.lwfuture.concurrent.DefaultFutureListener;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.Fork;
 import org.openjdk.jmh.annotations.Measurement;
@@ -58,7 +58,7 @@ public class SinglePreListenerAsyncBenchmark
 	{
 		cz.znj.kvr.sw.pof.concurrent.lwfuture.concurrent.ListenableFutureTask[] array = BenchmarkSupport.populateLwFutureArray(COUNT);
 		for (cz.znj.kvr.sw.pof.concurrent.lwfuture.concurrent.ListenableFutureTask f: array) {
-			f.addListener(new AbstractFutureListener<Integer>());
+			f.addListener(new DefaultFutureListener<Integer>());
 		}
 		BenchmarkSupport.threadedRunFutures(array);
 		// skip futures.get() as we already handled in listeners

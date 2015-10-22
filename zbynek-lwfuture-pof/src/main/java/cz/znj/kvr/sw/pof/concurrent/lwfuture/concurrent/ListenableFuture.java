@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Zbynek Vyskovsky http://kvr.znj.cz/ http://github.com/kvr000/
+ * Copyright 2015 Zbynek Vyskovsky mailto:kvr@centrum.cz http://kvr.znj.cz/ http://github.com/kvr000/
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,15 +20,20 @@ import java.util.concurrent.Future;
 
 
 /**
- * Listenable Future extends regular Future by allowing registering listeners for task completion and additionally allowing delay of cancel method.
+ * Listenable Future extends regular {@link Future} by allowing registering listeners for task completion
+ * and additionally allowing delay of cancellation notification.
  *
  * @param <V>
- *         Future result type
+ * 	Future result type
+ *
+ * @author
+ * 	Zbynek Vyskovsky, mailto:kvr@centrum.cz http://kvr.znj.cz/software/java/ListenableFuture/ http://github.com/kvr000
  */
 public interface ListenableFuture<V> extends Future<V>
 {
 	/**
-	 * Requests potential cancel notification to be postponed until the task actually finishes.
+	 * Requests potential {@link Future#cancel(boolean) cancel} notification to be postponed
+	 * until the task actually finishes.
 	 *
 	 * @return
 	 *      this instance
@@ -36,35 +41,52 @@ public interface ListenableFuture<V> extends Future<V>
 	ListenableFuture<V>             setDelayedCancel();
 
 	/**
-	 * Registers new listener as Runnable instance.
+	 * Registers new listener as {@link Runnable} instance.
 	 *
 	 * @param listener
-	 *      listener to be called when future is done
+	 * 	listener to be called when future is done
 	 *
 	 * @return
 	 *      this instance
 	 */
-	ListenableFuture<V>		addListener(Runnable listener);
+	ListenableFuture<V>             addListener(Runnable listener);
 
 	/**
-	 * Registers new listener as Function instance.
+	 * Registers new listener as {@link FutureNotifier} instance.
 	 *
 	 * @param listener
-	 *      listener to be called when future is done, getting the Future as a parameter
+	 * 	listener to be called when future is done, getting the {@link Future} as a parameter
 	 *
-	 * @return
-	 *      this instance
+	 * @return this instance
 	 */
 	<FT extends Future<V>> ListenableFuture<V> addListener(FutureNotifier<FT> listener);
 
 	/**
-	 * Registers new listener as FutureListener instance.
+	 * Registers new listener as {@link FutureListener} instance.
 	 *
 	 * @param listener
-	 *      listener to be called when future is done
+	 * 	listener to be called when future is done
 	 *
 	 * @return
 	 *      this instance
 	 */
 	ListenableFuture<V>             addListener(FutureListener<V> listener);
+
+	/**
+	 * Registers new listener as separated success, failure and cancel callbacks.
+	 *
+	 * In case any of the callbacks is null, it will be skipped while executing the listeners
+	 * for that particular notification.
+	 *
+	 * @param successListener
+	 * 	listener to be called when future successfully finishes, can be null
+	 * @param failureListener
+	 * 	listener to be called when future finishes with failure, can be null
+	 * @param cancelListener
+	 * 	listener to be called when future is cancelled, can be null
+	 *
+	 * @return
+	 *      this instance
+	 */
+	ListenableFuture<V>             addListener(SuccessListener<V> successListener, FailureListener failureListener, CancelListener cancelListener);
 }

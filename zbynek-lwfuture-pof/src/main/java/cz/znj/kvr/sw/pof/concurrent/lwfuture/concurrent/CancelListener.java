@@ -18,23 +18,15 @@ package cz.znj.kvr.sw.pof.concurrent.lwfuture.concurrent;
 
 
 /**
- * Asynchronous {@link java.util.concurrent.Future} that can be finished externally.
- *
- * @param <V>
- *      future result type
+ * Interface receiving {@link java.util.concurrent.Future Future} cancellation notifications.
  *
  * @author
  * 	Zbynek Vyskovsky, mailto:kvr@centrum.cz http://kvr.znj.cz/software/java/ListenableFuture/ http://github.com/kvr000
  */
-public class SettableFuture<V> extends AbstractFuture<V>
+public interface CancelListener
 {
-	public boolean                  set(V result)
-	{
-		return super.set(result);
-	}
-
-	public boolean                  setException(Throwable ex)
-	{
-		return super.setException(ex);
-	}
+	/**
+	 * Method called if future was cancelled
+	 */
+	void                            onCancelled();
 }

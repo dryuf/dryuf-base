@@ -30,3 +30,14 @@ It's 65% faster than Guava, 100% faster than Spring and 38% slower than JDK (but
 Currenty there are two implementations that differ in details how to handle atomic operations. The performance difference is about 10% but may change with JRE version:
 - feature/atomic-field-updaters - uses AtomicFieldUpdaters to manage the atomic fields, should be faster but with current JIT it's slower
 - feature/atomic-type-instances - uses AtomicInteger and AtomicReference instances, although the access is indirect, with current JIT this is faster
+- feature/unsafe-volatiles - uses Unsafe instance to read and write volatile members, fastest solution, with NoListener test even outperforms JDK Future
+
+## License
+
+The code is released under version 2.0 of the [Apache License][].
+
+## Stay in Touch
+
+Feel free to contact me at kvr@centrum.cz or http://kvr.znj.cz/software/java/ListenableFuture/ and http://github.com/kvr000
+
+[Apache License]: http://www.apache.org/licenses/LICENSE-2.0

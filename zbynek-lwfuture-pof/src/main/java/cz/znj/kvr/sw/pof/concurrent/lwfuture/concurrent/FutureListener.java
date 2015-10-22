@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Zbynek Vyskovsky http://kvr.znj.cz/ http://github.com/kvr000/
+ * Copyright 2015 Zbynek Vyskovsky mailto:kvr@centrum.cz http://kvr.znj.cz/ http://github.com/kvr000/
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,30 +18,14 @@ package cz.znj.kvr.sw.pof.concurrent.lwfuture.concurrent;
 
 
 /**
- * Interface receiving Future completion notifications.
+ * Interface receiving {@link java.util.concurrent.Future Future} completion notifications.
  *
  * @param <V>
  *      Future result type
+ *
+ * @author
+ * 	Zbynek Vyskovsky, mailto:kvr@centrum.cz http://kvr.znj.cz/software/java/ListenableFuture/ http://github.com/kvr000
  */
-public interface FutureListener<V>
+public interface FutureListener<V> extends SuccessListener<V>, FailureListener, CancelListener
 {
-	/**
-	 * Method called on successful completion.
-	 *
-	 * @param result
-	 *      result of future
-	 */
-	void			        onSuccess(V result);
-
-	/**
-	 * Method called if future failed due to exception
-	 * @param ex
-	 *      exception that caused the failure
-	 */
-	void			        onFailure(Throwable ex);
-
-	/**
-	 * Method called if future was cancelled
-	 */
-	void                            onCancelled();
 }

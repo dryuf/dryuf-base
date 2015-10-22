@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Zbynek Vyskovsky http://kvr.znj.cz/ http://github.com/kvr000/
+ * Copyright 2015 Zbynek Vyskovsky mailto:kvr@centrum.cz http://kvr.znj.cz/ http://github.com/kvr000/
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@ import org.junit.Test;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.BrokenBarrierException;
-import java.util.concurrent.CancellationException;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -35,6 +34,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * We start the threads at the beginning than they meet on CyclicBarrier and after 2 milliseconds of busy loops we finally give a green to them.
  *
  * Each of the tests is repeated 100 times.
+ *
+ * @author
+ * 	Zbynek Vyskovsky, mailto:kvr@centrum.cz http://kvr.znj.cz/software/java/ListenableFuture/ http://github.com/kvr000
  */
 public class AbstractFutureAsyncTest
 {
@@ -197,7 +199,7 @@ public class AbstractFutureAsyncTest
 	@Test
 	public void                     testSuccessOverloadedProcessors() throws ExecutionException, InterruptedException
 	{
-		for (int tries = 0; tries < 200; ++tries) {
+		for (int tries = 0; tries < 100; ++tries) {
 			final SettableFuture<Void> future = new SettableFuture<>();
 			final long hit[] = new long[2];
 			try (ThreadGroup group = new ThreadGroup(Math.max(1, Runtime.getRuntime().availableProcessors()*4), 20)) {

@@ -37,6 +37,6 @@ The code is released under version 2.0 of the [Apache License][].
 
 ## Stay in Touch
 
-Feel free to contact me at kvr@centrum.cz or http://kvr.znj.cz/about/ and http://github.com/kvr000
+Feel free to contact me at kvr@centrum.cz or http://kvr.znj.cz/software/java/ListenableFuture/ and http://github.com/kvr000
 
 [Apache License]: http://www.apache.org/licenses/LICENSE-2.0

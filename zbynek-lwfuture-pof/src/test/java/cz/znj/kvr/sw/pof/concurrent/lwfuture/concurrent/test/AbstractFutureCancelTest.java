@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Zbynek Vyskovsky http://kvr.znj.cz/ http://github.com/kvr000/
+ * Copyright 2015 Zbynek Vyskovsky mailto:kvr@centrum.cz http://kvr.znj.cz/ http://github.com/kvr000/
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package cz.znj.kvr.sw.pof.concurrent.lwfuture.concurrent.test;
 
 
+import cz.znj.kvr.sw.pof.concurrent.lwfuture.concurrent.DefaultFutureListener;
 import cz.znj.kvr.sw.pof.concurrent.lwfuture.concurrent.ListenableFutureTask;
 import org.junit.Assert;
 import org.junit.Test;
@@ -44,7 +45,7 @@ public class AbstractFutureCancelTest
 				catch (InterruptedException e) {
 					try {
 						queue.put(1);
-						Thread.sleep(2000);
+						Thread.sleep(20);
 						queue.put(2);
 					}
 					catch (InterruptedException e1) {
@@ -65,10 +66,12 @@ public class AbstractFutureCancelTest
 			}
 		});
 		executor.execute(future);
-		Assert.assertEquals(0, (int)queue.take());
+		Assert.assertEquals(0, (int) queue.take());
 		future.cancel(true);
 		Assert.assertEquals(1, (int)queue.take());
-		Assert.assertEquals(1, (int)queue.take());
+		Assert.assertEquals(1, (int) queue.take());
+		Assert.assertNull(queue.poll(10, TimeUnit.MILLISECONDS));
+		Assert.assertEquals(2, (int)queue.take());
 		Assert.assertNull(queue.poll(10, TimeUnit.MILLISECONDS));
 	}
 
@@ -107,13 +110,31 @@ public class AbstractFutureCancelTest
 				}
 			}
 		});
+		future.addListener(new DefaultFutureListener<Integer>() {
+			@Override
+			public void onSuccess(Integer result) {
+				throw new RuntimeException("onSuccess was called.");
+			}
+
+			@Override
+			public void onFailure(Throwable ex) {
+				throw new RuntimeException("onFailure was called.");
+			}
+
+			@Override
+			public void onCancelled() {
+				queue.add(4);
+			}
+		});
 		future.setDelayedCancel();
 		executor.execute(future);
 		Assert.assertEquals(0, (int)queue.take());
 		future.cancel(true);
 		Assert.assertEquals(1, (int)queue.take());
 		Assert.assertEquals(2, (int)queue.take());
-		Assert.assertEquals(3, (int) queue.take());
+		Assert.assertEquals(3, (int)queue.take());
+		Assert.assertEquals(4, (int)queue.take());
+		Assert.assertNull(queue.poll(10, TimeUnit.MILLISECONDS));
 	}
 
 
