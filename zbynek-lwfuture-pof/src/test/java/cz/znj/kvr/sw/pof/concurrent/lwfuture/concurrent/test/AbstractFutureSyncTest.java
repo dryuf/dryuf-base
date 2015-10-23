@@ -30,7 +30,7 @@ public class AbstractFutureSyncTest
 	public void                     testSuccess() throws ExecutionException, InterruptedException
 	{
 		TestListener listener = new TestListener();
-		SettableFuture<Object> future = new SettableFuture<>();
+		SettableFuture<Object> future = new SettableFuture<Object>();
 		future.addListener(listener);
 		Assert.assertNull(listener.getValue());
 		Assert.assertFalse(future.isDone());
@@ -49,7 +49,7 @@ public class AbstractFutureSyncTest
 	public void                     testException()
 	{
 		TestListener listener = new TestListener();
-		SettableFuture<Object> future = new SettableFuture<>();
+		SettableFuture<Object> future = new SettableFuture<Object>();
 		future.addListener(listener);
 		Assert.assertNull(listener.getValue());
 		Assert.assertFalse(future.isDone());
@@ -77,7 +77,7 @@ public class AbstractFutureSyncTest
 	public void                     testCancel()
 	{
 		TestListener listener = new TestListener();
-		SettableFuture<Object> future = new SettableFuture<>();
+		SettableFuture<Object> future = new SettableFuture<Object>();
 		future.addListener(listener);
 		Assert.assertNull(listener.getValue());
 		Assert.assertFalse(future.isDone());
@@ -107,7 +107,7 @@ public class AbstractFutureSyncTest
 	public void                     testCancelAndSet()
 	{
 		TestListener listener = new TestListener();
-		SettableFuture<Object> future = new SettableFuture<>();
+		SettableFuture<Object> future = new SettableFuture<Object>();
 		future.addListener(listener);
 		Assert.assertNull(listener.getValue());
 		Assert.assertFalse(future.isDone());
@@ -138,7 +138,7 @@ public class AbstractFutureSyncTest
 	public void                     testCancelAndSetException()
 	{
 		TestListener listener = new TestListener();
-		SettableFuture<Object> future = new SettableFuture<>();
+		SettableFuture<Object> future = new SettableFuture<Object>();
 		future.addListener(listener);
 		Assert.assertNull(listener.getValue());
 		Assert.assertFalse(future.isDone());
@@ -169,7 +169,7 @@ public class AbstractFutureSyncTest
 	public void                     testSetAndCancel() throws ExecutionException, InterruptedException
 	{
 		TestListener listener = new TestListener();
-		SettableFuture<Object> future = new SettableFuture<>();
+		SettableFuture<Object> future = new SettableFuture<Object>();
 		future.addListener(listener);
 		Assert.assertNull(listener.getValue());
 		Assert.assertFalse(future.isDone());
@@ -189,7 +189,7 @@ public class AbstractFutureSyncTest
 	public void                     testExceptionAndCancel()
 	{
 		TestListener listener = new TestListener();
-		SettableFuture<Object> future = new SettableFuture<>();
+		SettableFuture<Object> future = new SettableFuture<Object>();
 		future.addListener(listener);
 		Assert.assertNull(listener.getValue());
 		Assert.assertFalse(future.isDone());

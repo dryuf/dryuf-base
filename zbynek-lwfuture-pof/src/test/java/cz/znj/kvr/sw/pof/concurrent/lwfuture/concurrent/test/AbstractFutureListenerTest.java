@@ -36,7 +36,7 @@ public class AbstractFutureListenerTest
 	@Test(timeout = 1000L)
 	public void                     testListenersSet()
 	{
-		final BlockingQueue<Integer> queue = new LinkedBlockingQueue<>();
+		final BlockingQueue<Integer> queue = new LinkedBlockingQueue<Integer>();
 		SettableFuture<Void> future = new SettableFuture<Void>();
 		future.addListener(null, null, null);
 		future.addListener(new Runnable() {
@@ -75,7 +75,7 @@ public class AbstractFutureListenerTest
 	@Test(timeout = 1000L)
 	public void                     testListenersExcepted()
 	{
-		final BlockingQueue<Integer> queue = new LinkedBlockingQueue<>();
+		final BlockingQueue<Integer> queue = new LinkedBlockingQueue<Integer>();
 		SettableFuture<Void> future = new SettableFuture<Void>();
 		future.addListener(null, null, null);
 		future.addListener(new Runnable() {
@@ -114,7 +114,7 @@ public class AbstractFutureListenerTest
 	@Test(timeout = 1000L)
 	public void                     testListenersCancelled()
 	{
-		final BlockingQueue<Integer> queue = new LinkedBlockingQueue<>();
+		final BlockingQueue<Integer> queue = new LinkedBlockingQueue<Integer>();
 		SettableFuture<Void> future = new SettableFuture<Void>();
 		future.addListener(null, null, null);
 		future.addListener(new Runnable() {
