@@ -16,17 +16,38 @@
 
 package cz.znj.kvr.sw.pof.concurrent.lwfuture.concurrent.test;
 
+import cz.znj.kvr.sw.pof.concurrent.lwfuture.concurrent.DefaultFutureListener;
+import cz.znj.kvr.sw.pof.concurrent.lwfuture.concurrent.DirectExecutor;
+import cz.znj.kvr.sw.pof.concurrent.lwfuture.concurrent.RejectingExecutor;
+import org.junit.Assert;
+import org.junit.Test;
+
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.atomic.AtomicInteger;
+
 
 /**
- * Procedure interface, taking single argument and returning void.
- *
- * @param <T>
- *      parameter type to take by call method
+ * Tests for {@link RejectingExecutor} class.
  *
  * @author
  * 	Zbynek Vyskovsky, mailto:kvr@centrum.cz http://kvr.znj.cz/software/java/ListenableFuture/ http://github.com/kvr000
  */
-public interface CallProc<T>
+public class RejectingExecutorTest
 {
-	public void                     run(T arg);
+	@Test(expected = RejectedExecutionException.class)
+	public void                     testFailure()
+	{
+		final AtomicInteger result = new AtomicInteger();
+		try {
+			RejectingExecutor.getInstance().execute(new Runnable() {
+				@Override
+				public void run() {
+					result.incrementAndGet();
+				}
+			});
+		}
+		finally {
+			Assert.assertEquals(0, result.get());
+		}
+	}
 }

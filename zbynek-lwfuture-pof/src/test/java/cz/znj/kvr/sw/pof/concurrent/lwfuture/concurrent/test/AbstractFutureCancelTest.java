@@ -75,7 +75,7 @@ public class AbstractFutureCancelTest
 		Assert.assertNull(queue.poll(10, TimeUnit.MILLISECONDS));
 	}
 
-	@Test(timeout = 1000)
+	@Test(timeout = 1000000L)
 	public void                     testDelayedCancel() throws  InterruptedException
 	{
 		Executor executor = Executors.newSingleThreadExecutor();

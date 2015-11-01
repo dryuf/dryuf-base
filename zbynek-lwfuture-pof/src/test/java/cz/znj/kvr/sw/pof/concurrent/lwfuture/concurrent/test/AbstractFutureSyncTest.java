@@ -213,4 +213,87 @@ public class AbstractFutureSyncTest
 		Assert.assertTrue(future.isDone());
 		Assert.assertFalse(future.isCancelled());
 	}
+
+	@Test
+	public void                     testSetCancelled()
+	{
+		TestListener listener = new TestListener();
+		SettableFuture<Object> future = new SettableFuture<Object>();
+		future.addListener(listener);
+		Assert.assertNull(listener.getValue());
+		Assert.assertFalse(future.isDone());
+		Assert.assertFalse(future.isCancelled());
+		Assert.assertTrue(future.setCancelled());
+		Assert.assertTrue(listener.getValue() instanceof CancellationException);
+		Assert.assertTrue(future.isDone());
+		Assert.assertTrue(future.isCancelled());
+	}
+
+	@Test
+	public void                     testSetAndSetCancelled()
+	{
+		TestListener listener = new TestListener();
+		SettableFuture<Object> future = new SettableFuture<Object>();
+		future.addListener(listener);
+		Assert.assertNull(listener.getValue());
+		Assert.assertFalse(future.isDone());
+		Assert.assertFalse(future.isCancelled());
+		Assert.assertTrue(future.set(null));
+		Assert.assertFalse(future.setCancelled());
+		Assert.assertTrue(listener.getValue() == null);
+	}
+
+	@Test(expected = CancellationException.class)
+	public void                     testRestart() throws ExecutionException, InterruptedException
+	{
+		TestListener listener = new TestListener();
+		SettableFuture<Object> future = new SettableFuture<Object>();
+		future.addListener(listener);
+		Assert.assertNull(listener.getValue());
+		Assert.assertFalse(future.isDone());
+		Assert.assertFalse(future.isCancelled());
+		Assert.assertTrue(future.setRestart());
+		Assert.assertNull(listener.getValue());
+		Assert.assertTrue(future.setRunning());
+		Assert.assertNull(listener.getValue());
+		Assert.assertTrue(future.setRestart());
+		Assert.assertNull(listener.getValue());
+		Assert.assertTrue(future.cancel(true));
+		Assert.assertTrue(listener.waitValue() instanceof CancellationException);
+		Assert.assertFalse(future.setRestart());
+		future.get();
+	}
+
+	@Test(expected = CancellationException.class)
+	public void                     testRestartDelayedCancel() throws ExecutionException, InterruptedException
+	{
+		TestListener listener = new TestListener();
+		SettableFuture<Object> future = new SettableFuture<Object>();
+		future.addListener(listener);
+		future.setDelayedCancel();
+		Assert.assertNull(listener.getValue());
+		Assert.assertFalse(future.isDone());
+		Assert.assertFalse(future.isCancelled());
+		Assert.assertTrue(future.cancel(true));
+		Assert.assertNull(listener.getValue());
+		Assert.assertFalse(future.setRestart());
+		Assert.assertTrue(listener.waitValue() instanceof CancellationException);
+		future.get();
+	}
+
+	@Test
+	public void                     testDoubleSet() throws ExecutionException, InterruptedException
+	{
+		TestListener listener = new TestListener();
+		SettableFuture<Integer> future = new SettableFuture<Integer>();
+		future.addListener(listener);
+		Assert.assertNull(listener.getValue());
+		Assert.assertFalse(future.isDone());
+		Assert.assertFalse(future.isCancelled());
+		Assert.assertTrue(future.set(0));
+		Assert.assertFalse(future.set(1));
+		Assert.assertEquals(0, (int)future.get());
+		Assert.assertTrue(future.isDone());
+		Assert.assertFalse(future.isCancelled());
+	}
 }

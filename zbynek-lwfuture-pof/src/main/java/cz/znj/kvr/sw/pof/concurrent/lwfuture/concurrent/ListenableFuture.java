@@ -16,6 +16,7 @@
 
 package cz.znj.kvr.sw.pof.concurrent.lwfuture.concurrent;
 
+import java.util.concurrent.Executor;
 import java.util.concurrent.Future;
 
 
@@ -39,6 +40,14 @@ public interface ListenableFuture<V> extends Future<V>
 	 *      this instance
 	 */
 	ListenableFuture<V>             setDelayedCancel();
+
+	/**
+	 * Rejects potential {@link Future#cancel(boolean) cancellations}.
+	 *
+	 * @return
+	 *      this instance
+	 */
+	ListenableFuture<V>             setUncancellable();
 
 	/**
 	 * Registers new listener as {@link Runnable} instance.
@@ -89,4 +98,62 @@ public interface ListenableFuture<V> extends Future<V>
 	 *      this instance
 	 */
 	ListenableFuture<V>             addListener(SuccessListener<V> successListener, FailureListener failureListener, CancelListener cancelListener);
+
+	/**
+	 * Registers new listener as {@link Runnable} instance.
+	 *
+	 * @param listener
+	 * 	listener to be called when future is done
+	 * @param executor
+	 *      executor which will execute listener
+	 *
+	 * @return
+	 *      this instance
+	 */
+	ListenableFuture<V>             addAsyncListener(Runnable listener, Executor executor);
+
+	/**
+	 * Registers new listener as {@link FutureNotifier} instance.
+	 *
+	 * @param listener
+	 * 	listener to be called when future is done, getting the {@link Future} as a parameter
+	 * @param executor
+	 *      executor which will execute listener
+	 *
+	 * @return this instance
+	 */
+	<FT extends Future<V>> ListenableFuture<V> addAsyncListener(FutureNotifier<FT> listener, Executor executor);
+
+	/**
+	 * Registers new listener as {@link FutureListener} instance.
+	 *
+	 * @param listener
+	 * 	listener to be called when future is done
+	 * @param executor
+	 *      executor which will execute listener
+	 *
+	 * @return
+	 *      this instance
+	 */
+	ListenableFuture<V>             addAsyncListener(FutureListener<V> listener, Executor executor);
+
+	/**
+	 * Registers new listener as separated success, failure and cancel callbacks.
+	 *
+	 * In case any of the callbacks is null, it will be skipped while executing the listeners
+	 * for that particular notification.
+	 *
+	 * @param successListener
+	 * 	listener to be called when future successfully finishes, can be null
+	 * @param failureListener
+	 * 	listener to be called when future finishes with failure, can be null
+	 * @param cancelListener
+	 * 	listener to be called when future is cancelled, can be null
+	 * @param executor
+	 *      executor which will execute listener
+	 *
+	 * @return
+	 *      this instance
+	 */
+	ListenableFuture<V>             addAsyncListener(SuccessListener<V> successListener, FailureListener failureListener, CancelListener cancelListener, Executor executor);
 }

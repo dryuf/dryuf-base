@@ -14,19 +14,37 @@
  * limitations under the License.
  */
 
-package cz.znj.kvr.sw.pof.concurrent.lwfuture.concurrent.test;
+package cz.znj.kvr.sw.pof.concurrent.lwfuture.concurrent;
 
+
+import java.util.concurrent.Executor;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
- * Procedure interface, taking single argument and returning void.
- *
- * @param <T>
- *      parameter type to take by call method
+ * {@link Executor} which rejects everything.
  *
  * @author
  * 	Zbynek Vyskovsky, mailto:kvr@centrum.cz http://kvr.znj.cz/software/java/ListenableFuture/ http://github.com/kvr000
  */
-public interface CallProc<T>
+public class RejectingExecutor implements Executor
 {
-	public void                     run(T arg);
+	public void			execute(Runnable runnable)
+	{
+		throw new RejectedExecutionException(getClass()+" rejects everything.");
+	}
+
+	/**
+	 * Gets instance of {@link DirectExecutor}.
+	 *
+	 * @return
+	 * 	single instane of {@link DirectExecutor}
+	 */
+	public static RejectingExecutor	getInstance()
+	{
+		return instance;
+	}
+
+	private static RejectingExecutor instance = new RejectingExecutor();
 }

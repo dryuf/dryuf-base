@@ -27,26 +27,32 @@ import java.util.concurrent.CancellationException;
  * @author
  * 	Zbynek Vyskovsky, mailto:kvr@centrum.cz http://kvr.znj.cz/software/java/ListenableFuture/ http://github.com/kvr000
  */
-public class TestListener extends DefaultFutureListener<Object>
+public class TestListener<V> extends DefaultFutureListener<V>
 {
 	public static final CancellationException CANCELLED = new CancellationException();
 
 	@Override
-	public void                     onSuccess(Object result)
+	public synchronized void        onSuccess(V result)
 	{
 		this.value = result;
+		this.done = true;
+		this.notifyAll();
 	}
 
 	@Override
-	public void                     onFailure(Throwable ex)
+	public synchronized void        onFailure(Throwable ex)
 	{
 		this.value = ex;
+		this.done = true;
+		this.notifyAll();
 	}
 
 	@Override
-	public void                     onCancelled()
+	public synchronized void        onCancelled()
 	{
 		this.value = CANCELLED;
+		this.done = true;
+		this.notifyAll();
 	}
 
 	/**
@@ -59,6 +65,21 @@ public class TestListener extends DefaultFutureListener<Object>
 	{
 		return value;
 	}
+
+	public synchronized  Object	waitValue()
+	{
+		if (!done) {
+			try {
+				wait();
+			}
+			catch (InterruptedException e) {
+				throw new RuntimeException(e);
+			}
+		}
+		return value;
+	}
+
+	protected boolean		done;
 
 	/**
 	 * Result value, exception or cancellation.

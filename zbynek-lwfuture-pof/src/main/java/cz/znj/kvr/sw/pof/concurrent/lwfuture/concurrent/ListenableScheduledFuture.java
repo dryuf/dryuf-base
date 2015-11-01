@@ -14,19 +14,22 @@
  * limitations under the License.
  */
 
-package cz.znj.kvr.sw.pof.concurrent.lwfuture.concurrent.test;
+package cz.znj.kvr.sw.pof.concurrent.lwfuture.concurrent;
+
+import java.util.concurrent.Executor;
+import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledFuture;
 
 
 /**
- * Procedure interface, taking single argument and returning void.
+ * ListenableScheduledFuture extends regular {@link java.util.concurrent.Future} and {@link java.util.concurrent.ScheduledFuture}.
  *
- * @param <T>
- *      parameter type to take by call method
+ * @param <V>
+ * 	Future result type
  *
  * @author
  * 	Zbynek Vyskovsky, mailto:kvr@centrum.cz http://kvr.znj.cz/software/java/ListenableFuture/ http://github.com/kvr000
  */
-public interface CallProc<T>
+public interface ListenableScheduledFuture<V> extends ListenableFuture<V>, ScheduledFuture<V>
 {
-	public void                     run(T arg);
 }

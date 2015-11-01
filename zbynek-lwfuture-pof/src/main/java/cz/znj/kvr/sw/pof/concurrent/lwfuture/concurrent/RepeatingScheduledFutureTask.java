@@ -18,11 +18,12 @@ package cz.znj.kvr.sw.pof.concurrent.lwfuture.concurrent;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.RunnableFuture;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 
 /**
- * ListenableFuture implementation which can be used as handling wrapper for actually running the
- * task.
+ * ListenableScheduledFuture implementation that is used to wrap {@link java.util.concurrent.ScheduledFuture} method results.
  *
  * @param <V>
  * 	future return type
@@ -30,49 +31,28 @@ import java.util.concurrent.RunnableFuture;
  * @author
  * 	Zbynek Vyskovsky, mailto:kvr@centrum.cz http://kvr.znj.cz/software/java/ListenableFuture/ http://github.com/kvr000
  */
-public class ListenableFutureTask<V> extends AbstractFuture<V> implements RunnableFuture<V>
+public class RepeatingScheduledFutureTask<V> extends OneShotScheduledFutureTask<V>
 {
 	/**
 	 * Constructs new instance with {@link Runnable} reference and provided {@code result}.
 	 *
 	 * @param runnable
 	 * 	function to run
-	 * @param result
-	 * 	provided result
 	 */
-	public                          ListenableFutureTask(final Runnable runnable, final V result)
+	public                          RepeatingScheduledFutureTask(final Runnable runnable, V result)
 	{
-		this(new Callable<V>()
-		{
-			@Override
-			public V call() throws Exception
-			{
-				runnable.run();
-				return result;
-			}
-		});
+		super(runnable, result);
 	}
 
 	/**
-	 * Constructs new instance with {@link Callable} reference.
+	 * Constructs new instance with {@link java.util.concurrent.Callable} reference.
 	 *
 	 * @param callable
 	 * 	function to compute the result
 	 */
-	public                          ListenableFutureTask(final Callable<V> callable)
+	public RepeatingScheduledFutureTask(final Callable<V> callable)
 	{
-		super(false);
-		this.callable = callable;
-	}
-
-	protected void                  interruptTask()
-	{
-		myThread.interrupt();
-	}
-
-	protected boolean		enforcedCancel()
-	{
-		return false;
+		super(callable);
 	}
 
 	@Override
@@ -81,11 +61,11 @@ public class ListenableFutureTask<V> extends AbstractFuture<V> implements Runnab
 		try {
 			myThread = Thread.currentThread();
 			if (setRunning()) {
-				V result = callable.call();
+				callable.call();
 				if (enforcedCancel())
 					setCancelled();
 				else
-					set(result);
+					setRestart();
 			}
 		}
 		catch (Exception ex) {
@@ -93,18 +73,7 @@ public class ListenableFutureTask<V> extends AbstractFuture<V> implements Runnab
 				setCancelled();
 			else
 				setException(ex);
+			throw ex instanceof RuntimeException ? (RuntimeException)ex : new RuntimeException(ex);
 		}
 	}
-
-	/**
-	 * The thread that executes the task.
-	 *
-	 * Volatile is not needed as this is surrounded with other memory barrier reads/writes.
-	 */
-	private Thread                  myThread;
-
-	/**
-	 * Callable performing the task.
-	 */
-	private final Callable<V>       callable;
 }

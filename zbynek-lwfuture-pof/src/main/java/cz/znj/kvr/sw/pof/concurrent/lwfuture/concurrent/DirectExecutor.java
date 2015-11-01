@@ -17,41 +17,40 @@
 package cz.znj.kvr.sw.pof.concurrent.lwfuture.concurrent;
 
 
+import java.util.concurrent.Executor;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 /**
- * Asynchronous {@link java.util.concurrent.Future} that can be finished externally.
- *
- * This future starts automatically with {@code RUNNING} state.
- *
- * @param <V>
- *      future result type
+ * {@link Executor} executing {@link Runnable} directly in this thread.
  *
  * @author
  * 	Zbynek Vyskovsky, mailto:kvr@centrum.cz http://kvr.znj.cz/software/java/ListenableFuture/ http://github.com/kvr000
  */
-public class SettableFuture<V> extends AbstractFuture<V>
+public class DirectExecutor implements Executor
 {
-	public boolean                  set(V result)
+	public void			execute(Runnable runnable)
 	{
-		return super.set(result);
+		try {
+			runnable.run();
+		}
+		catch (RuntimeException ex) {
+			logger.log(Level.SEVERE, "DirectExecutor: Runnable raised RuntimeException while executing Runnable "+runnable, ex);
+		}
 	}
 
-	public boolean                  setException(Throwable ex)
+	/**
+	 * Gets instance of {@link DirectExecutor}.
+	 *
+	 * @return
+	 * 	single instance of {@link DirectExecutor}
+	 */
+	public static DirectExecutor	getInstance()
 	{
-		return super.setException(ex);
+		return instance;
 	}
 
-	public boolean			setCancelled()
-	{
-		return super.setCancelled();
-	}
+	private static DirectExecutor	instance = new DirectExecutor();
 
-	public boolean			setRunning()
-	{
-		return super.setRunning();
-	}
-
-	public boolean			setRestart()
-	{
-		return super.setRestart();
-	}
+	private static Logger		logger = Logger.getLogger(DirectExecutor.class.getName());
 }

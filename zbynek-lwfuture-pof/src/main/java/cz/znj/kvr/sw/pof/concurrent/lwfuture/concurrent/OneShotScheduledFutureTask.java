@@ -18,11 +18,12 @@ package cz.znj.kvr.sw.pof.concurrent.lwfuture.concurrent;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.RunnableFuture;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 
 /**
- * ListenableFuture implementation which can be used as handling wrapper for actually running the
- * task.
+ * ListenableScheduledFuture implementation that is used to wrap {@link java.util.concurrent.ScheduledFuture} method results.
  *
  * @param <V>
  * 	future return type
@@ -30,7 +31,7 @@ import java.util.concurrent.RunnableFuture;
  * @author
  * 	Zbynek Vyskovsky, mailto:kvr@centrum.cz http://kvr.znj.cz/software/java/ListenableFuture/ http://github.com/kvr000
  */
-public class ListenableFutureTask<V> extends AbstractFuture<V> implements RunnableFuture<V>
+public class OneShotScheduledFutureTask<V> extends AbstractScheduledFuture<V> implements RunnableFuture<V>
 {
 	/**
 	 * Constructs new instance with {@link Runnable} reference and provided {@code result}.
@@ -40,7 +41,7 @@ public class ListenableFutureTask<V> extends AbstractFuture<V> implements Runnab
 	 * @param result
 	 * 	provided result
 	 */
-	public                          ListenableFutureTask(final Runnable runnable, final V result)
+	public OneShotScheduledFutureTask(final Runnable runnable, final V result)
 	{
 		this(new Callable<V>()
 		{
@@ -54,20 +55,38 @@ public class ListenableFutureTask<V> extends AbstractFuture<V> implements Runnab
 	}
 
 	/**
-	 * Constructs new instance with {@link Callable} reference.
+	 * Constructs new instance with {@link java.util.concurrent.Callable} reference.
 	 *
 	 * @param callable
 	 * 	function to compute the result
 	 */
-	public                          ListenableFutureTask(final Callable<V> callable)
+	public OneShotScheduledFutureTask(final Callable<V> callable)
 	{
-		super(false);
 		this.callable = callable;
 	}
 
+	@Override
+	public long                     getDelay(TimeUnit unit)
+	{
+		return scheduledDelegate.getDelay(unit);
+	}
+
+	/**
+	 * Sets original JDK {@link ScheduledFuture}.
+	 *
+	 * @param scheduledDelegate
+	 * 	JDK future
+	 */
+	public void                     setScheduledDelegate(ScheduledFuture<V> scheduledDelegate)
+	{
+		this.scheduledDelegate = scheduledDelegate;
+	}
+
+	@Override
 	protected void                  interruptTask()
 	{
 		myThread.interrupt();
+		this.scheduledDelegate.cancel(true);
 	}
 
 	protected boolean		enforcedCancel()
@@ -96,15 +115,17 @@ public class ListenableFutureTask<V> extends AbstractFuture<V> implements Runnab
 		}
 	}
 
+	private ScheduledFuture         scheduledDelegate;
+
 	/**
 	 * The thread that executes the task.
 	 *
 	 * Volatile is not needed as this is surrounded with other memory barrier reads/writes.
 	 */
-	private Thread                  myThread;
+	protected Thread                  myThread;
 
 	/**
 	 * Callable performing the task.
 	 */
-	private final Callable<V>       callable;
+	protected final Callable<V>     callable;
 }

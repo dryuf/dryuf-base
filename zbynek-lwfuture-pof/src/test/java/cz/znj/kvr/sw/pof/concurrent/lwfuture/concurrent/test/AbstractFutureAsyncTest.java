@@ -16,241 +16,87 @@
 
 package cz.znj.kvr.sw.pof.concurrent.lwfuture.concurrent.test;
 
+import cz.znj.kvr.sw.pof.concurrent.lwfuture.concurrent.ListenableFutureTask;
 import cz.znj.kvr.sw.pof.concurrent.lwfuture.concurrent.SettableFuture;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.util.LinkedList;
-import java.util.List;
-import java.util.concurrent.BrokenBarrierException;
-import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 
-/**
- * In these tests we want to raise probability of race condition as high as possible.
- *
- * We start the threads at the beginning than they meet on CyclicBarrier and after 2 milliseconds of busy loops we finally give a green to them.
- *
- * Each of the tests is repeated 100 times.
- *
- * @author
- * 	Zbynek Vyskovsky, mailto:kvr@centrum.cz http://kvr.znj.cz/software/java/ListenableFuture/ http://github.com/kvr000
- */
 public class AbstractFutureAsyncTest
 {
-	protected static class ThreadGroup
+	@Test(timeout = 1000L)
+	public void                     testWaitSuccess() throws ExecutionException, InterruptedException
 	{
-		public                          ThreadGroup(int threadCount, int actionCount)
-		{
-			result = new long[threadCount][actionCount];
-		}
-
-		public void                     assertResult()
-		{
-			for (int i = 0; i < result.length; ++i) {
-				for (int j = 0; j < result[i].length; ++j) {
-					Assert.assertEquals(1, result[i][j]);
-				}
+		Executor executor = Executors.newSingleThreadExecutor();
+		TestListener listener = new TestListener();
+		ListenableFutureTask<Integer> future = new ListenableFutureTask<Integer>(new Callable<Integer>() {
+			@Override
+			public Integer call() throws Exception {
+				Thread.sleep(1);
+				return 1;
 			}
-		}
-
-		public void                     init(int count)
-		{
-			fineBarrier = new AtomicBoolean(false);
-			threadBarrier = new CyclicBarrier(count, new Runnable() {
-				@Override
-				public void run() {
-					try {
-						Thread.sleep(2);
-					}
-					catch (InterruptedException e) {
-						throw new RuntimeException(e);
-					}
-					fineBarrier.set(true);
-				}
-			});
-			threads = new LinkedList<Thread>();
-		}
-
-		public void                     startGroupThreads(final CallProc<Integer> runner)
-		{
-			for (int i = 0; i < result.length; ++i) {
-				final int id = i;
-				startThread(new Runnable() {
-					@Override
-					public void run() {
-						runner.run(id);
-					}
-				});
-			}
-		}
-
-		public Thread                   startThread(final Runnable runner)
-		{
-			Thread thread = new Thread(new Runnable() {
-				@Override
-				public void run() {
-					try {
-						threadBarrier.await();
-					}
-					catch (InterruptedException e) {
-						throw new RuntimeException(e);
-					}
-					catch (BrokenBarrierException e) {
-						throw new RuntimeException(e);
-					}
-					while (!fineBarrier.get()) {
-					}
-					runner.run();
-				}
-			});
-			thread.start();
-			threads.add(thread);
-			return thread;
-		}
-
-		public void                     waitThreads()
-		{
-			for (Thread thread: threads) {
-				try {
-					thread.join();
-				}
-				catch (InterruptedException e) {
-					throw new RuntimeException(e);
-				}
-			}
-			threads = null;
-		}
-
-		public void                     close()
-		{
-			if (threads != null) {
-				for (Thread thread : threads)
-					thread.interrupt();
-				waitThreads();
-			}
-		}
-
-		public long[][]                 result;
-
-		protected List<Thread>          threads;
-
-		private AtomicBoolean           fineBarrier;
-
-		private CyclicBarrier           threadBarrier;
+		});
+		future.addListener(listener);
+		executor.execute(future);
+		Assert.assertEquals(1, (int)future.get());
+		Assert.assertEquals(1, (int)(Integer)listener.waitValue());
 	}
 
-	@Test
-	public void                     testSuccessMatchProcessors() throws ExecutionException, InterruptedException
+	@Test(expected = ExecutionException.class, timeout = 1000L)
+	public void                     testWaitFailure() throws ExecutionException, InterruptedException
 	{
-		for (int tries = 0; tries < 100; ++tries) {
-			final SettableFuture<Void> future = new SettableFuture<Void>();
-			final long hit[] = new long[2];
-			final ThreadGroup group = new ThreadGroup(Math.max(1, Runtime.getRuntime().availableProcessors()-1), 20);
-			try {
-				group.init(group.result.length+1);
-				group.startGroupThreads(new CallProc<Integer>() {
-					@Override
-					public void run(Integer id) {
-						final long[] r = group.result[id];
-						for (int i = 0; i < r.length; ++i) {
-							final int aid = i;
-							future.addListener(new Runnable()
-							{
-								@Override
-								public void run()
-								{
-									r[aid] = 1;
-								}
-							});
-						}
-						;
-					}
-				});
-				group.startThread(new Runnable() {
-					@Override
-					public void run() {
-						future.addListener(new Runnable() {
-							@Override
-							public void run()
-							{
-								hit[0] = 1;
-							}
-						});
-						future.set(null);
-						future.addListener(new Runnable() {
-							@Override
-							public void run()
-							{
-								hit[1] = 1;
-							}
-						});
-					}
-				});
-				group.waitThreads();
-				group.assertResult();
-				Assert.assertArrayEquals(new long[]{1, 1}, hit);
+		Executor executor = Executors.newSingleThreadExecutor();
+		TestListener listener = new TestListener();
+		ListenableFutureTask<Integer> future = new ListenableFutureTask<Integer>(new Callable<Integer>() {
+			@Override
+			public Integer call() throws Exception {
+				Thread.sleep(1);
+				throw new TestingRuntimeException();
 			}
-			finally {
-				group.close();
-			}
+		});
+		future.addListener(listener);
+		executor.execute(future);
+		try {
+			future.get();
+			Assert.fail("get() succeeded");
+		}
+		finally {
+			Assert.assertTrue(listener.waitValue() instanceof TestingRuntimeException);
 		}
 	}
 
-	@Test
-	public void                     testSuccessOverloadedProcessors() throws ExecutionException, InterruptedException
+	@Test(expected = CancellationException.class, timeout = 1000L)
+	public void                     testWaitCancel() throws ExecutionException, InterruptedException
 	{
-		for (int tries = 0; tries < 100; ++tries) {
-			final SettableFuture<Void> future = new SettableFuture<Void>();
-			final long hit[] = new long[2];
-			final ThreadGroup group = new ThreadGroup(Math.max(1, Runtime.getRuntime().availableProcessors()*4), 20);
-			try {
-				group.init(group.result.length+1);
-				group.startGroupThreads(new CallProc<Integer>() {
-					@Override
-					public void run(Integer id) {
-						final long[] r = group.result[id];
-						for (int i = 0; i < r.length; ++i) {
-							final int aid = i;
-							future.addListener(new Runnable()
-							{
-								@Override
-								public void run()
-								{
-									r[aid] = 1;
-								}
-							});
-						}
-						;
-					}
-				});
-				group.startThread(new Runnable() {
-					@Override
-					public void run() {
-						future.addListener(new Runnable() {
-							@Override
-							public void run() {
-								hit[0] = 1;
-							}
-						});
-						future.set(null);
-						future.addListener(new Runnable() {
-							@Override
-							public void run() {
-								hit[1] = 1;
-							}
-						});
-					}
-				});
-				group.waitThreads();
-				group.assertResult();
-				Assert.assertArrayEquals(new long[]{1, 1}, hit);
+		Executor executor = Executors.newSingleThreadExecutor();
+		TestListener listener = new TestListener();
+		final ListenableFutureTask<Integer> future = new ListenableFutureTask<Integer>(new Callable<Integer>() {
+			@Override
+			public Integer call() throws Exception {
+				Thread.sleep(1000000);
+				return 0;
 			}
-			finally {
-				group.close();
+		});
+		future.addListener(listener);
+		executor.execute(future);
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				future.cancel(true);
 			}
+		}).start();
+		try {
+			future.get();
+			Assert.fail("get() succeeded");
+		}
+		finally {
+			Assert.assertTrue(listener.waitValue() instanceof CancellationException);
 		}
 	}
 }
