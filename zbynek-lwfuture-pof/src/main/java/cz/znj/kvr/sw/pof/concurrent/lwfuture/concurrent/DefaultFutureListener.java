@@ -31,15 +31,22 @@ public class DefaultFutureListener<V> implements FutureListener<V>
 	@Override
 	public void			onSuccess(V result)
 	{
+		onNotify();
 	}
 
 	@Override
 	public void			onFailure(Throwable ex)
 	{
+		onNotify();
 	}
 
 	@Override
 	public void                     onCancelled()
+	{
+		onNotify();
+	}
+
+	public void			onNotify()
 	{
 	}
 }

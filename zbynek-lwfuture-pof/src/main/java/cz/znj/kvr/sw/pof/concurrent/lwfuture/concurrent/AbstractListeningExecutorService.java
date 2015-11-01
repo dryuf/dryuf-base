@@ -56,7 +56,7 @@ public abstract class AbstractListeningExecutorService implements ListeningExecu
 		synchronized (counter) {
 			FutureNotifier<Future<V>> listener = new FutureNotifier<Future<V>>() {
 				@Override
-				public void notify(Future<V> future) {
+				public void accept(Future<V> future) {
 					if (counter.decrementAndGet() == 0) {
 						synchronized (counter) {
 							counter.notifyAll();

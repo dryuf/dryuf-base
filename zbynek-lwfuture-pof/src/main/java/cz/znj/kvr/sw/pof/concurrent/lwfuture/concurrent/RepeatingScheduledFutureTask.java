@@ -50,7 +50,7 @@ public class RepeatingScheduledFutureTask<V> extends OneShotScheduledFutureTask<
 	 * @param callable
 	 * 	function to compute the result
 	 */
-	public RepeatingScheduledFutureTask(final Callable<V> callable)
+	public                          RepeatingScheduledFutureTask(final Callable<V> callable)
 	{
 		super(callable);
 	}

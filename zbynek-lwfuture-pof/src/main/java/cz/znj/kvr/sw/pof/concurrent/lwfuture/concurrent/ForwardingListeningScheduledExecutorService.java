@@ -41,7 +41,12 @@ public class ForwardingListeningScheduledExecutorService extends ForwardingListe
 	@Override
 	public ListenableScheduledFuture<?> schedule(Runnable command, long delay, TimeUnit unit)
 	{
-		OneShotScheduledFutureTask<Object> task = new OneShotScheduledFutureTask<Object>(command, null);
+		OneShotScheduledFutureTask<Object> task = new OneShotScheduledFutureTask<Object>(command, null) {
+			@Override
+			public boolean enforcedCancel() {
+				return cancelled;
+			}
+		};
 		task.setScheduledDelegate((ScheduledFuture<Object>)executor.schedule(task, delay, unit));
 		return task;
 	}
@@ -50,7 +55,12 @@ public class ForwardingListeningScheduledExecutorService extends ForwardingListe
 	@Override
 	public <V> ListenableScheduledFuture<V> schedule(Runnable command, V result, long delay, TimeUnit unit)
 	{
-		OneShotScheduledFutureTask<V> task = new OneShotScheduledFutureTask<V>(command, result);
+		OneShotScheduledFutureTask<V> task = new OneShotScheduledFutureTask<V>(command, result) {
+			@Override
+			public boolean enforcedCancel() {
+				return cancelled;
+			}
+		};
 		task.setScheduledDelegate((ScheduledFuture<V>)executor.schedule(task, delay, unit));
 		return task;
 	}
@@ -59,7 +69,12 @@ public class ForwardingListeningScheduledExecutorService extends ForwardingListe
 	@Override
 	public <V> ListenableScheduledFuture<V> schedule(Callable<V> callable, long delay, TimeUnit unit)
 	{
-		OneShotScheduledFutureTask<V> task = new OneShotScheduledFutureTask<V>(callable);
+		OneShotScheduledFutureTask<V> task = new OneShotScheduledFutureTask<V>(callable) {
+			@Override
+			public boolean enforcedCancel() {
+				return cancelled;
+			}
+		};
 		task.setScheduledDelegate((ScheduledFuture<V>)executor.schedule(task, delay, unit));
 		return task;
 	}
@@ -68,7 +83,12 @@ public class ForwardingListeningScheduledExecutorService extends ForwardingListe
 	@Override
 	public ListenableScheduledFuture<?> scheduleAtFixedRate(Runnable command, long initialDelay, long period, TimeUnit unit)
 	{
-		RepeatingScheduledFutureTask<Object> task = new RepeatingScheduledFutureTask<Object>(command, null);
+		RepeatingScheduledFutureTask<Object> task = new RepeatingScheduledFutureTask<Object>(command, null) {
+			@Override
+			public boolean enforcedCancel() {
+				return cancelled;
+			}
+		};
 		task.setScheduledDelegate((ScheduledFuture<Object>)executor.scheduleAtFixedRate(task, initialDelay, period, unit));
 		return task;
 	}
@@ -77,7 +97,12 @@ public class ForwardingListeningScheduledExecutorService extends ForwardingListe
 	@Override
 	public ListenableScheduledFuture<?> scheduleWithFixedDelay(Runnable command, long initialDelay, long delay, TimeUnit unit)
 	{
-		RepeatingScheduledFutureTask<Object> task = new RepeatingScheduledFutureTask<Object>(command, null);
+		RepeatingScheduledFutureTask<Object> task = new RepeatingScheduledFutureTask<Object>(command, null) {
+			@Override
+			public boolean enforcedCancel() {
+				return cancelled;
+			}
+		};
 		task.setScheduledDelegate((ScheduledFuture<Object>)executor.scheduleWithFixedDelay(task, initialDelay, delay, unit));
 		return task;
 	}

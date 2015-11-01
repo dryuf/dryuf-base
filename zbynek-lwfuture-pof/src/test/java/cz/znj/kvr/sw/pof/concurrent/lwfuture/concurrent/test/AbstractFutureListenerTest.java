@@ -50,7 +50,7 @@ public class AbstractFutureListenerTest
 		});
 		future.addListener(new FutureNotifier<Future<Void>>() {
 			@Override
-			public void notify(Future<Void> future) {
+			public void accept(Future<Void> future) {
 				queue.add(2);
 			}
 		});
@@ -78,7 +78,7 @@ public class AbstractFutureListenerTest
 		future.addAsyncListener(new FutureNotifier<Future<Void>>()
 		{
 			@Override
-			public void notify(Future<Void> future)
+			public void accept(Future<Void> future)
 			{
 				queue.add(12);
 			}
@@ -127,7 +127,7 @@ public class AbstractFutureListenerTest
 		});
 		future.addListener(new FutureNotifier<Future<Void>>() {
 			@Override
-			public void notify(Future<Void> future) {
+			public void accept(Future<Void> future) {
 				queue.add(2);
 			}
 		});
@@ -155,7 +155,7 @@ public class AbstractFutureListenerTest
 		future.addAsyncListener(new FutureNotifier<Future<Void>>()
 		{
 			@Override
-			public void notify(Future<Void> future)
+			public void accept(Future<Void> future)
 			{
 				queue.add(12);
 			}
@@ -204,7 +204,7 @@ public class AbstractFutureListenerTest
 		});
 		future.addListener(new FutureNotifier<Future<Void>>() {
 			@Override
-			public void notify(Future<Void> future) {
+			public void accept(Future<Void> future) {
 				queue.add(2);
 			}
 		});
@@ -232,7 +232,7 @@ public class AbstractFutureListenerTest
 		future.addAsyncListener(new FutureNotifier<Future<Void>>()
 		{
 			@Override
-			public void notify(Future<Void> future)
+			public void accept(Future<Void> future)
 			{
 				queue.add(12);
 			}
@@ -304,7 +304,7 @@ public class AbstractFutureListenerTest
 		});
 		future.addListener(new FutureNotifier<ListenableFuture<V>>() {
 			@Override
-			public void notify(ListenableFuture<V> future) {
+			public void accept(ListenableFuture<V> future) {
 				throw new TestingRuntimeException();
 			}
 		});
@@ -354,7 +354,7 @@ public class AbstractFutureListenerTest
 		future.addAsyncListener(new FutureNotifier<ListenableFuture<V>>()
 		{
 			@Override
-			public void notify(ListenableFuture<V> future)
+			public void accept(ListenableFuture<V> future)
 			{
 				throw new TestingRuntimeException();
 			}

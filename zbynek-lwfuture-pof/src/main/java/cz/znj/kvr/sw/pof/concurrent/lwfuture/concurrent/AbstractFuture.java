@@ -70,35 +70,61 @@ public class AbstractFuture<V> implements ListenableFuture<V>
 	}
 
 	@Override
-	public boolean			cancel(boolean b)
+	public boolean			cancel(boolean interrupt)
 	{
 		// optimize for the most common case when we update to final from RUNNING state
 		int oldStatus = ST_RUNNING;
 		for (;;) {
-			int newStatus = oldStatus|ST_CANCELLED;
+			int newStatus = oldStatus|ST_CANCELLING|((oldStatus&ST_RUNNING) != 0 ? 0 : ST_FINISHED);
+			if (casStatus(oldStatus, newStatus)) {
+				if ((oldStatus&ST_RUNNING) == 0)
+					interrupt = false;
+				oldStatus = newStatus;
+				break;
+			}
+			oldStatus = getStatusLazy();
+			if ((oldStatus&(ST_UNCANCELLABLE|ST_COMPLETING|ST_FINISHED|ST_CANCELLING|ST_CANCELLED)) != 0)
+				return (oldStatus&(ST_CANCELLING|ST_CANCELLED)) != 0;
+		}
+		if (interrupt) {
+			interruptTask();
+		}
+
+		for (;;) {
+			int newStatus = oldStatus&~ST_CANCELLING|ST_CANCELLED;
 			if (casStatus(oldStatus, newStatus))
 				break;
 			oldStatus = getStatusLazy();
-			if ((oldStatus&(ST_UNCANCELLABLE|ST_COMPLETING|ST_FINISHED|ST_CANCELLED)) != 0)
-				return (oldStatus&ST_CANCELLED) != 0;
 		}
-		if (b && (oldStatus&ST_RUNNING) != 0) {
-			// we need to synchronize with executor thread here so we dont kill it while its already processing something else
-			synchronized (this) {
-				if ((getStatus()&ST_RUNNING) != 0)
-					interruptTask();
-			}
-		}
-		if ((oldStatus&ST_WAITING) != 0) {
-			synchronized (this) {
-				notifyAll();
-			}
-		}
-		switch (oldStatus&(ST_RUNNING|ST_DELAYED_CANCEL)) {
+		switch (oldStatus&(ST_DELAYED_CANCEL|ST_WAITING|ST_RUNNING|ST_COMPLETING)) {
 		case 0:
 		case ST_RUNNING:
 		case ST_DELAYED_CANCEL:
 			processListenersCancelled();
+			break;
+
+		case ST_COMPLETING:
+		case ST_RUNNING|ST_COMPLETING:
+		case ST_WAITING:
+		case ST_WAITING|ST_COMPLETING:
+		case ST_WAITING|ST_RUNNING:
+		case ST_WAITING|ST_RUNNING|ST_COMPLETING:
+		case ST_DELAYED_CANCEL|ST_WAITING:
+			synchronized (this) {
+				notifyAll();
+			}
+			processListenersCancelled();
+			break;
+
+		case ST_DELAYED_CANCEL|ST_COMPLETING:
+		case ST_DELAYED_CANCEL|ST_RUNNING:
+		case ST_DELAYED_CANCEL|ST_RUNNING|ST_COMPLETING:
+		case ST_DELAYED_CANCEL|ST_WAITING|ST_COMPLETING:
+		case ST_DELAYED_CANCEL|ST_WAITING|ST_RUNNING:
+		case ST_DELAYED_CANCEL|ST_WAITING|ST_RUNNING|ST_COMPLETING:
+			synchronized (this) {
+				notifyAll();
+			}
 			break;
 		}
 		return true;
@@ -172,12 +198,12 @@ public class AbstractFuture<V> implements ListenableFuture<V>
 	public ListenableFuture<V>      setDelayedCancel()
 	{
 		// optimize for the most common case when we set delayed cancel right after the future was created
-		int localStatus = 0;
+		int oldStatus = 0;
 		for (;;) {
-			if (casStatus(localStatus, localStatus|ST_DELAYED_CANCEL))
+			if (casStatus(oldStatus, oldStatus|ST_DELAYED_CANCEL))
 				return this;
-			localStatus = getStatusLazy();
-			if ((localStatus&ST_CANCELLED) != 0)
+			oldStatus = getStatusLazy();
+			if ((oldStatus&ST_CANCELLED) != 0)
 				throw new IllegalStateException("Future delayed cannot be changed once the future was cancelled.");
 		}
 	}
@@ -186,12 +212,12 @@ public class AbstractFuture<V> implements ListenableFuture<V>
 	public ListenableFuture<V>      setUncancellable()
 	{
 		// optimize for the most common case when we set delayed cancel right after the future was created
-		int localStatus = 0;
+		int oldStatus = 0;
 		for (;;) {
-			if (casStatus(localStatus, localStatus|ST_UNCANCELLABLE))
+			if (casStatus(oldStatus, oldStatus|ST_UNCANCELLABLE))
 				return this;
-			localStatus = getStatusLazy();
-			if ((localStatus&ST_CANCELLED) != 0)
+			oldStatus = getStatusLazy();
+			if ((oldStatus&ST_CANCELLED) != 0)
 				throw new IllegalStateException("Future uncancellable cannot be changed once the future was cancelled.");
 		}
 	}
@@ -235,19 +261,19 @@ public class AbstractFuture<V> implements ListenableFuture<V>
 			@Override
 			@SuppressWarnings("unchecked")
 			public void executeSet() {
-				listener.notify((FT) AbstractFuture.this);
+				listener.accept((FT) AbstractFuture.this);
 			}
 
 			@Override
 			@SuppressWarnings("unchecked")
 			public void executeExcepted() {
-				listener.notify((FT) AbstractFuture.this);
+				listener.accept((FT) AbstractFuture.this);
 			}
 
 			@Override
 			@SuppressWarnings("unchecked")
 			public void executeCancelled() {
-				listener.notify((FT) AbstractFuture.this);
+				listener.accept((FT) AbstractFuture.this);
 			}
 		});
 		return this;
@@ -362,7 +388,7 @@ public class AbstractFuture<V> implements ListenableFuture<V>
 				executor.execute(new Runnable() {
 					@Override
 					public void run() {
-						listener.notify((FT) AbstractFuture.this);
+						listener.accept((FT) AbstractFuture.this);
 					}
 				});
 			}
@@ -373,7 +399,7 @@ public class AbstractFuture<V> implements ListenableFuture<V>
 				executor.execute(new Runnable() {
 					@Override
 					public void run() {
-						listener.notify((FT) AbstractFuture.this);
+						listener.accept((FT) AbstractFuture.this);
 					}
 				});
 			}
@@ -384,7 +410,7 @@ public class AbstractFuture<V> implements ListenableFuture<V>
 				executor.execute(new Runnable() {
 					@Override
 					public void run() {
-						listener.notify((FT) AbstractFuture.this);
+						listener.accept((FT) AbstractFuture.this);
 					}
 				});
 			}
@@ -517,12 +543,12 @@ public class AbstractFuture<V> implements ListenableFuture<V>
 	protected boolean         	setRunning()
 	{
 		// optimize for the most common case when we update to RUNNING from initial state
-		int localStatus = 0;
+		int oldStatus = 0;
 		for (;;) {
-			if (casStatus(localStatus, localStatus|ST_RUNNING))
+			if (casStatus(oldStatus, oldStatus|ST_RUNNING))
 				return true;
-			localStatus = getStatusLazy();
-			if (localStatus >= ST_COMPLETING)
+			oldStatus = getStatusLazy();
+			if (oldStatus >= ST_COMPLETING)
 				return false;
 		}
 	}
@@ -637,9 +663,6 @@ public class AbstractFuture<V> implements ListenableFuture<V>
 	 * Runs {@code CANCELLED} notification if this future was already cancelled and delayed
 	 * cancel notification was configured.
 	 *
-	 * @param finalStatus
-	 * 	the new status value (state part)
-	 *
 	 * @return
 	 *      old status value
 	 */
@@ -648,13 +671,45 @@ public class AbstractFuture<V> implements ListenableFuture<V>
 		// optimize for the most common case when we update to final from RUNNING state
 		int oldStatus = ST_RUNNING;
 		for (;;) {
-			int newStatus = oldStatus|ST_COMPLETING;
-			if (casStatus(oldStatus, newStatus))
+			int newStatus = oldStatus&~ST_RUNNING|ST_COMPLETING;
+			if (casStatus(oldStatus, newStatus)) {
+				if ((oldStatus&ST_CANCELLING) != 0) {
+					oldStatus = newStatus;
+					break;
+				}
 				return true;
+			}
 			oldStatus = getStatusLazy();
 			if ((oldStatus&(ST_COMPLETING|ST_FINISHED)) != 0)
 				return false;
 		}
+
+		// we got CANCELLING and COMPLETING at the same time
+		// we have to wait for potential interrupt request and wait for notification from cancel()
+		synchronized (this) {
+			for (;;) {
+				if (casStatus(oldStatus, oldStatus|ST_FINISHED))
+					break;
+				oldStatus = getStatusLazy();
+			}
+			if ((oldStatus&ST_CANCELLING) != 0) {
+				boolean interrupted = false;
+				for (;;) {
+					try {
+						this.wait();
+						break;
+					}
+					catch (InterruptedException e) {
+						interrupted = true;
+					}
+				}
+				if (interrupted)
+					Thread.currentThread().interrupt();
+			}
+		}
+		if ((oldStatus&ST_DELAYED_CANCEL) != 0)
+			processListenersCancelled();
+		return false;
 	}
 
 	/**
@@ -725,13 +780,13 @@ public class AbstractFuture<V> implements ListenableFuture<V>
 		if (casListeners(null, listenerNode))
 			return;
 		for (;;) {
-			ListenerNode<V> localListeners = getListenersLazy();
-			if (localListeners != null && localListeners.getNodeType() != ListenerNode.NT_REGULAR) {
+			ListenerNode<V> oldListeners = getListenersLazy();
+			if (oldListeners != null && oldListeners.getNodeType() != ListenerNode.NT_REGULAR) {
 				executeLateListener(listenerNode);
 				return;
 			}
-			listenerNode.nextNode = localListeners;
-			if (casListeners(localListeners, listenerNode))
+			listenerNode.nextNode = oldListeners;
+			if (casListeners(oldListeners, listenerNode))
 				return;
 		}
 	}
@@ -1106,12 +1161,14 @@ public class AbstractFuture<V> implements ListenableFuture<V>
 	private static final int        ST_WAITING                      = 4;
 	/** Running state */
 	private static final int        ST_RUNNING                      = 8;
+	/** Cancelling state (just temporary before updating to CANCELLED) */
+	private static final int        ST_CANCELLING                   = 16;
 	/** Completing state (just temporary before updating result) */
-	private static final int        ST_COMPLETING                   = 16;
+	private static final int        ST_COMPLETING                   = 32;
 	/** Finished state (task really finished) */
-	private static final int        ST_FINISHED                     = 32;
+	private static final int        ST_FINISHED                     = 64;
 	/** Cancelled requested */
-	private static final int        ST_CANCELLED                    = 64;
+	private static final int        ST_CANCELLED                    = 128;
 
 	/** Marks closed listener queue */
 	private static final ListenerNode LN_MARKER_CLOSED = new MarkerListenerNode(ListenerNode.NT_MARKER_CLOSED);

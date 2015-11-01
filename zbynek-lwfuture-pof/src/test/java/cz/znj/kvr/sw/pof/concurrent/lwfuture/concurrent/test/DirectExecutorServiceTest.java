@@ -43,12 +43,24 @@ public class DirectExecutorServiceTest
 	public void                     testExecute() throws InterruptedException
 	{
 		final AtomicInteger result = new AtomicInteger();
-		getExecutor().execute(new Runnable()
-		{
+		getExecutor().execute(new Runnable() {
 			@Override
-			public void run()
-			{
-					result.incrementAndGet();
+			public void run() {
+				result.incrementAndGet();
+			}
+		});
+		Assert.assertEquals(1, result.get());
+	}
+
+	@Test
+	public void                     testException() throws InterruptedException
+	{
+		final AtomicInteger result = new AtomicInteger();
+		getExecutor().execute(new Runnable() {
+			@Override
+			public void run() {
+				result.incrementAndGet();
+				throw new TestingRuntimeException();
 			}
 		});
 		Assert.assertEquals(1, result.get());

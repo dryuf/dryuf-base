@@ -17,6 +17,7 @@
 package cz.znj.kvr.sw.pof.concurrent.lwfuture.concurrent.test;
 
 import cz.znj.kvr.sw.pof.concurrent.lwfuture.concurrent.DefaultFutureListener;
+import org.junit.Assert;
 
 import java.util.concurrent.CancellationException;
 
@@ -34,24 +35,29 @@ public class TestListener<V> extends DefaultFutureListener<V>
 	@Override
 	public synchronized void        onSuccess(V result)
 	{
+		onNotified();
 		this.value = result;
-		this.done = true;
-		this.notifyAll();
 	}
 
 	@Override
 	public synchronized void        onFailure(Throwable ex)
 	{
+		onNotified();
 		this.value = ex;
-		this.done = true;
-		this.notifyAll();
 	}
 
 	@Override
 	public synchronized void        onCancelled()
 	{
+		onNotified();
 		this.value = CANCELLED;
-		this.done = true;
+	}
+
+	protected synchronized void     onNotified()
+	{
+		if (done)
+			Assert.fail("TestListener "+toString()+" already notified: "+value);
+		done = true;
 		this.notifyAll();
 	}
 

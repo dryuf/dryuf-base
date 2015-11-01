@@ -121,7 +121,7 @@ public class ForwardingListeningScheduledExecutorServiceTest
 				result.wait();
 			}
 			future.addListener(listener);
-			Assert.assertEquals(1, (int)future.get());
+			Assert.assertEquals(1, (int) future.get());
 			Assert.assertEquals(1, result.get());
 			Assert.assertEquals(1, listener.waitValue());
 		}
@@ -330,6 +330,71 @@ public class ForwardingListeningScheduledExecutorServiceTest
 			}
 			finally {
 				Assert.assertTrue(listener.waitValue() instanceof TestingRuntimeException);
+			}
+		}
+		finally {
+			executor.shutdownCancelling();
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	@Test(timeout = 1000L)
+	public void                     testShutdownCancelling() throws InterruptedException, ExecutionException
+	{
+		ListeningScheduledExecutorService executor = getExecutor();
+		try {
+			final AtomicInteger result = new AtomicInteger();
+			ListenableScheduledFuture<Object> f0;
+			ListenableScheduledFuture<Object> f1;
+			TestListener<Object> t0 = new TestListener<Object>();
+			TestListener<Object> t1 = new TestListener<Object>();
+			synchronized (result) {
+				f0 = executor.schedule(new Callable<Object>() {
+					@Override
+					public Object call() throws Exception {
+						synchronized (result) {
+							result.incrementAndGet();
+							result.notify();
+						}
+						Thread.sleep(1000000);
+						return null;
+					}
+				}, 0L, TimeUnit.MILLISECONDS);
+				f1 = (ListenableScheduledFuture<Object>) executor.scheduleWithFixedDelay(new Runnable() {
+					@Override
+					public void run() {
+						synchronized (result) {
+							result.incrementAndGet();
+							result.notify();
+						}
+						try {
+							Thread.sleep(1000000);
+						}
+						catch (InterruptedException e) {
+							throw new RuntimeException(e);
+						}
+					}
+				}, 0L, 1000000L, TimeUnit.MILLISECONDS);
+				f0.addListener(t0);
+				f1.addListener(t1);
+				result.wait();
+				if (result.get() < 2)
+					result.wait();
+			}
+			executor.shutdownCancelling();
+			try {
+				f0.get();
+				Assert.fail("Expected ExecutionException");
+			}
+			catch (CancellationException ex) {
+				Assert.assertTrue(t0.waitValue() instanceof CancellationException);
+			}
+			try {
+				f1.get();
+				Assert.fail("Expected ExecutionException");
+			}
+			catch (CancellationException ex) {
+				Assert.assertTrue(t1.waitValue() instanceof CancellationException);
 			}
 		}
 		finally {

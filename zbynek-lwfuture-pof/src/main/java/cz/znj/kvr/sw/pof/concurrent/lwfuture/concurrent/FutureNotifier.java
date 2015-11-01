@@ -36,5 +36,5 @@ public interface FutureNotifier<FT extends Future<?>>
 	 * @param future
 	 *      future object
 	 */
-	void			        notify(FT future);
+	void				accept(FT future);
 }
