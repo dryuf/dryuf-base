@@ -568,24 +568,11 @@ public class AbstractFuture<V> implements ListenableFuture<V>
 			if (casStatus(oldStatus, oldStatus&~ST_RUNNING))
 				return true;
 			oldStatus = getStatusLazy();
-			if (oldStatus >= ST_COMPLETING)
-				break;
-		}
-		for (;;) {
-			if ((oldStatus&(ST_COMPLETING|ST_FINISHED)) != 0)
-				return false;
-			if (casStatus(oldStatus, (oldStatus&~ST_RUNNING)|ST_FINISHED))
-				break;
-			oldStatus = getStatusLazy();
-		}
-		if ((oldStatus&ST_CANCELLED) != 0) {
-			synchronized (this) {
-				// dummy lock so we stay within the thread until interruptTask() finishes
+			if (oldStatus >= ST_CANCELLING) {
+				// let leave all the work to updateStatusCompleting if we're already updated to final state
+				return updateStatusCompleting();
 			}
-			if ((oldStatus&(ST_CANCELLED|ST_DELAYED_CANCEL)) == (ST_CANCELLED|ST_DELAYED_CANCEL))
-				processListenersCancelled();
 		}
-		return false;
 	}
 
 	/**
@@ -682,6 +669,11 @@ public class AbstractFuture<V> implements ListenableFuture<V>
 			oldStatus = getStatusLazy();
 			if ((oldStatus&(ST_COMPLETING|ST_FINISHED)) != 0)
 				return false;
+			if ((oldStatus&ST_CANCELLED) != 0) {
+				if ((oldStatus&ST_DELAYED_CANCEL) != 0)
+					processListenersCancelled();
+				return false;
+			}
 		}
 
 		// we got CANCELLING and COMPLETING at the same time
