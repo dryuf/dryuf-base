@@ -88,11 +88,13 @@ public class ListenableFutureTask<V> extends AbstractFuture<V> implements Runnab
 					set(result);
 			}
 		}
-		catch (Exception ex) {
+		catch (Throwable ex) {
 			if (enforcedCancel())
 				setCancelled();
 			else
 				setException(ex);
+			if (ex instanceof Error)
+				throw (Error)ex;
 		}
 	}
 

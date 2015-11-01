@@ -34,7 +34,7 @@ public class AbstractFutureAsyncTest
 	public void                     testWaitSuccess() throws ExecutionException, InterruptedException
 	{
 		Executor executor = Executors.newSingleThreadExecutor();
-		TestListener listener = new TestListener();
+		TestListener<Integer> listener = new TestListener<Integer>();
 		ListenableFutureTask<Integer> future = new ListenableFutureTask<Integer>(new Callable<Integer>() {
 			@Override
 			public Integer call() throws Exception {
@@ -52,7 +52,7 @@ public class AbstractFutureAsyncTest
 	public void                     testWaitFailure() throws ExecutionException, InterruptedException
 	{
 		Executor executor = Executors.newSingleThreadExecutor();
-		TestListener listener = new TestListener();
+		TestListener<Integer> listener = new TestListener<Integer>();
 		ListenableFutureTask<Integer> future = new ListenableFutureTask<Integer>(new Callable<Integer>() {
 			@Override
 			public Integer call() throws Exception {
@@ -75,7 +75,7 @@ public class AbstractFutureAsyncTest
 	public void                     testWaitCancel() throws ExecutionException, InterruptedException
 	{
 		Executor executor = Executors.newSingleThreadExecutor();
-		TestListener listener = new TestListener();
+		TestListener<Integer> listener = new TestListener<Integer>();
 		final ListenableFutureTask<Integer> future = new ListenableFutureTask<Integer>(new Callable<Integer>() {
 			@Override
 			public Integer call() throws Exception {

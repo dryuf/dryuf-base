@@ -29,7 +29,7 @@ public class AbstractFutureSyncTest
 	@Test
 	public void                     testSuccess() throws ExecutionException, InterruptedException
 	{
-		TestListener listener = new TestListener();
+		TestListener<Object> listener = new TestListener<Object>();
 		SettableFuture<Object> future = new SettableFuture<Object>();
 		future.addListener(listener);
 		Assert.assertNull(listener.getValue());
@@ -37,7 +37,7 @@ public class AbstractFutureSyncTest
 		Assert.assertFalse(future.isCancelled());
 		future.set(0);
 		Assert.assertEquals(0, listener.getValue());
-		TestListener second = new TestListener();
+		TestListener<Object> second = new TestListener<Object>();
 		future.addListener(second);
 		Assert.assertEquals(0, second.getValue());
 		Assert.assertEquals(0, future.get());
@@ -48,7 +48,7 @@ public class AbstractFutureSyncTest
 	@Test
 	public void                     testException()
 	{
-		TestListener listener = new TestListener();
+		TestListener<Object> listener = new TestListener<Object>();
 		SettableFuture<Object> future = new SettableFuture<Object>();
 		future.addListener(listener);
 		Assert.assertNull(listener.getValue());
@@ -56,7 +56,7 @@ public class AbstractFutureSyncTest
 		Assert.assertFalse(future.isCancelled());
 		future.setException(new NumberFormatException());
 		Assert.assertTrue(listener.getValue() instanceof NumberFormatException);
-		TestListener second = new TestListener();
+		TestListener<Object> second = new TestListener<Object>();
 		future.addListener(second);
 		Assert.assertTrue(second.getValue() instanceof NumberFormatException);
 		try {
@@ -76,7 +76,7 @@ public class AbstractFutureSyncTest
 	@Test
 	public void                     testCancel()
 	{
-		TestListener listener = new TestListener();
+		TestListener<Object> listener = new TestListener<Object>();
 		SettableFuture<Object> future = new SettableFuture<Object>();
 		future.addListener(listener);
 		Assert.assertNull(listener.getValue());
@@ -84,7 +84,7 @@ public class AbstractFutureSyncTest
 		Assert.assertFalse(future.isCancelled());
 		Assert.assertTrue(future.cancel(true));
 		Assert.assertTrue(listener.getValue() instanceof CancellationException);
-		TestListener second = new TestListener();
+		TestListener<Object> second = new TestListener<Object>();
 		future.addListener(second);
 		Assert.assertTrue(second.getValue() instanceof CancellationException);
 		try {
@@ -106,7 +106,7 @@ public class AbstractFutureSyncTest
 	@Test
 	public void                     testCancelAndSet()
 	{
-		TestListener listener = new TestListener();
+		TestListener<Object> listener = new TestListener<Object>();
 		SettableFuture<Object> future = new SettableFuture<Object>();
 		future.addListener(listener);
 		Assert.assertNull(listener.getValue());
@@ -115,7 +115,7 @@ public class AbstractFutureSyncTest
 		Assert.assertTrue(future.cancel(true));
 		Assert.assertFalse(future.set(0));
 		Assert.assertTrue(listener.getValue() instanceof CancellationException);
-		TestListener second = new TestListener();
+		TestListener<Object> second = new TestListener<Object>();
 		future.addListener(second);
 		Assert.assertTrue(second.getValue() instanceof CancellationException);
 		try {
@@ -137,7 +137,7 @@ public class AbstractFutureSyncTest
 	@Test
 	public void                     testCancelAndSetException()
 	{
-		TestListener listener = new TestListener();
+		TestListener<Object> listener = new TestListener<Object>();
 		SettableFuture<Object> future = new SettableFuture<Object>();
 		future.addListener(listener);
 		Assert.assertNull(listener.getValue());
@@ -146,7 +146,7 @@ public class AbstractFutureSyncTest
 		Assert.assertTrue(future.cancel(true));
 		Assert.assertFalse(future.setException(new NumberFormatException()));
 		Assert.assertTrue(listener.getValue() instanceof CancellationException);
-		TestListener second = new TestListener();
+		TestListener<Object> second = new TestListener<Object>();
 		future.addListener(second);
 		Assert.assertTrue(second.getValue() instanceof CancellationException);
 		try {
@@ -168,7 +168,7 @@ public class AbstractFutureSyncTest
 	@Test
 	public void                     testSetAndCancel() throws ExecutionException, InterruptedException
 	{
-		TestListener listener = new TestListener();
+		TestListener<Object> listener = new TestListener<Object>();
 		SettableFuture<Object> future = new SettableFuture<Object>();
 		future.addListener(listener);
 		Assert.assertNull(listener.getValue());
@@ -177,7 +177,7 @@ public class AbstractFutureSyncTest
 		Assert.assertTrue(future.set(0));
 		Assert.assertFalse(future.cancel(true));
 		Assert.assertEquals(0, listener.getValue());
-		TestListener second = new TestListener();
+		TestListener<Object> second = new TestListener<Object>();
 		future.addListener(second);
 		Assert.assertEquals(0, second.getValue());
 		Assert.assertEquals(0, future.get());
@@ -188,7 +188,7 @@ public class AbstractFutureSyncTest
 	@Test
 	public void                     testExceptionAndCancel()
 	{
-		TestListener listener = new TestListener();
+		TestListener<Object> listener = new TestListener<Object>();
 		SettableFuture<Object> future = new SettableFuture<Object>();
 		future.addListener(listener);
 		Assert.assertNull(listener.getValue());
@@ -197,7 +197,7 @@ public class AbstractFutureSyncTest
 		Assert.assertTrue(future.setException(new NumberFormatException()));
 		Assert.assertFalse(future.cancel(true));
 		Assert.assertTrue(listener.getValue() instanceof NumberFormatException);
-		TestListener second = new TestListener();
+		TestListener<Object> second = new TestListener<Object>();
 		future.addListener(second);
 		Assert.assertTrue(second.getValue() instanceof NumberFormatException);
 		try {
@@ -217,7 +217,7 @@ public class AbstractFutureSyncTest
 	@Test
 	public void                     testSetCancelled()
 	{
-		TestListener listener = new TestListener();
+		TestListener<Object> listener = new TestListener<Object>();
 		SettableFuture<Object> future = new SettableFuture<Object>();
 		future.addListener(listener);
 		Assert.assertNull(listener.getValue());
@@ -232,7 +232,7 @@ public class AbstractFutureSyncTest
 	@Test
 	public void                     testSetAndSetCancelled()
 	{
-		TestListener listener = new TestListener();
+		TestListener<Object> listener = new TestListener<Object>();
 		SettableFuture<Object> future = new SettableFuture<Object>();
 		future.addListener(listener);
 		Assert.assertNull(listener.getValue());
@@ -246,7 +246,7 @@ public class AbstractFutureSyncTest
 	@Test(expected = CancellationException.class)
 	public void                     testRestart() throws ExecutionException, InterruptedException
 	{
-		TestListener listener = new TestListener();
+		TestListener<Object> listener = new TestListener<Object>();
 		SettableFuture<Object> future = new SettableFuture<Object>();
 		future.addListener(listener);
 		Assert.assertNull(listener.getValue());
@@ -267,7 +267,7 @@ public class AbstractFutureSyncTest
 	@Test(expected = CancellationException.class)
 	public void                     testRestartDelayedCancel() throws ExecutionException, InterruptedException
 	{
-		TestListener listener = new TestListener();
+		TestListener<Object> listener = new TestListener<Object>();
 		SettableFuture<Object> future = new SettableFuture<Object>();
 		future.addListener(listener);
 		future.setDelayedCancel();
@@ -284,7 +284,7 @@ public class AbstractFutureSyncTest
 	@Test
 	public void                     testDoubleSet() throws ExecutionException, InterruptedException
 	{
-		TestListener listener = new TestListener();
+		TestListener<Integer> listener = new TestListener<Integer>();
 		SettableFuture<Integer> future = new SettableFuture<Integer>();
 		future.addListener(listener);
 		Assert.assertNull(listener.getValue());

@@ -94,6 +94,7 @@ public class FuturesTest
 	{
 		SettableFuture<Integer> f0 = new SettableFuture<Integer>();
 		SettableFuture<Integer> f1 = new SettableFuture<Integer>();
+		@SuppressWarnings("unchecked")
 		ListenableFuture<Integer> any = Futures.anyOf(Arrays.<ListenableFuture<Integer>>asList(f0, f1));
 		Assert.assertFalse(any.isDone());
 		f0.set(1);
@@ -107,6 +108,7 @@ public class FuturesTest
 	{
 		SettableFuture<Integer> f0 = new SettableFuture<Integer>();
 		SettableFuture<Integer> f1 = new SettableFuture<Integer>();
+		@SuppressWarnings("unchecked")
 		ListenableFuture<Integer> any = Futures.anyOf(f0, f1);
 		Assert.assertFalse(any.isDone());
 		f1.set(1);
@@ -120,6 +122,7 @@ public class FuturesTest
 	{
 		SettableFuture<Integer> f0 = new SettableFuture<Integer>();
 		SettableFuture<Integer> f1 = new SettableFuture<Integer>();
+		@SuppressWarnings("unchecked")
 		ListenableFuture<Integer> any = Futures.anyOf(f0, f1);
 		Assert.assertFalse(any.isDone());
 		f1.setException(new TestingRuntimeException());

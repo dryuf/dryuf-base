@@ -27,6 +27,8 @@ package cz.znj.kvr.sw.pof.concurrent.lwfuture.concurrent.test;
  */
 public class TestingRuntimeException extends RuntimeException
 {
+	private static final long	serialVersionUID = 1;
+
 	public                          TestingRuntimeException()
 	{
 	}

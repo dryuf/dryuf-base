@@ -90,6 +90,7 @@ public abstract class AbstractListeningExecutorService implements ListeningExecu
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public <V> V                    invokeAny(Collection<? extends Callable<V>> tasks, long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException
 	{

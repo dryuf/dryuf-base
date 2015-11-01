@@ -107,6 +107,7 @@ public class AbstractListeningExecutorServiceTest
 		ListeningExecutorService executor = getExecutor();
 		try {
 			int i = 0;
+			@SuppressWarnings("unchecked")
 			List<Future<Integer>> futures = executor.invokeAll(Arrays.asList(
 					new Callable<Integer>() {
 						@Override
@@ -137,6 +138,7 @@ public class AbstractListeningExecutorServiceTest
 		ListeningExecutorService executor = getExecutor();
 		try {
 			int i = 0;
+			@SuppressWarnings("unchecked")
 			List<Future<Integer>> futures = executor.invokeAll(Arrays.asList(
 					new Callable<Integer>() {
 						@Override
@@ -167,6 +169,7 @@ public class AbstractListeningExecutorServiceTest
 		ListeningExecutorService executor = getExecutor();
 		try {
 			int i = 0;
+			@SuppressWarnings("unchecked")
 			List<Future<Integer>> futures = executor.invokeAll(Arrays.asList(
 					new Callable<Integer>() {
 						@Override

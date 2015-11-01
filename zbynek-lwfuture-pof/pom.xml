@@ -29,6 +29,9 @@
 				<configuration>
 					<source>${javac.version}</source>
 					<target>${javac.version}</target>
+					<compilerArgs>
+						<arg>-Xlint:all</arg>
+					</compilerArgs>
 				</configuration>
 			</plugin>
 		</plugins>

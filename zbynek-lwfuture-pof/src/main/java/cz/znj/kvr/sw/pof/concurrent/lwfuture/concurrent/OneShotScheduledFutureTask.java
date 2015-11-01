@@ -107,25 +107,27 @@ public class OneShotScheduledFutureTask<V> extends AbstractScheduledFuture<V> im
 					set(result);
 			}
 		}
-		catch (Exception ex) {
+		catch (Throwable ex) {
 			if (enforcedCancel())
 				setCancelled();
 			else
 				setException(ex);
+			if (ex instanceof Error)
+				throw (Error)ex;
 		}
 	}
 
-	private ScheduledFuture         scheduledDelegate;
+	private ScheduledFuture<V>	scheduledDelegate;
 
 	/**
 	 * The thread that executes the task.
 	 *
 	 * Volatile is not needed as this is surrounded with other memory barrier reads/writes.
 	 */
-	protected Thread                  myThread;
+	protected Thread    		myThread;
 
 	/**
 	 * Callable performing the task.
 	 */
-	protected final Callable<V>     callable;
+	protected final Callable<V>	callable;
 }

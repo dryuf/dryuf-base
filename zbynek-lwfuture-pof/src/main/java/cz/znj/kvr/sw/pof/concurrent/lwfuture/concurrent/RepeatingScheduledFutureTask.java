@@ -68,11 +68,13 @@ public class RepeatingScheduledFutureTask<V> extends OneShotScheduledFutureTask<
 					setRestart();
 			}
 		}
-		catch (Exception ex) {
+		catch (Throwable ex) {
 			if (enforcedCancel())
 				setCancelled();
 			else
 				setException(ex);
+			if (ex instanceof Error)
+				throw (Error)ex;
 			throw ex instanceof RuntimeException ? (RuntimeException)ex : new RuntimeException(ex);
 		}
 	}
