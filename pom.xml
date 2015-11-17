@@ -16,11 +16,11 @@
 
 	<properties>
 		<javac.version>1.6</javac.version>
-                <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-                <maven-compiler-plugin.version>3.3</maven-compiler-plugin.version>
+		<maven-compiler-plugin.version>3.3</maven-compiler-plugin.version>
 
-                <junit.version>4.11</junit.version>
+		<junit.version>4.11</junit.version>
 
 		<dryuf-concurrent.version>0.0.1</dryuf-concurrent.version>
 	</properties>

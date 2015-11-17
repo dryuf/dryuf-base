@@ -218,10 +218,12 @@ public class ForwardingListeningScheduledExecutorServiceTest
 			final AtomicInteger result = new AtomicInteger();
 			TestListener<Object> listener = new TestListener<Object>();
 			ListenableScheduledFuture<Object> future;
+			final Semaphore sem = new Semaphore(1);
 			synchronized (result) {
 				future = (ListenableScheduledFuture<Object>) executor.scheduleAtFixedRate(new Runnable() {
 					@Override
 					public void run() {
+						sem.acquireUninterruptibly();
 						synchronized (result) {
 							result.notify();
 							if (result.incrementAndGet() == 2)
@@ -239,8 +241,10 @@ public class ForwardingListeningScheduledExecutorServiceTest
 				Assert.assertTrue(future.getDelay(TimeUnit.MILLISECONDS) <= 1);
 				result.wait();
 				Assert.assertEquals(1, result.get());
+				sem.release();
 				result.wait();
 				Assert.assertEquals(2, result.get());
+				sem.release();
 				Assert.assertFalse(longTermFuture.isDone());
 			}
 			future.addListener(listener);
@@ -266,12 +270,14 @@ public class ForwardingListeningScheduledExecutorServiceTest
 			final AtomicInteger result = new AtomicInteger();
 			TestListener<Object> listener = new TestListener<Object>();
 			ListenableScheduledFuture<Object> future;
+			final Semaphore sem = new Semaphore(1);
 			synchronized (result) {
 				future = (ListenableScheduledFuture<Object>) executor.scheduleWithFixedDelay(new Runnable()
 				{
 					@Override
 					public void run()
 					{
+						sem.acquireUninterruptibly();
 						synchronized (result) {
 							result.incrementAndGet();
 							result.notify();
@@ -281,8 +287,10 @@ public class ForwardingListeningScheduledExecutorServiceTest
 				Assert.assertTrue(future.getDelay(TimeUnit.MILLISECONDS) <= 1);
 				result.wait();
 				Assert.assertEquals(1, result.get());
+				sem.release();
 				result.wait();
 				Assert.assertEquals(2, result.get());
+				sem.release();
 				future.setDelayedCancel();
 				future.cancel(true);
 			}
@@ -309,12 +317,14 @@ public class ForwardingListeningScheduledExecutorServiceTest
 			final AtomicInteger result = new AtomicInteger();
 			TestListener<Object> listener = new TestListener<Object>();
 			ListenableScheduledFuture<Object> future;
+			final Semaphore sem = new Semaphore(1);
 			synchronized (result) {
 				future = (ListenableScheduledFuture<Object>) executor.scheduleWithFixedDelay(new Runnable()
 				{
 					@Override
 					public void run()
 					{
+						sem.acquireUninterruptibly();
 						synchronized (result) {
 							result.notify();
 							if (result.incrementAndGet() == 2)
@@ -325,8 +335,10 @@ public class ForwardingListeningScheduledExecutorServiceTest
 				Assert.assertTrue(future.getDelay(TimeUnit.MILLISECONDS) <= 1);
 				result.wait();
 				Assert.assertEquals(1, result.get());
+				sem.release();
 				result.wait();
 				Assert.assertEquals(2, result.get());
+				sem.release();
 			}
 			future.addListener(listener);
 			try {
