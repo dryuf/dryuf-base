@@ -946,12 +946,6 @@ public class AbstractFuture<V> implements ListenableFuture<V>
 		return listenersUpdater.compareAndSet(this, expected, set);
 	}
 
-	@SuppressWarnings("unchecked")
-	private final ListenerNode<V>   xchgListeners(ListenerNode<V> set)
-	{
-		return (ListenerNode<V>)listenersUpdater.getAndSet(this, set);
-	}
-
 	/**
 	 * Basic Listener node providing linking functions.
 	 */
