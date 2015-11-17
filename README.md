@@ -1,10 +1,4 @@
-# zbynek-concurrent-pof
-
-Zbynek's concurrent experiments and proofs of concepts
-
-Currently there is only single project:
-
-## [Lock free ListenableFuture / Future implementation](zbynek-lwfuture-pof/)
+## Lock free ListenableFuture / Future implementation
 
 The project implements java concurrent (Listenable) Future in very cheap and flexible way.
 
@@ -43,6 +37,13 @@ SinglePreListenerAsyncBenchmark.benchmarkSpring    thrpt    2   82.673          
 ```
 
 It's 108% faster than Guava, 148% faster than Spring and 15% slower than JDK (but JDK test runs without  listener).
+
+### Implementations
+
+Currenty there are two implementations that differ in details how to handle atomic operations. The performance difference is about 10% but may change with JRE version:
+- feature/atomic-field-updaters - uses AtomicFieldUpdaters to manage the atomic fields, should be faster but with current JIT it's slower
+- feature/atomic-type-instances - uses AtomicInteger and AtomicReference instances, although the access is indirect, with current JIT this is faster
+- feature/unsafe-volatiles - uses Unsafe instance to read and write volatile members, fastest solution, with NoListener test even outperforms JDK Future
 
 ## License
 
