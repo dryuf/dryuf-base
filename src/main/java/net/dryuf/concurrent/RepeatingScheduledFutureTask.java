@@ -62,13 +62,18 @@ public class RepeatingScheduledFutureTask<V> extends OneShotScheduledFutureTask<
 			myThread = Thread.currentThread();
 			if (setRunning()) {
 				callable.call();
-				if (enforcedCancel())
+				if (enforcedCancel()) {
 					setCancelled();
-				else
-					setRestart();
+					callable = null;
+				}
+				else {
+					if (!setRestart())
+						callable = null;
+				}
 			}
 		}
 		catch (Throwable ex) {
+			callable = null;
 			if (enforcedCancel())
 				setCancelled();
 			else
