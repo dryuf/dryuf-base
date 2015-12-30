@@ -41,7 +41,7 @@ public class OneShotScheduledFutureTask<V> extends AbstractScheduledFuture<V> im
 	 * @param result
 	 * 	provided result
 	 */
-	public OneShotScheduledFutureTask(final Runnable runnable, final V result)
+	public				OneShotScheduledFutureTask(final Runnable runnable, final V result)
 	{
 		this(new Callable<V>()
 		{
@@ -60,7 +60,7 @@ public class OneShotScheduledFutureTask<V> extends AbstractScheduledFuture<V> im
 	 * @param callable
 	 * 	function to compute the result
 	 */
-	public OneShotScheduledFutureTask(final Callable<V> callable)
+	public				OneShotScheduledFutureTask(final Callable<V> callable)
 	{
 		this.callable = callable;
 	}
@@ -115,6 +115,9 @@ public class OneShotScheduledFutureTask<V> extends AbstractScheduledFuture<V> im
 			if (ex instanceof Error)
 				throw (Error)ex;
 		}
+		finally {
+			callable = null;
+		}
 	}
 
 	private ScheduledFuture<V>	scheduledDelegate;
@@ -129,5 +132,5 @@ public class OneShotScheduledFutureTask<V> extends AbstractScheduledFuture<V> im
 	/**
 	 * Callable performing the task.
 	 */
-	protected final Callable<V>	callable;
+	protected Callable<V>		callable;
 }
