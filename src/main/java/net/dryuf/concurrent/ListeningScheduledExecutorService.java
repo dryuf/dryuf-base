@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Zbynek Vyskovsky mailto:kvr@centrum.cz http://kvr.znj.cz/ http://github.com/kvr000/
+ * Copyright 2015 Zbynek Vyskovsky mailto:kvr000@gmail.com http://kvr.znj.cz/ http://github.com/kvr000/
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,13 +17,9 @@
 package net.dryuf.concurrent;
 
 
-import java.util.Collection;
-import java.util.List;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 
@@ -31,17 +27,21 @@ import java.util.concurrent.TimeUnit;
  * Interface extending {@link ScheduledExecutorService} by return {@link ListenableFuture} instead of {@link Future}.
  *
  * @author
- * 	Zbynek Vyskovsky, mailto:kvr@centrum.cz http://kvr.znj.cz/software/java/ListenableFuture/ http://github.com/kvr000
+ * 	Zbynek Vyskovsky, mailto:kvr000@gmail.com http://kvr.znj.cz/software/java/ListenableFuture/ http://github.com/kvr000
  */
 public interface ListeningScheduledExecutorService extends ListeningExecutorService, ScheduledExecutorService
 {
 	<V> ListenableScheduledFuture<V> schedule(Runnable command, V result, long delay, TimeUnit unit);
 
+	@Override
 	ListenableScheduledFuture<?> schedule(Runnable command, long delay, TimeUnit unit);
 
+	@Override
 	<V> ListenableScheduledFuture<V> schedule(Callable<V> var1, long delay, TimeUnit unit);
 
-	ListenableScheduledFuture<?> scheduleAtFixedRate(Runnable command, long delay, long var4, TimeUnit unit);
+	@Override
+	ListenableScheduledFuture<?> scheduleAtFixedRate(Runnable command, long delay, long period, TimeUnit unit);
 
-	ListenableScheduledFuture<?> scheduleWithFixedDelay(Runnable command, long delay, long var4, TimeUnit unit);
+	@Override
+	ListenableScheduledFuture<?> scheduleWithFixedDelay(Runnable command, long delay, long period, TimeUnit unit);
 }

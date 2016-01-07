@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Zbynek Vyskovsky mailto:kvr@centrum.cz http://kvr.znj.cz/ http://github.com/kvr000/
+ * Copyright 2015 Zbynek Vyskovsky mailto:kvr000@gmail.com http://kvr.znj.cz/ http://github.com/kvr000/
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,7 +32,7 @@ import java.util.logging.Logger;
  * Futures utilities.
  *
  * @author
- * 	Zbynek Vyskovsky, mailto:kvr@centrum.cz http://kvr.znj.cz/software/java/ListenableFuture/ http://github.com/kvr000
+ * 	Zbynek Vyskovsky, mailto:kvr000@gmail.com http://kvr.znj.cz/software/java/ListenableFuture/ http://github.com/kvr000
  */
 public final class Futures
 {
@@ -156,6 +156,7 @@ public final class Futures
 	 * @return
 	 *      future that will complete once all of {@code futures} complete
 	 */
+	@SafeVarargs
 	public static <V> ListenableFuture<V> anyOf(ListenableFuture<V>... futures)
 	{
 		return new AnyOfFuture<V>(Arrays.asList(futures));
@@ -173,8 +174,9 @@ public final class Futures
 	public static int               cancelAll(Iterable<? extends Future<?>> futures)
 	{
 		int count = 0;
-		for (Future<?> future: futures)
+		for (Future<?> future: futures) {
 			count += future.cancel(true) ? 1 : 0;
+		}
 		return count;
 	}
 

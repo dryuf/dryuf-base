@@ -10,22 +10,28 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>net.dryuf</groupId>
-	<artifactId>dryuf-concurrent-futures-benchmark</artifactId>
+	<artifactId>dryuf-concurrent-benchmark</artifactId>
 	<version>0.0.1</version>
-	<packaging>jar</packaging>
+	<packaging>pom</packaging>
 
 	<properties>
 		<javac.version>1.8</javac.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
 		<maven-compiler-plugin.version>3.3</maven-compiler-plugin.version>
+		<maven-shade-plugin.version>3.2.1</maven-shade-plugin.version>
 
-		<guava.version>18.0</guava.version>
-		<spring.version>4.1.6.RELEASE</spring.version>
 		<jmh.version>1.11.1</jmh.version>
+
+		<javax.annotation-api>1.2</javax.annotation-api>
 
 		<dryuf-concurrent.version>0.0.1</dryuf-concurrent.version>
 	</properties>
+
+	<modules>
+		<module>collection-benchmark</module>
+		<module>futures-benchmark</module>
+	</modules>
 
 	<build>
 		<plugins>
@@ -38,6 +44,7 @@
 					<target>${javac.version}</target>
 				</configuration>
 			</plugin>
+
 		</plugins>
 	</build>
 
@@ -60,15 +67,9 @@
 		</dependency>
 
 		<dependency>
-			<groupId>com.google.guava</groupId>
-			<artifactId>guava</artifactId>
-			<version>${guava.version}</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-core</artifactId>
-			<version>${spring.version}</version>
+			<groupId>javax.annotation</groupId>
+			<artifactId>javax.annotation-api</artifactId>
+			<version>${javax.annotation-api}</version>
 		</dependency>
 
 	</dependencies>
