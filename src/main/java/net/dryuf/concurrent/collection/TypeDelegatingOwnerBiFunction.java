@@ -37,7 +37,28 @@ public class TypeDelegatingOwnerBiFunction<O, T, R> implements BiFunction<O, T, 
 			Map<Class<? extends T>, BiFunction<O, ? super T, ? extends R>> callbacks
 	)
 	{
-		this.initialCallbacks = callbacks;
+		this((Class<? extends T> clazz) -> {
+			for (Map.Entry<Class<? extends T>, BiFunction<O, ? super T, ? extends R>> callback :
+					callbacks.entrySet()) {
+				if (callback.getKey().isAssignableFrom(clazz)) {
+					return callback.getValue();
+				}
+			}
+			throw new IllegalArgumentException("Class unsupported by this caller: "+clazz);
+		});
+	}
+
+	/**
+	 * Creates new instance of {@link TypeDelegatingOwnerBiFunction}, initialized by callbacks provider.
+	 *
+	 * @param callbacksProvider
+	 * 	callback to provide processing callback based on the input class
+	 */
+	public				TypeDelegatingOwnerBiFunction(
+			Function<Class<? extends T>, BiFunction<O, ? super T, ? extends R>> callbacksProvider
+	)
+	{
+		this.typedCallbacks = new LazilyBuiltLoadingCache<>(callbacksProvider);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -70,7 +91,7 @@ public class TypeDelegatingOwnerBiFunction<O, T, R> implements BiFunction<O, T, 
 	 * Callbacks builder temporary holder.
 	 *
 	 * @param <O>
-	 *      type of input
+	 *      type of owner
 	 * @param <T>
 	 *      type of input
 	 * @param <R>
@@ -123,19 +144,5 @@ public class TypeDelegatingOwnerBiFunction<O, T, R> implements BiFunction<O, T, 
 				= new LinkedHashMap<>();
 	}
 
-	private BiFunction<O, ? super T, ? extends R> mapper(Class<? extends T> clazz)
-	{
-		for (Map.Entry<Class<? extends T>, BiFunction<O, ? super T, ? extends R>> callback:
-				initialCallbacks.entrySet()) {
-			if (callback.getKey().isAssignableFrom(clazz)) {
-				return callback.getValue();
-			}
-		}
-		throw new IllegalArgumentException("Class unsupported by this caller: "+clazz);
-	}
-
-	private final Map<Class<? extends T>, BiFunction<O, ? super T, ? extends R>> initialCallbacks;
-
-	private final Function<Class<? extends T>, BiFunction<O, ? super T, ? extends R>> typedCallbacks
-			= new LazilyBuiltLoadingCache<>(this::mapper);
+	private final Function<Class<? extends T>, BiFunction<O, ? super T, ? extends R>> typedCallbacks;
 }

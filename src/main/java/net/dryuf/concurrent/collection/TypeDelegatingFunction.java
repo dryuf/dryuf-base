@@ -32,7 +32,27 @@ public class TypeDelegatingFunction<T, R> implements Function<T, R>
 			Map<Class<? extends T>, Function<? super T, ? extends R>> callbacks
 	)
 	{
-		this.initialCallbacks = callbacks;
+		this((Class<? extends T> clazz) -> {
+			for (Map.Entry<Class<? extends T>, Function<? super T, ? extends R>> callback: callbacks.entrySet()) {
+				if (callback.getKey().isAssignableFrom(clazz)) {
+					return callback.getValue();
+				}
+			}
+			throw new IllegalArgumentException("Class unsupported by this caller: "+clazz);
+		});
+	}
+
+	/**
+	 * Creates new instance of {@link TypeDelegatingFunction}, initialized by list of callbacks.
+	 *
+	 * @param callbacksProvider
+	 * 	callback to provide processing callback based on the input class
+	 */
+	public				TypeDelegatingFunction(
+			Function<Class<? extends T>, Function<? super T, ? extends R>> callbacksProvider
+	)
+	{
+		this.typedCallbacks = new LazilyBuiltLoadingCache<>(callbacksProvider);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -113,18 +133,5 @@ public class TypeDelegatingFunction<T, R> implements Function<T, R>
 		private Map<Class<? extends T>, Function<? super T, ? extends R>> callbacks = new LinkedHashMap<>();
 	}
 
-	private Function<? super T, ? extends R> mapper(Class<? extends T> clazz)
-	{
-		for (Map.Entry<Class<? extends T>, Function<? super T, ? extends R>> callback: initialCallbacks.entrySet()) {
-			if (callback.getKey().isAssignableFrom(clazz)) {
-				return callback.getValue();
-			}
-		}
-		throw new IllegalArgumentException("Class unsupported by this caller: "+clazz);
-	}
-
-	private final Map<Class<? extends T>, Function<? super T, ? extends R>> initialCallbacks;
-
-	private final Function<Class<? extends T>, Function<? super T, ? extends R>> typedCallbacks
-			= new LazilyBuiltLoadingCache<>(this::mapper);
+	private final Function<Class<? extends T>, Function<? super T, ? extends R>> typedCallbacks;
 }
