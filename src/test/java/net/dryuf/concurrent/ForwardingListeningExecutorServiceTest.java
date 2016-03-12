@@ -14,15 +14,14 @@
  * limitations under the License.
  */
 
-package net.dryuf.concurrent.test;
+package net.dryuf.concurrent;
 
-import net.dryuf.concurrent.DirectExecutor;
 import net.dryuf.concurrent.ListenableFuture;
 import net.dryuf.concurrent.ListeningExecutorService;
 import net.dryuf.concurrent.ListeningExecutors;
 import net.dryuf.concurrent.ListeningScheduledExecutorService;
-import org.junit.Assert;
-import org.junit.Test;
+import org.testng.AssertJUnit;
+import org.testng.annotations.Test;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
@@ -58,7 +57,7 @@ public class ForwardingListeningExecutorServiceTest
 			});
 			result.wait();
 		}
-		Assert.assertEquals(1, result.get());
+		AssertJUnit.assertEquals(1, result.get());
 	}
 
 	@Test
@@ -81,14 +80,14 @@ public class ForwardingListeningExecutorServiceTest
 				}
 			});
 			executor.shutdownCancelling();
-			Assert.assertTrue(f1.isCancelled());
+			AssertJUnit.assertTrue(f1.isCancelled());
 			try {
 				f0.get();
-				Assert.fail("Previous should have thrown CancellationException");
+				AssertJUnit.fail("Previous should have thrown CancellationException");
 			}
 			catch (CancellationException ex) {
 			}
-			Assert.assertTrue(f0.isCancelled());
+			AssertJUnit.assertTrue(f0.isCancelled());
 		}
 		finally {
 			executor.shutdownNow();
@@ -99,24 +98,24 @@ public class ForwardingListeningExecutorServiceTest
 	public void			testLifecycle1() throws InterruptedException
 	{
 		ListeningScheduledExecutorService executor = getExecutor();
-		Assert.assertFalse(executor.isTerminated());
-		Assert.assertFalse(executor.isShutdown());
+		AssertJUnit.assertFalse(executor.isTerminated());
+		AssertJUnit.assertFalse(executor.isShutdown());
 		executor.shutdown();
-		Assert.assertTrue(executor.isTerminated());
-		Assert.assertTrue(executor.isShutdown());
-		Assert.assertTrue(executor.awaitTermination(0, TimeUnit.MILLISECONDS));
+		AssertJUnit.assertTrue(executor.isTerminated());
+		AssertJUnit.assertTrue(executor.isShutdown());
+		AssertJUnit.assertTrue(executor.awaitTermination(0, TimeUnit.MILLISECONDS));
 	}
 
 	@Test
 	public void			testLifecycle2() throws InterruptedException
 	{
 		ListeningScheduledExecutorService executor = getExecutor();
-		Assert.assertFalse(executor.isTerminated());
-		Assert.assertFalse(executor.isShutdown());
+		AssertJUnit.assertFalse(executor.isTerminated());
+		AssertJUnit.assertFalse(executor.isShutdown());
 		executor.shutdownNow();
-		Assert.assertTrue(executor.isTerminated());
-		Assert.assertTrue(executor.isShutdown());
-		Assert.assertTrue(executor.awaitTermination(0, TimeUnit.MILLISECONDS));
+		AssertJUnit.assertTrue(executor.isTerminated());
+		AssertJUnit.assertTrue(executor.isShutdown());
+		AssertJUnit.assertTrue(executor.awaitTermination(0, TimeUnit.MILLISECONDS));
 	}
 
 	private static ListeningScheduledExecutorService getExecutor()

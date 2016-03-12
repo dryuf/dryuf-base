@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package net.dryuf.concurrent.test;
+package net.dryuf.concurrent;
 
 
 import net.dryuf.concurrent.DefaultFutureListener;
 import net.dryuf.concurrent.ListenableFutureTask;
-import org.junit.Assert;
-import org.junit.Test;
+import org.testng.AssertJUnit;
+import org.testng.annotations.Test;
 
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -30,7 +30,7 @@ import java.util.concurrent.TimeUnit;
 
 public class AbstractFutureCancelTest
 {
-	@Test(timeout = 1000)
+	@Test(timeOut = 1000)
 	public void                     testCancel() throws  InterruptedException
 	{
 		Executor executor = Executors.newSingleThreadExecutor();
@@ -66,16 +66,16 @@ public class AbstractFutureCancelTest
 			}
 		});
 		executor.execute(future);
-		Assert.assertEquals(0, (int) queue.take());
+		AssertJUnit.assertEquals(0, (int) queue.take());
 		future.cancel(true);
-		Assert.assertEquals(1, (int)queue.take());
-		Assert.assertEquals(1, (int) queue.take());
-		Assert.assertNull(queue.poll(10, TimeUnit.MILLISECONDS));
-		Assert.assertEquals(2, (int)queue.take());
-		Assert.assertNull(queue.poll(10, TimeUnit.MILLISECONDS));
+		AssertJUnit.assertEquals(1, (int)queue.take());
+		AssertJUnit.assertEquals(1, (int) queue.take());
+		AssertJUnit.assertNull(queue.poll(10, TimeUnit.MILLISECONDS));
+		AssertJUnit.assertEquals(2, (int)queue.take());
+		AssertJUnit.assertNull(queue.poll(10, TimeUnit.MILLISECONDS));
 	}
 
-	@Test(timeout = 1000000L)
+	@Test(timeOut = 1000000L)
 	public void                     testDelayedCancel() throws  InterruptedException
 	{
 		Executor executor = Executors.newSingleThreadExecutor();
@@ -128,17 +128,17 @@ public class AbstractFutureCancelTest
 		});
 		future.setDelayedCancel();
 		executor.execute(future);
-		Assert.assertEquals(0, (int)queue.take());
+		AssertJUnit.assertEquals(0, (int)queue.take());
 		future.cancel(true);
-		Assert.assertEquals(1, (int)queue.take());
-		Assert.assertEquals(2, (int)queue.take());
-		Assert.assertEquals(3, (int)queue.take());
-		Assert.assertEquals(4, (int)queue.take());
-		Assert.assertNull(queue.poll(10, TimeUnit.MILLISECONDS));
+		AssertJUnit.assertEquals(1, (int)queue.take());
+		AssertJUnit.assertEquals(2, (int)queue.take());
+		AssertJUnit.assertEquals(3, (int)queue.take());
+		AssertJUnit.assertEquals(4, (int)queue.take());
+		AssertJUnit.assertNull(queue.poll(10, TimeUnit.MILLISECONDS));
 	}
 
 
-	@Test(timeout = 1000)
+	@Test(timeOut = 1000)
 	public void                     testDelayedCancelAfter() throws  InterruptedException
 	{
 		Executor executor = Executors.newSingleThreadExecutor();
@@ -175,15 +175,15 @@ public class AbstractFutureCancelTest
 		});
 		future.setDelayedCancel();
 		executor.execute(future);
-		Assert.assertEquals(0, (int)queue.take());
+		AssertJUnit.assertEquals(0, (int)queue.take());
 		future.setDelayedCancel();
 		future.cancel(true);
-		Assert.assertEquals(1, (int)queue.take());
-		Assert.assertEquals(2, (int)queue.take());
-		Assert.assertEquals(3, (int) queue.take());
+		AssertJUnit.assertEquals(1, (int)queue.take());
+		AssertJUnit.assertEquals(2, (int)queue.take());
+		AssertJUnit.assertEquals(3, (int) queue.take());
 	}
 
-	@Test(timeout = 1000, expected = IllegalStateException.class)
+	@Test(timeOut = 1000, expectedExceptions = IllegalStateException.class)
 	public void                     testDelayedCancelLate() throws  InterruptedException
 	{
 		Executor executor = Executors.newSingleThreadExecutor();
@@ -220,7 +220,7 @@ public class AbstractFutureCancelTest
 		});
 		future.setDelayedCancel();
 		executor.execute(future);
-		Assert.assertEquals(0, (int)queue.take());
+		AssertJUnit.assertEquals(0, (int)queue.take());
 		future.cancel(true);
 		future.setDelayedCancel();
 	}

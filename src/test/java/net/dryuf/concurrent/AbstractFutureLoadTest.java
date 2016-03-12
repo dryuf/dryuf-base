@@ -14,11 +14,10 @@
  * limitations under the License.
  */
 
-package net.dryuf.concurrent.test;
+package net.dryuf.concurrent;
 
-import net.dryuf.concurrent.SettableFuture;
-import org.junit.Assert;
-import org.junit.Test;
+import org.testng.AssertJUnit;
+import org.testng.annotations.Test;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -26,6 +25,7 @@ import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 
 
 /**
@@ -51,7 +51,7 @@ public class AbstractFutureLoadTest
 		{
 			for (int i = 0; i < result.length; ++i) {
 				for (int j = 0; j < result[i].length; ++j) {
-					Assert.assertEquals(1, result[i][j]);
+					AssertJUnit.assertEquals(1, result[i][j]);
 				}
 			}
 		}
@@ -74,14 +74,14 @@ public class AbstractFutureLoadTest
 			threads = new LinkedList<Thread>();
 		}
 
-		public void                     startGroupThreads(final CallProc<Integer> runner)
+		public void                     startGroupThreads(final Consumer<Integer> runner)
 		{
 			for (int i = 0; i < result.length; ++i) {
 				final int id = i;
 				startThread(new Runnable() {
 					@Override
 					public void run() {
-						runner.run(id);
+						runner.accept(id);
 					}
 				});
 			}
@@ -151,9 +151,9 @@ public class AbstractFutureLoadTest
 			final ThreadGroup group = new ThreadGroup(Math.max(1, Runtime.getRuntime().availableProcessors()-1), 20);
 			try {
 				group.init(group.result.length+1);
-				group.startGroupThreads(new CallProc<Integer>() {
+				group.startGroupThreads(new Consumer<Integer>() {
 					@Override
-					public void run(Integer id) {
+					public void accept(Integer id) {
 						final long[] r = group.result[id];
 						for (int i = 0; i < r.length; ++i) {
 							final int aid = i;
@@ -191,7 +191,7 @@ public class AbstractFutureLoadTest
 				});
 				group.waitThreads();
 				group.assertResult();
-				Assert.assertArrayEquals(new long[]{1, 1}, hit);
+				AssertJUnit.assertArrayEquals(new long[]{1, 1}, hit);
 			}
 			finally {
 				group.close();
@@ -208,9 +208,9 @@ public class AbstractFutureLoadTest
 			final ThreadGroup group = new ThreadGroup(Math.max(1, Runtime.getRuntime().availableProcessors()*4), 20);
 			try {
 				group.init(group.result.length+1);
-				group.startGroupThreads(new CallProc<Integer>() {
+				group.startGroupThreads(new Consumer<Integer>() {
 					@Override
-					public void run(Integer id) {
+					public void accept(Integer id) {
 						final long[] r = group.result[id];
 						for (int i = 0; i < r.length; ++i) {
 							final int aid = i;
@@ -246,7 +246,7 @@ public class AbstractFutureLoadTest
 				});
 				group.waitThreads();
 				group.assertResult();
-				Assert.assertArrayEquals(new long[]{1, 1}, hit);
+				AssertJUnit.assertArrayEquals(new long[]{1, 1}, hit);
 			}
 			finally {
 				group.close();

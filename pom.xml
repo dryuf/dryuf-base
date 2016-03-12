@@ -50,7 +50,6 @@
 		<maven-gpg-plugin.version>1.6</maven-gpg-plugin.version>
 		<nexus-staging-maven-plugin>1.6.8</nexus-staging-maven-plugin>
 
-		<junit.version>4.11</junit.version>
 		<testng.version>6.9.10</testng.version>
 
 		<dryuf-concurrent.version>0.0.1</dryuf-concurrent.version>
@@ -78,10 +77,11 @@
 				<version>${maven-surefire-plugin.version}</version>
 				<configuration>
 					<!--
-					<suiteXmlFiles>
-						<suiteXmlFile>src/test/java/performance.testng-suite.xml</suiteXmlFile>
-					</suiteXmlFiles>
+						Not that we could not do it, the tests are ready for parallel testing.
+						But we want cause as much thread concurrency as possible in single test
+						to discover any race condition in the code.
 					-->
+					<parallel>method</parallel>
 				</configuration>
 			</plugin>
 
@@ -170,12 +170,6 @@
 	</profiles>
 
 	<dependencies>
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>${junit.version}</version>
-			<scope>test</scope>
-		</dependency>
 
 		<dependency>
 			<groupId>org.testng</groupId>

@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-package net.dryuf.concurrent.test;
+package net.dryuf.concurrent;
 
-import net.dryuf.concurrent.DefaultFutureListener;
-import org.junit.Assert;
+import org.testng.AssertJUnit;
 
 import java.util.concurrent.CancellationException;
 
@@ -55,8 +54,9 @@ public class TestListener<V> extends DefaultFutureListener<V>
 
 	protected synchronized void     onNotified()
 	{
-		if (done)
-			Assert.fail("TestListener "+toString()+" already notified: "+value);
+		if (done) {
+			AssertJUnit.fail("TestListener "+toString()+" already notified: "+value);
+		}
 		done = true;
 		this.notifyAll();
 	}

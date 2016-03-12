@@ -14,14 +14,13 @@
  * limitations under the License.
  */
 
-package net.dryuf.concurrent.test;
+package net.dryuf.concurrent;
 
 import net.dryuf.concurrent.ListeningExecutorService;
 import net.dryuf.concurrent.ListeningExecutors;
-import net.dryuf.concurrent.RejectingExecutor;
 import net.dryuf.concurrent.RejectingExecutorService;
-import org.junit.Assert;
-import org.junit.Test;
+import org.testng.AssertJUnit;
+import org.testng.annotations.Test;
 
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -36,7 +35,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class RejectingExecutorServiceTest
 {
-	@Test(expected = RejectedExecutionException.class)
+	@Test(expectedExceptions = RejectedExecutionException.class)
 	public void                     testFailure()
 	{
 		final AtomicInteger result = new AtomicInteger();
@@ -49,7 +48,7 @@ public class RejectingExecutorServiceTest
 			});
 		}
 		finally {
-			Assert.assertEquals(0, result.get());
+			AssertJUnit.assertEquals(0, result.get());
 		}
 	}
 
@@ -57,13 +56,13 @@ public class RejectingExecutorServiceTest
 	public void			testLifecycle1() throws InterruptedException
 	{
 		ListeningExecutorService executor = getExecutor();
-		Assert.assertTrue(executor.isTerminated());
-		Assert.assertTrue(executor.isShutdown());
+		AssertJUnit.assertTrue(executor.isTerminated());
+		AssertJUnit.assertTrue(executor.isShutdown());
 		executor.shutdown();
 		executor.shutdownNow();
-		Assert.assertTrue(executor.isTerminated());
-		Assert.assertTrue(executor.isShutdown());
-		Assert.assertTrue(executor.awaitTermination(0, TimeUnit.MILLISECONDS));
+		AssertJUnit.assertTrue(executor.isTerminated());
+		AssertJUnit.assertTrue(executor.isShutdown());
+		AssertJUnit.assertTrue(executor.awaitTermination(0, TimeUnit.MILLISECONDS));
 	}
 
 	private static ListeningExecutorService getExecutor()

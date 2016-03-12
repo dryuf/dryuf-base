@@ -14,13 +14,11 @@
  * limitations under the License.
  */
 
-package net.dryuf.concurrent.test;
+package net.dryuf.concurrent;
 
-import net.dryuf.concurrent.DefaultFutureListener;
-import net.dryuf.concurrent.DirectExecutor;
 import net.dryuf.concurrent.RejectingExecutor;
-import org.junit.Assert;
-import org.junit.Test;
+import org.testng.AssertJUnit;
+import org.testng.annotations.Test;
 
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -34,7 +32,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class RejectingExecutorTest
 {
-	@Test(expected = RejectedExecutionException.class)
+	@Test(expectedExceptions = RejectedExecutionException.class)
 	public void                     testFailure()
 	{
 		final AtomicInteger result = new AtomicInteger();
@@ -47,7 +45,7 @@ public class RejectingExecutorTest
 			});
 		}
 		finally {
-			Assert.assertEquals(0, result.get());
+			AssertJUnit.assertEquals(0, result.get());
 		}
 	}
 }

@@ -14,12 +14,10 @@
  * limitations under the License.
  */
 
-package net.dryuf.concurrent.test;
+package net.dryuf.concurrent;
 
-import net.dryuf.concurrent.ListenableFutureTask;
-import net.dryuf.concurrent.SettableFuture;
-import org.junit.Assert;
-import org.junit.Test;
+import org.testng.AssertJUnit;
+import org.testng.annotations.Test;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
@@ -30,7 +28,7 @@ import java.util.concurrent.Executors;
 
 public class AbstractFutureAsyncTest
 {
-	@Test(timeout = 1000L)
+	@Test(timeOut = 1000L)
 	public void                     testWaitSuccess() throws ExecutionException, InterruptedException
 	{
 		Executor executor = Executors.newSingleThreadExecutor();
@@ -44,11 +42,11 @@ public class AbstractFutureAsyncTest
 		});
 		future.addListener(listener);
 		executor.execute(future);
-		Assert.assertEquals(1, (int)future.get());
-		Assert.assertEquals(1, (int)(Integer)listener.waitValue());
+		AssertJUnit.assertEquals(1, (int)future.get());
+		AssertJUnit.assertEquals(1, (int)(Integer)listener.waitValue());
 	}
 
-	@Test(expected = ExecutionException.class, timeout = 1000L)
+	@Test(expectedExceptions = ExecutionException.class, timeOut = 1000L)
 	public void                     testWaitFailure() throws ExecutionException, InterruptedException
 	{
 		Executor executor = Executors.newSingleThreadExecutor();
@@ -64,14 +62,14 @@ public class AbstractFutureAsyncTest
 		executor.execute(future);
 		try {
 			future.get();
-			Assert.fail("get() succeeded");
+			AssertJUnit.fail("get() succeeded");
 		}
 		finally {
-			Assert.assertTrue(listener.waitValue() instanceof TestingRuntimeException);
+			AssertJUnit.assertTrue(listener.waitValue() instanceof TestingRuntimeException);
 		}
 	}
 
-	@Test(expected = CancellationException.class, timeout = 1000L)
+	@Test(expectedExceptions = CancellationException.class, timeOut = 1000L)
 	public void                     testWaitCancel() throws ExecutionException, InterruptedException
 	{
 		Executor executor = Executors.newSingleThreadExecutor();
@@ -93,10 +91,10 @@ public class AbstractFutureAsyncTest
 		}).start();
 		try {
 			future.get();
-			Assert.fail("get() succeeded");
+			AssertJUnit.fail("get() succeeded");
 		}
 		finally {
-			Assert.assertTrue(listener.waitValue() instanceof CancellationException);
+			AssertJUnit.assertTrue(listener.waitValue() instanceof CancellationException);
 		}
 	}
 }
