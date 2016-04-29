@@ -14,49 +14,48 @@
  * limitations under the License.
  */
 
-package net.dryuf.concurrent.test;
+package net.dryuf.concurrent;
 
-import net.dryuf.concurrent.DefaultFutureListener;
-import net.dryuf.concurrent.Futures;
-import net.dryuf.concurrent.ListenableFuture;
-import net.dryuf.concurrent.SettableFuture;
-import org.junit.Assert;
-import org.junit.Test;
+import org.testng.AssertJUnit;
+import org.testng.annotations.Test;
 
-import java.util.Arrays;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.ExecutionException;
+import java.util.concurrent.atomic.AtomicInteger;
 
 
 /**
- * Tests for {@link DefaultFutureListener} class.
+ * Tests for {@link DirectExecutor} class.
  *
  * @author
  * 	Zbynek Vyskovsky, mailto:kvr000@gmail.com http://kvr.znj.cz/software/java/ListenableFuture/ http://github.com/kvr000
  */
-public class DefaultFutureListenerTest
+public class DirectExecutorTest
 {
 	@Test
 	public void                     testSuccess()
 	{
-		SettableFuture<Void> f = new SettableFuture<Void>();
-		f.addListener(new DefaultFutureListener<Void>());
-		f.set(null);
+		final AtomicInteger result = new AtomicInteger();
+		DirectExecutor.getInstance().execute(new Runnable()
+		{
+			@Override
+			public void run()
+			{
+				result.incrementAndGet();
+			}
+		});
+		AssertJUnit.assertEquals(1, result.get());
 	}
 
 	@Test
 	public void                     testFailure()
 	{
-		SettableFuture<Void> f = new SettableFuture<Void>();
-		f.addListener(new DefaultFutureListener<Void>());
-		f.setException(new TestingRuntimeException());
-	}
-
-	@Test
-	public void                     testCancel()
-	{
-		SettableFuture<Void> f = new SettableFuture<Void>();
-		f.addListener(new DefaultFutureListener<Void>());
-		f.cancel(true);
+		final AtomicInteger result = new AtomicInteger();
+		DirectExecutor.getInstance().execute(new Runnable() {
+			@Override
+			public void run() {
+				result.incrementAndGet();
+				throw new TestingRuntimeException();
+			}
+		});
+		AssertJUnit.assertEquals(1, result.get());
 	}
 }

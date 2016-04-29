@@ -136,6 +136,8 @@ public final class Futures
 	 *
 	 * @param futures
 	 *      dependent futures
+	 * @param <V>
+	 *      type of value
 	 *
 	 * @return
 	 *      future that will complete once all of {@code futures} complete
@@ -152,6 +154,8 @@ public final class Futures
 	 *
 	 * @param futures
 	 *      dependent futures
+	 * @param <V>
+	 *      type of value
 	 *
 	 * @return
 	 *      future that will complete once all of {@code futures} complete

@@ -972,6 +972,10 @@ public class AbstractFuture<V> implements ListenableFuture<V>
 		 *
 		 * @param last
 		 *      lastly registered listener
+		 * @param boundary
+		 * 	node to stop at
+		 * @param <V>
+		 *      type of value
 		 *
 		 * @return
 		 *      reversed list
@@ -1086,6 +1090,7 @@ public class AbstractFuture<V> implements ListenableFuture<V>
 	/**
 	 * Marker listener node, marking states of processing the listeners queue.
 	 * @param <V>
+	 *    	type of value
 	 */
 	protected static class MarkerListenerNode<V> extends ListenerNode<V>
 	{

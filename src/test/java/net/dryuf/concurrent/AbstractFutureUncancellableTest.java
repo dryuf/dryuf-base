@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package net.dryuf.concurrent.test;
+package net.dryuf.concurrent;
 
 
 import net.dryuf.concurrent.ListenableFutureTask;
 import net.dryuf.concurrent.ListeningExecutors;
-import org.junit.Assert;
-import org.junit.Test;
+import org.testng.AssertJUnit;
+import org.testng.annotations.Test;
 
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -30,7 +30,7 @@ import java.util.concurrent.TimeUnit;
 
 public class AbstractFutureUncancellableTest
 {
-	@Test(timeout = 1000)
+	@Test(timeOut = 1000)
 	public void                     testUncancellable() throws  InterruptedException
 	{
 		Executor executor = Executors.newSingleThreadExecutor();
@@ -63,15 +63,15 @@ public class AbstractFutureUncancellableTest
 		});
 		future.setUncancellable();
 		executor.execute(future);
-		Assert.assertEquals(0, (int) queue.take());
-		Assert.assertFalse(future.cancel(true));
-		Assert.assertEquals(1, (int)queue.take());
-		Assert.assertEquals(2, (int) queue.take());
-		Assert.assertEquals(3, (int)queue.take());
-		Assert.assertNull(queue.poll(10, TimeUnit.MILLISECONDS));
+		AssertJUnit.assertEquals(0, (int) queue.take());
+		AssertJUnit.assertFalse(future.cancel(true));
+		AssertJUnit.assertEquals(1, (int)queue.take());
+		AssertJUnit.assertEquals(2, (int) queue.take());
+		AssertJUnit.assertEquals(3, (int)queue.take());
+		AssertJUnit.assertNull(queue.poll(10, TimeUnit.MILLISECONDS));
 	}
 
-	@Test(timeout = 1000)
+	@Test(timeOut = 1000)
 	public void                     testUncancellableFinished() throws  InterruptedException
 	{
 		Executor executor = ListeningExecutors.directExecutor();
@@ -90,13 +90,13 @@ public class AbstractFutureUncancellableTest
 		});
 		executor.execute(future);
 		future.setUncancellable();
-		Assert.assertEquals(0, (int) queue.take());
-		Assert.assertFalse(future.cancel(true));
-		Assert.assertEquals(1, (int)queue.take());
-		Assert.assertNull(queue.poll(10, TimeUnit.MILLISECONDS));
+		AssertJUnit.assertEquals(0, (int) queue.take());
+		AssertJUnit.assertFalse(future.cancel(true));
+		AssertJUnit.assertEquals(1, (int)queue.take());
+		AssertJUnit.assertNull(queue.poll(10, TimeUnit.MILLISECONDS));
 	}
 
-	@Test(expected = IllegalStateException.class, timeout = 1000)
+	@Test(expectedExceptions = IllegalStateException.class, timeOut = 1000)
 	public void                     testUncancellableCancelled() throws  InterruptedException
 	{
 		ListenableFutureTask<Integer> future = new ListenableFutureTask<Integer>(new Runnable() {
@@ -104,7 +104,7 @@ public class AbstractFutureUncancellableTest
 			public void run() {
 			}
 		}, null);
-		Assert.assertTrue(future.cancel(true));
+		AssertJUnit.assertTrue(future.cancel(true));
 		future.setUncancellable();
 	}
 }

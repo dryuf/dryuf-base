@@ -14,19 +14,11 @@
  * limitations under the License.
  */
 
-package net.dryuf.concurrent.test;
+package net.dryuf.concurrent;
 
-import net.dryuf.concurrent.ListenableFuture;
-import net.dryuf.concurrent.ListeningExecutorService;
-import net.dryuf.concurrent.ListeningExecutors;
-import net.dryuf.concurrent.ListeningScheduledExecutorService;
-import org.junit.Assert;
-import org.junit.Test;
+import org.testng.AssertJUnit;
+import org.testng.annotations.Test;
 
-import java.util.concurrent.Callable;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -49,7 +41,7 @@ public class DirectExecutorServiceTest
 				result.incrementAndGet();
 			}
 		});
-		Assert.assertEquals(1, result.get());
+		AssertJUnit.assertEquals(1, result.get());
 	}
 
 	@Test
@@ -63,20 +55,20 @@ public class DirectExecutorServiceTest
 				throw new TestingRuntimeException();
 			}
 		});
-		Assert.assertEquals(1, result.get());
+		AssertJUnit.assertEquals(1, result.get());
 	}
 
 	@Test
 	public void			testLifecycle1() throws InterruptedException
 	{
 		ListeningExecutorService executor = getExecutor();
-		Assert.assertFalse(executor.isTerminated());
-		Assert.assertFalse(executor.isShutdown());
+		AssertJUnit.assertFalse(executor.isTerminated());
+		AssertJUnit.assertFalse(executor.isShutdown());
 		executor.shutdown();
 		executor.shutdownNow();
-		Assert.assertFalse(executor.isTerminated());
-		Assert.assertFalse(executor.isShutdown());
-		Assert.assertTrue(executor.awaitTermination(0, TimeUnit.MILLISECONDS));
+		AssertJUnit.assertFalse(executor.isTerminated());
+		AssertJUnit.assertFalse(executor.isShutdown());
+		AssertJUnit.assertTrue(executor.awaitTermination(0, TimeUnit.MILLISECONDS));
 	}
 
 	private static ListeningExecutorService getExecutor()

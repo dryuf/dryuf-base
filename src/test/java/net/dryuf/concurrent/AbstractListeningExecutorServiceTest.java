@@ -14,18 +14,12 @@
  * limitations under the License.
  */
 
-package net.dryuf.concurrent.test;
+package net.dryuf.concurrent;
 
-import net.dryuf.concurrent.DirectExecutor;
-import net.dryuf.concurrent.ListenableFuture;
-import net.dryuf.concurrent.ListeningExecutorService;
-import net.dryuf.concurrent.ListeningExecutors;
-import net.dryuf.concurrent.ListeningScheduledExecutorService;
-import org.junit.Assert;
-import org.junit.Test;
+import org.testng.AssertJUnit;
+import org.testng.annotations.Test;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
@@ -34,7 +28,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicInteger;
 
 
 /**
@@ -45,37 +38,37 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class AbstractListeningExecutorServiceTest
 {
-	@Test(timeout = 1000L)
+	@Test(timeOut = 1000L)
 	public void			testSubmitCallable() throws ExecutionException, InterruptedException
 	{
 		ListeningExecutorService executor = getExecutor();
 		try {
 			TestListener<Integer> test = new TestListener<Integer>();
-			Assert.assertEquals(1, (int) executor.submit(new Callable<Integer>() {
+			AssertJUnit.assertEquals(1, (int) executor.submit(new Callable<Integer>() {
 				@Override
 				public Integer call() throws Exception {
 					return 1;
 				}
 			}).addListener(test).get());
-			Assert.assertEquals(1, (int)(Integer)test.waitValue());
+			AssertJUnit.assertEquals(1, (int)(Integer)test.waitValue());
 		}
 		finally {
 			executor.shutdownNow();
 		}
 	}
 
-	@Test(timeout = 1000L)
+	@Test(timeOut = 1000L)
 	public void			testSubmitRunnableValue() throws ExecutionException, InterruptedException
 	{
 		ListeningExecutorService executor = getExecutor();
 		try {
 			TestListener<Integer> test = new TestListener<Integer>();
-			Assert.assertEquals(1, (int) executor.submit(new Runnable() {
+			AssertJUnit.assertEquals(1, (int) executor.submit(new Runnable() {
 				@Override
 				public void run() {
 				}
 			}, 1).addListener(test).get());
-			Assert.assertEquals(1, (int)(Integer)test.waitValue());
+			AssertJUnit.assertEquals(1, (int)(Integer)test.waitValue());
 		}
 		finally {
 			executor.shutdownNow();
@@ -83,25 +76,25 @@ public class AbstractListeningExecutorServiceTest
 	}
 
 	@SuppressWarnings("unchecked")
-	@Test(timeout = 1000L)
+	@Test(timeOut = 1000L)
 	public void			testSubmitRunnableWithout() throws ExecutionException, InterruptedException
 	{
 		ListeningExecutorService executor = getExecutor();
 		try {
 			TestListener<Object> test = new TestListener<Object>();
-			Assert.assertNull(((ListenableFuture<Object>)executor.submit(new Runnable() {
+			AssertJUnit.assertNull(((ListenableFuture<Object>)executor.submit(new Runnable() {
 				@Override
 				public void run() {
 				}
 			})).addListener(test).get());
-			Assert.assertNull(test.waitValue());
+			AssertJUnit.assertNull(test.waitValue());
 		}
 		finally {
 			executor.shutdownNow();
 		}
 	}
 
-	@Test(timeout = 1000L)
+	@Test(timeOut = 1000L)
 	public void			testInvokeAll() throws InterruptedException, ExecutionException
 	{
 		ListeningExecutorService executor = getExecutor();
@@ -122,17 +115,17 @@ public class AbstractListeningExecutorServiceTest
 						}
 					}
 			));
-			Assert.assertTrue(futures.get(0) instanceof ListenableFuture);
-			Assert.assertTrue(futures.get(1) instanceof ListenableFuture);
-			Assert.assertEquals(0, (int)futures.get(0).get());
-			Assert.assertEquals(1, (int)futures.get(1).get());
+			AssertJUnit.assertTrue(futures.get(0) instanceof ListenableFuture);
+			AssertJUnit.assertTrue(futures.get(1) instanceof ListenableFuture);
+			AssertJUnit.assertEquals(0, (int)futures.get(0).get());
+			AssertJUnit.assertEquals(1, (int)futures.get(1).get());
 		}
 		finally {
 			executor.shutdownNow();
 		}
 	}
 
-	@Test(timeout = 1000L)
+	@Test(timeOut = 1000L)
 	public void			testInvokeAllTimed() throws InterruptedException, ExecutionException
 	{
 		ListeningExecutorService executor = getExecutor();
@@ -153,17 +146,17 @@ public class AbstractListeningExecutorServiceTest
 						}
 					}
 			), 1000, TimeUnit.MILLISECONDS);
-			Assert.assertTrue(futures.get(0) instanceof ListenableFuture);
-			Assert.assertTrue(futures.get(1) instanceof ListenableFuture);
-			Assert.assertEquals(0, (int)futures.get(0).get());
-			Assert.assertEquals(1, (int)futures.get(1).get());
+			AssertJUnit.assertTrue(futures.get(0) instanceof ListenableFuture);
+			AssertJUnit.assertTrue(futures.get(1) instanceof ListenableFuture);
+			AssertJUnit.assertEquals(0, (int)futures.get(0).get());
+			AssertJUnit.assertEquals(1, (int)futures.get(1).get());
 		}
 		finally {
 			executor.shutdownNow();
 		}
 	}
 
-	@Test(timeout = 1000L)
+	@Test(timeOut = 1000L)
 	public void			testInvokeAllTimeout() throws InterruptedException, ExecutionException
 	{
 		ListeningExecutorService executor = getExecutor();
@@ -185,10 +178,10 @@ public class AbstractListeningExecutorServiceTest
 						}
 					}
 			), 10, TimeUnit.MILLISECONDS);
-			Assert.assertTrue(futures.get(0) instanceof ListenableFuture);
-			Assert.assertTrue(futures.get(1) instanceof ListenableFuture);
-			Assert.assertTrue(futures.get(0).isCancelled());
-			Assert.assertEquals(1, (int)futures.get(1).get());
+			AssertJUnit.assertTrue(futures.get(0) instanceof ListenableFuture);
+			AssertJUnit.assertTrue(futures.get(1) instanceof ListenableFuture);
+			AssertJUnit.assertTrue(futures.get(0).isCancelled());
+			AssertJUnit.assertEquals(1, (int)futures.get(1).get());
 		}
 		finally {
 			executor.shutdownNow();
@@ -196,13 +189,13 @@ public class AbstractListeningExecutorServiceTest
 	}
 
 	@SuppressWarnings("unchecked")
-	@Test(timeout = 1000L)
+	@Test(timeOut = 1000L)
 	public void			testInvokeAny() throws InterruptedException, TimeoutException, ExecutionException
 	{
 		ListeningExecutorService executor = getExecutor();
 		try {
 			int i = 0;
-			Assert.assertEquals(0, (int)executor.invokeAny(Arrays.asList(
+			AssertJUnit.assertEquals(0, (int)executor.invokeAny(Arrays.asList(
 					new Callable<Integer>() {
 						@Override
 						public Integer call() throws Exception {
@@ -225,13 +218,13 @@ public class AbstractListeningExecutorServiceTest
 	}
 
 	@SuppressWarnings("unchecked")
-	@Test(timeout = 1000L)
+	@Test(timeOut = 1000L)
 	public void			testInvokeAnyTimed() throws InterruptedException, TimeoutException, ExecutionException
 	{
 		ListeningExecutorService executor = getExecutor();
 		try {
 			int i = 0;
-			Assert.assertEquals(0, (int)executor.invokeAny(Arrays.asList(
+			AssertJUnit.assertEquals(0, (int)executor.invokeAny(Arrays.asList(
 					new Callable<Integer>() {
 						@Override
 						public Integer call() throws Exception {
@@ -254,13 +247,13 @@ public class AbstractListeningExecutorServiceTest
 	}
 
 	@SuppressWarnings("unchecked")
-	@Test(expected = TimeoutException.class, timeout = 1000L)
+	@Test(expectedExceptions = TimeoutException.class, timeOut = 1000L)
 	public void			testInvokeAnyTimeout() throws InterruptedException, TimeoutException, ExecutionException
 	{
 		ListeningExecutorService executor = getExecutor();
 		try {
 			int i = 0;
-			Assert.assertEquals(0, (int)executor.invokeAny(Arrays.asList(
+			AssertJUnit.assertEquals(0, (int)executor.invokeAny(Arrays.asList(
 					new Callable<Integer>() {
 						@Override
 						public Integer call() throws Exception {
@@ -284,7 +277,7 @@ public class AbstractListeningExecutorServiceTest
 	}
 
 	@SuppressWarnings("unchecked")
-	@Test(expected = ExecutionException.class, timeout = 1000L)
+	@Test(expectedExceptions = ExecutionException.class, timeOut = 1000L)
 	public void			testInvokeAnyExcepted() throws InterruptedException, TimeoutException, ExecutionException
 	{
 		ListeningExecutorService executor = getExecutor();
@@ -308,7 +301,7 @@ public class AbstractListeningExecutorServiceTest
 						}
 					}
 			));
-			Assert.fail("Unreachable, should throw TestingRuntimeException");
+			AssertJUnit.fail("Unreachable, should throw TestingRuntimeException");
 		}
 		finally {
 			executor.shutdown();
@@ -316,7 +309,7 @@ public class AbstractListeningExecutorServiceTest
 		}
 	}
 
-	@Test(expected = CancellationException.class, timeout = 1000L)
+	@Test(expectedExceptions = CancellationException.class, timeOut = 1000L)
 	public void			testShutdownCancelling() throws ExecutionException, InterruptedException
 	{
 		ListeningExecutorService executor = getExecutor();
@@ -332,10 +325,10 @@ public class AbstractListeningExecutorServiceTest
 			executor.shutdownCancelling();
 			try {
 				future.get();
-				Assert.fail("get() should have thrown an CancellationException");
+				AssertJUnit.fail("get() should have thrown an CancellationException");
 			}
 			catch (ExecutionException ex) {
-				Assert.fail("get() should have thrown an CancellationException");
+				AssertJUnit.fail("get() should have thrown an CancellationException");
 			}
 		}
 		finally {

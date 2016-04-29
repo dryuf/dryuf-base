@@ -14,22 +14,15 @@
  * limitations under the License.
  */
 
-package net.dryuf.concurrent.test;
+package net.dryuf.concurrent;
 
-import net.dryuf.concurrent.ListenableFuture;
-import net.dryuf.concurrent.ListenableScheduledFuture;
-import net.dryuf.concurrent.ListeningExecutors;
-import net.dryuf.concurrent.ListeningScheduledExecutorService;
-import net.dryuf.concurrent.OneShotScheduledFutureTask;
-import net.dryuf.concurrent.RepeatingScheduledFutureTask;
-import org.junit.Assert;
-import org.junit.Test;
+import org.testng.AssertJUnit;
+import org.testng.annotations.Test;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -43,7 +36,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class ForwardingListeningScheduledExecutorServiceTest
 {
-	@Test(timeout = 1000L)
+	@Test(timeOut = 1000L)
 	public void                     testExecute() throws InterruptedException
 	{
 		ListeningScheduledExecutorService executor = getExecutor();
@@ -63,7 +56,7 @@ public class ForwardingListeningScheduledExecutorServiceTest
 				});
 				result.wait();
 			}
-			Assert.assertEquals(1, result.get());
+			AssertJUnit.assertEquals(1, result.get());
 		}
 		finally {
 			executor.shutdownCancelling();
@@ -71,7 +64,7 @@ public class ForwardingListeningScheduledExecutorServiceTest
 	}
 
 	@SuppressWarnings("unchecked")
-	@Test(timeout = 1000L)
+	@Test(timeOut = 1000L)
 	public void                     testScheduleRunnableNone() throws InterruptedException, ExecutionException
 	{
 		ListeningScheduledExecutorService executor = getExecutor();
@@ -93,15 +86,15 @@ public class ForwardingListeningScheduledExecutorServiceTest
 			}
 			future.addListener(listener);
 			future.get();
-			Assert.assertEquals(1, result.get());
-			Assert.assertNull(listener.waitValue());
+			AssertJUnit.assertEquals(1, result.get());
+			AssertJUnit.assertNull(listener.waitValue());
 		}
 		finally {
 			executor.shutdownCancelling();
 		}
 	}
 
-	@Test(timeout = 1000L)
+	@Test(timeOut = 1000L)
 	public void                     testScheduleRunnableResult() throws InterruptedException, ExecutionException
 	{
 		ListeningScheduledExecutorService executor = getExecutor();
@@ -122,16 +115,16 @@ public class ForwardingListeningScheduledExecutorServiceTest
 				result.wait();
 			}
 			future.addListener(listener);
-			Assert.assertEquals(1, (int) future.get());
-			Assert.assertEquals(1, result.get());
-			Assert.assertEquals(1, listener.waitValue());
+			AssertJUnit.assertEquals(1, (int) future.get());
+			AssertJUnit.assertEquals(1, result.get());
+			AssertJUnit.assertEquals(1, listener.waitValue());
 		}
 		finally {
 			executor.shutdownCancelling();
 		}
 	}
 
-	@Test(timeout = 1000L)
+	@Test(timeOut = 1000L)
 	public void                     testScheduleCallable() throws InterruptedException, ExecutionException
 	{
 		ListeningScheduledExecutorService executor = getExecutor();
@@ -153,9 +146,9 @@ public class ForwardingListeningScheduledExecutorServiceTest
 				result.wait();
 			}
 			future.addListener(listener);
-			Assert.assertEquals(1, (int)future.get());
-			Assert.assertEquals(1, result.get());
-			Assert.assertEquals(1, listener.waitValue());
+			AssertJUnit.assertEquals(1, (int)future.get());
+			AssertJUnit.assertEquals(1, result.get());
+			AssertJUnit.assertEquals(1, listener.waitValue());
 		}
 		finally {
 			executor.shutdownCancelling();
@@ -163,7 +156,7 @@ public class ForwardingListeningScheduledExecutorServiceTest
 	}
 
 	@SuppressWarnings("unchecked")
-	@Test(expected = CancellationException.class, timeout = 1000L)
+	@Test(expectedExceptions = CancellationException.class, timeOut = 1000L)
 	public void                     testScheduleAtFixedRate() throws InterruptedException, ExecutionException
 	{
 		ListeningScheduledExecutorService executor = getExecutor();
@@ -185,12 +178,12 @@ public class ForwardingListeningScheduledExecutorServiceTest
 						}
 					}
 				}, 1L, 1L, TimeUnit.MILLISECONDS);
-				Assert.assertTrue(future.getDelay(TimeUnit.MILLISECONDS) <= 1);
+				AssertJUnit.assertTrue(future.getDelay(TimeUnit.MILLISECONDS) <= 1);
 				result.wait();
-				Assert.assertEquals(1, result.get());
+				AssertJUnit.assertEquals(1, result.get());
 				sem.release();
 				result.wait();
-				Assert.assertEquals(2, result.get());
+				AssertJUnit.assertEquals(2, result.get());
 				sem.release();
 				future.setDelayedCancel();
 				future.cancel(true);
@@ -198,10 +191,10 @@ public class ForwardingListeningScheduledExecutorServiceTest
 			future.addListener(listener);
 			try {
 				future.get();
-				Assert.fail("Expected CancellationException");
+				AssertJUnit.fail("Expected CancellationException");
 			}
 			finally {
-				Assert.assertTrue(listener.waitValue() instanceof CancellationException);
+				AssertJUnit.assertTrue(listener.waitValue() instanceof CancellationException);
 			}
 		}
 		finally {
@@ -210,7 +203,7 @@ public class ForwardingListeningScheduledExecutorServiceTest
 	}
 
 	@SuppressWarnings("unchecked")
-	@Test(expected = ExecutionException.class, timeout = 1000000L)
+	@Test(expectedExceptions = ExecutionException.class, timeOut = 1000000L)
 	public void                     testScheduleAtFixedRateExcepted() throws InterruptedException, ExecutionException
 	{
 		ListeningScheduledExecutorService executor = getExecutor();
@@ -238,22 +231,22 @@ public class ForwardingListeningScheduledExecutorServiceTest
 					}
 				}, 10000L, 10000L, TimeUnit.MILLISECONDS);
 				future.compareTo(longTermFuture); // dont test result as it is implementation specific
-				Assert.assertTrue(future.getDelay(TimeUnit.MILLISECONDS) <= 1);
+				AssertJUnit.assertTrue(future.getDelay(TimeUnit.MILLISECONDS) <= 1);
 				result.wait();
-				Assert.assertEquals(1, result.get());
+				AssertJUnit.assertEquals(1, result.get());
 				sem.release();
 				result.wait();
-				Assert.assertEquals(2, result.get());
+				AssertJUnit.assertEquals(2, result.get());
 				sem.release();
-				Assert.assertFalse(longTermFuture.isDone());
+				AssertJUnit.assertFalse(longTermFuture.isDone());
 			}
 			future.addListener(listener);
 			try {
 				future.get();
-				Assert.fail("Expected ExecutionException");
+				AssertJUnit.fail("Expected ExecutionException");
 			}
 			finally {
-				Assert.assertTrue(listener.waitValue() instanceof TestingRuntimeException);
+				AssertJUnit.assertTrue(listener.waitValue() instanceof TestingRuntimeException);
 			}
 		}
 		finally {
@@ -262,7 +255,7 @@ public class ForwardingListeningScheduledExecutorServiceTest
 	}
 
 	@SuppressWarnings("unchecked")
-	@Test(expected = CancellationException.class, timeout = 1000L)
+	@Test(expectedExceptions = CancellationException.class, timeOut = 1000L)
 	public void                     testScheduleWithFixedDelay() throws InterruptedException, ExecutionException
 	{
 		ListeningScheduledExecutorService executor = getExecutor();
@@ -284,12 +277,12 @@ public class ForwardingListeningScheduledExecutorServiceTest
 						}
 					}
 				}, 0L, 1L, TimeUnit.MILLISECONDS);
-				Assert.assertTrue(future.getDelay(TimeUnit.MILLISECONDS) <= 1);
+				AssertJUnit.assertTrue(future.getDelay(TimeUnit.MILLISECONDS) <= 1);
 				result.wait();
-				Assert.assertEquals(1, result.get());
+				AssertJUnit.assertEquals(1, result.get());
 				sem.release();
 				result.wait();
-				Assert.assertEquals(2, result.get());
+				AssertJUnit.assertEquals(2, result.get());
 				sem.release();
 				future.setDelayedCancel();
 				future.cancel(true);
@@ -297,10 +290,10 @@ public class ForwardingListeningScheduledExecutorServiceTest
 			future.addListener(listener);
 			try {
 				future.get();
-				Assert.fail("Expected CancellationException");
+				AssertJUnit.fail("Expected CancellationException");
 			}
 			finally {
-				Assert.assertTrue(listener.waitValue() instanceof CancellationException);
+				AssertJUnit.assertTrue(listener.waitValue() instanceof CancellationException);
 			}
 		}
 		finally {
@@ -309,7 +302,7 @@ public class ForwardingListeningScheduledExecutorServiceTest
 	}
 
 	@SuppressWarnings("unchecked")
-	@Test(expected = ExecutionException.class, timeout = 1000L)
+	@Test(expectedExceptions = ExecutionException.class, timeOut = 1000L)
 	public void                     testScheduleWithFixedDelayExcepted() throws InterruptedException, ExecutionException
 	{
 		ListeningScheduledExecutorService executor = getExecutor();
@@ -332,21 +325,21 @@ public class ForwardingListeningScheduledExecutorServiceTest
 						}
 					}
 				}, 0L, 1L, TimeUnit.MILLISECONDS);
-				Assert.assertTrue(future.getDelay(TimeUnit.MILLISECONDS) <= 1);
+				AssertJUnit.assertTrue(future.getDelay(TimeUnit.MILLISECONDS) <= 1);
 				result.wait();
-				Assert.assertEquals(1, result.get());
+				AssertJUnit.assertEquals(1, result.get());
 				sem.release();
 				result.wait();
-				Assert.assertEquals(2, result.get());
+				AssertJUnit.assertEquals(2, result.get());
 				sem.release();
 			}
 			future.addListener(listener);
 			try {
 				future.get();
-				Assert.fail("Expected ExecutionException");
+				AssertJUnit.fail("Expected ExecutionException");
 			}
 			finally {
-				Assert.assertTrue(listener.waitValue() instanceof TestingRuntimeException);
+				AssertJUnit.assertTrue(listener.waitValue() instanceof TestingRuntimeException);
 			}
 		}
 		finally {
@@ -355,7 +348,7 @@ public class ForwardingListeningScheduledExecutorServiceTest
 	}
 
 	@SuppressWarnings("unchecked")
-	@Test(timeout = 1000L)
+	@Test(timeOut = 1000L)
 	public void                     testShutdownCancelling() throws InterruptedException, ExecutionException
 	{
 		ListeningScheduledExecutorService executor = getExecutor();
@@ -401,17 +394,17 @@ public class ForwardingListeningScheduledExecutorServiceTest
 			executor.shutdownCancelling();
 			try {
 				f0.get();
-				Assert.fail("Expected ExecutionException");
+				AssertJUnit.fail("Expected ExecutionException");
 			}
 			catch (CancellationException ex) {
-				Assert.assertTrue(t0.waitValue() instanceof CancellationException);
+				AssertJUnit.assertTrue(t0.waitValue() instanceof CancellationException);
 			}
 			try {
 				f1.get();
-				Assert.fail("Expected ExecutionException");
+				AssertJUnit.fail("Expected ExecutionException");
 			}
 			catch (CancellationException ex) {
-				Assert.assertTrue(t1.waitValue() instanceof CancellationException);
+				AssertJUnit.assertTrue(t1.waitValue() instanceof CancellationException);
 			}
 		}
 		finally {

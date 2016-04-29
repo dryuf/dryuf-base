@@ -1,3 +1,19 @@
+/*
+ * Copyright 2015 Zbynek Vyskovsky mailto:kvr000@gmail.com http://kvr.znj.cz/ http://github.com/kvr000/
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package net.dryuf.concurrent.collection;
 
 import java.util.LinkedHashMap;
@@ -19,6 +35,9 @@ import java.util.function.Function;
  *      type of expected result
  *
  * @apiNote thread safe
+ *
+ * @author
+ * 	Zbynek Vyskovsky, mailto:kvr000@gmail.com http://kvr.znj.cz/software/java/ListenableFuture/ http://github.com/kvr000
  */
 public class TypeDelegatingFunction<T, R> implements Function<T, R>
 {
@@ -32,7 +51,27 @@ public class TypeDelegatingFunction<T, R> implements Function<T, R>
 			Map<Class<? extends T>, Function<? super T, ? extends R>> callbacks
 	)
 	{
-		this.initialCallbacks = callbacks;
+		this((Class<? extends T> clazz) -> {
+			for (Map.Entry<Class<? extends T>, Function<? super T, ? extends R>> callback: callbacks.entrySet()) {
+				if (callback.getKey().isAssignableFrom(clazz)) {
+					return callback.getValue();
+				}
+			}
+			throw new IllegalArgumentException("Class unsupported by this caller: "+clazz);
+		});
+	}
+
+	/**
+	 * Creates new instance of {@link TypeDelegatingFunction}, initialized by list of callbacks.
+	 *
+	 * @param callbacksProvider
+	 * 	callback to provide processing callback based on the input class
+	 */
+	public				TypeDelegatingFunction(
+			Function<Class<? extends T>, Function<? super T, ? extends R>> callbacksProvider
+	)
+	{
+		this.typedCallbacks = new LazilyBuiltLoadingCache<>(callbacksProvider);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -113,18 +152,5 @@ public class TypeDelegatingFunction<T, R> implements Function<T, R>
 		private Map<Class<? extends T>, Function<? super T, ? extends R>> callbacks = new LinkedHashMap<>();
 	}
 
-	private Function<? super T, ? extends R> mapper(Class<? extends T> clazz)
-	{
-		for (Map.Entry<Class<? extends T>, Function<? super T, ? extends R>> callback: initialCallbacks.entrySet()) {
-			if (callback.getKey().isAssignableFrom(clazz)) {
-				return callback.getValue();
-			}
-		}
-		throw new IllegalArgumentException("Class unsupported by this caller: "+clazz);
-	}
-
-	private final Map<Class<? extends T>, Function<? super T, ? extends R>> initialCallbacks;
-
-	private final Function<Class<? extends T>, Function<? super T, ? extends R>> typedCallbacks
-			= new LazilyBuiltLoadingCache<>(this::mapper);
+	private final Function<Class<? extends T>, Function<? super T, ? extends R>> typedCallbacks;
 }

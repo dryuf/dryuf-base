@@ -14,20 +14,10 @@
  * limitations under the License.
  */
 
-package net.dryuf.concurrent.test;
+package net.dryuf.concurrent;
 
-
-import net.dryuf.concurrent.DefaultFutureListener;
-import net.dryuf.concurrent.CancelListener;
-import net.dryuf.concurrent.FailureListener;
-import net.dryuf.concurrent.FutureListener;
-import net.dryuf.concurrent.FutureNotifier;
-import net.dryuf.concurrent.ListenableFuture;
-import net.dryuf.concurrent.ListeningExecutors;
-import net.dryuf.concurrent.SettableFuture;
-import net.dryuf.concurrent.SuccessListener;
-import org.junit.Assert;
-import org.junit.Test;
+import org.testng.AssertJUnit;
+import org.testng.annotations.Test;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Future;
@@ -36,7 +26,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 public class AbstractFutureListenerTest
 {
-	@Test(timeout = 1000L)
+	@Test(timeOut = 1000L)
 	public void                     testListenersSet()
 	{
 		final BlockingQueue<Integer> queue = new LinkedBlockingQueue<Integer>();
@@ -101,19 +91,19 @@ public class AbstractFutureListenerTest
 		}, null, null, ListeningExecutors.directExecutor());
 		queue.add(0);
 		future.set(null);
-		Assert.assertEquals(0, (int)queue.remove());
-		Assert.assertEquals(1, (int)queue.remove());
-		Assert.assertEquals(2, (int)queue.remove());
-		Assert.assertEquals(3, (int)queue.remove());
-		Assert.assertEquals(4, (int)queue.remove());
-		Assert.assertEquals(11, (int)queue.remove());
-		Assert.assertEquals(12, (int)queue.remove());
-		Assert.assertEquals(13, (int)queue.remove());
-		Assert.assertEquals(14, (int)queue.remove());
-		Assert.assertNull(queue.poll());
+		AssertJUnit.assertEquals(0, (int)queue.remove());
+		AssertJUnit.assertEquals(1, (int)queue.remove());
+		AssertJUnit.assertEquals(2, (int)queue.remove());
+		AssertJUnit.assertEquals(3, (int)queue.remove());
+		AssertJUnit.assertEquals(4, (int)queue.remove());
+		AssertJUnit.assertEquals(11, (int)queue.remove());
+		AssertJUnit.assertEquals(12, (int)queue.remove());
+		AssertJUnit.assertEquals(13, (int)queue.remove());
+		AssertJUnit.assertEquals(14, (int)queue.remove());
+		AssertJUnit.assertNull(queue.poll());
 	}
 
-	@Test(timeout = 1000L)
+	@Test(timeOut = 1000L)
 	public void                     testListenersExcepted()
 	{
 		final BlockingQueue<Integer> queue = new LinkedBlockingQueue<Integer>();
@@ -178,19 +168,19 @@ public class AbstractFutureListenerTest
 		}, null, ListeningExecutors.directExecutor());
 		queue.add(0);
 		future.setException(new NumberFormatException());
-		Assert.assertEquals(0, (int)queue.remove());
-		Assert.assertEquals(1, (int)queue.remove());
-		Assert.assertEquals(2, (int)queue.remove());
-		Assert.assertEquals(3, (int)queue.remove());
-		Assert.assertEquals(4, (int)queue.remove());
-		Assert.assertEquals(11, (int)queue.remove());
-		Assert.assertEquals(12, (int)queue.remove());
-		Assert.assertEquals(13, (int)queue.remove());
-		Assert.assertEquals(14, (int)queue.remove());
-		Assert.assertNull(queue.poll());
+		AssertJUnit.assertEquals(0, (int)queue.remove());
+		AssertJUnit.assertEquals(1, (int)queue.remove());
+		AssertJUnit.assertEquals(2, (int)queue.remove());
+		AssertJUnit.assertEquals(3, (int)queue.remove());
+		AssertJUnit.assertEquals(4, (int)queue.remove());
+		AssertJUnit.assertEquals(11, (int)queue.remove());
+		AssertJUnit.assertEquals(12, (int)queue.remove());
+		AssertJUnit.assertEquals(13, (int)queue.remove());
+		AssertJUnit.assertEquals(14, (int)queue.remove());
+		AssertJUnit.assertNull(queue.poll());
 	}
 
-	@Test(timeout = 1000L)
+	@Test(timeOut = 1000L)
 	public void                     testListenersCancelled()
 	{
 		final BlockingQueue<Integer> queue = new LinkedBlockingQueue<Integer>();
@@ -255,16 +245,16 @@ public class AbstractFutureListenerTest
 		}, ListeningExecutors.directExecutor());
 		queue.add(0);
 		future.cancel(true);
-		Assert.assertEquals(0, (int)queue.remove());
-		Assert.assertEquals(1, (int)queue.remove());
-		Assert.assertEquals(2, (int)queue.remove());
-		Assert.assertEquals(3, (int)queue.remove());
-		Assert.assertEquals(4, (int)queue.remove());
-		Assert.assertEquals(11, (int)queue.remove());
-		Assert.assertEquals(12, (int)queue.remove());
-		Assert.assertEquals(13, (int)queue.remove());
-		Assert.assertEquals(14, (int)queue.remove());
-		Assert.assertNull(queue.poll());
+		AssertJUnit.assertEquals(0, (int)queue.remove());
+		AssertJUnit.assertEquals(1, (int)queue.remove());
+		AssertJUnit.assertEquals(2, (int)queue.remove());
+		AssertJUnit.assertEquals(3, (int)queue.remove());
+		AssertJUnit.assertEquals(4, (int)queue.remove());
+		AssertJUnit.assertEquals(11, (int)queue.remove());
+		AssertJUnit.assertEquals(12, (int)queue.remove());
+		AssertJUnit.assertEquals(13, (int)queue.remove());
+		AssertJUnit.assertEquals(14, (int)queue.remove());
+		AssertJUnit.assertNull(queue.poll());
 	}
 
 	@Test

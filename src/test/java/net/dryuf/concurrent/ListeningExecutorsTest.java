@@ -14,25 +14,16 @@
  * limitations under the License.
  */
 
-package net.dryuf.concurrent.test;
+package net.dryuf.concurrent;
 
-import net.dryuf.concurrent.ListenableFuture;
 import net.dryuf.concurrent.ListeningExecutorService;
 import net.dryuf.concurrent.ListeningExecutors;
 import net.dryuf.concurrent.ListeningScheduledExecutorService;
-import org.junit.Assert;
-import org.junit.Test;
+import org.testng.AssertJUnit;
+import org.testng.annotations.Test;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 
 /**
@@ -48,7 +39,7 @@ public class ListeningExecutorsTest
 	{
 		ListeningExecutorService executor = ListeningExecutors.listeningDecorator(Executors.newCachedThreadPool());
 		try {
-			//Assert.assertTrue(executor instanceof ListeningExecutorService);
+			//AssertJUnit.assertTrue(executor instanceof ListeningExecutorService);
 		}
 		finally {
 			executor.shutdownNow();
@@ -60,7 +51,7 @@ public class ListeningExecutorsTest
 	{
 		ListeningExecutorService executor = ListeningExecutors.listeningDecorator((ExecutorService)Executors.newScheduledThreadPool(1));
 		try {
-			Assert.assertTrue(executor instanceof ListeningScheduledExecutorService);
+			AssertJUnit.assertTrue(executor instanceof ListeningScheduledExecutorService);
 		}
 		finally {
 			executor.shutdownNow();
@@ -72,7 +63,7 @@ public class ListeningExecutorsTest
 	{
 		ListeningScheduledExecutorService executor = ListeningExecutors.listeningDecorator(Executors.newScheduledThreadPool(1));
 		try {
-			//Assert.assertTrue(executor instanceof ListeningScheduledExecutorService);
+			//AssertJUnit.assertTrue(executor instanceof ListeningScheduledExecutorService);
 		}
 		finally {
 			executor.shutdownNow();
@@ -82,13 +73,13 @@ public class ListeningExecutorsTest
 	@Test
 	public void			testDirectExecutor()
 	{
-		Assert.assertNotNull(ListeningExecutors.directExecutor());
+		AssertJUnit.assertNotNull(ListeningExecutors.directExecutor());
 	}
 
 
 	@Test
 	public void			testRejectingExecutor()
 	{
-		Assert.assertNotNull(ListeningExecutors.rejectingExecutor());
+		AssertJUnit.assertNotNull(ListeningExecutors.rejectingExecutor());
 	}
 }

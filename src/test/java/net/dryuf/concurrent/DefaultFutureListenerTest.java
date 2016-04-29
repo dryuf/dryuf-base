@@ -14,50 +14,40 @@
  * limitations under the License.
  */
 
-package net.dryuf.concurrent.test;
+package net.dryuf.concurrent;
 
-import net.dryuf.concurrent.DirectExecutor;
-import net.dryuf.concurrent.DirectExecutorService;
-import org.junit.Assert;
-import org.junit.Test;
-
-import java.util.concurrent.atomic.AtomicInteger;
+import org.testng.annotations.Test;
 
 
 /**
- * Tests for {@link DirectExecutor} class.
+ * Tests for {@link DefaultFutureListener} class.
  *
  * @author
  * 	Zbynek Vyskovsky, mailto:kvr000@gmail.com http://kvr.znj.cz/software/java/ListenableFuture/ http://github.com/kvr000
  */
-public class DirectExecutorTest
+public class DefaultFutureListenerTest
 {
 	@Test
 	public void                     testSuccess()
 	{
-		final AtomicInteger result = new AtomicInteger();
-		DirectExecutor.getInstance().execute(new Runnable()
-		{
-			@Override
-			public void run()
-			{
-				result.incrementAndGet();
-			}
-		});
-		Assert.assertEquals(1, result.get());
+		SettableFuture<Void> f = new SettableFuture<Void>();
+		f.addListener(new DefaultFutureListener<Void>());
+		f.set(null);
 	}
 
 	@Test
 	public void                     testFailure()
 	{
-		final AtomicInteger result = new AtomicInteger();
-		DirectExecutor.getInstance().execute(new Runnable() {
-			@Override
-			public void run() {
-				result.incrementAndGet();
-				throw new TestingRuntimeException();
-			}
-		});
-		Assert.assertEquals(1, result.get());
+		SettableFuture<Void> f = new SettableFuture<Void>();
+		f.addListener(new DefaultFutureListener<Void>());
+		f.setException(new TestingRuntimeException());
+	}
+
+	@Test
+	public void                     testCancel()
+	{
+		SettableFuture<Void> f = new SettableFuture<Void>();
+		f.addListener(new DefaultFutureListener<Void>());
+		f.cancel(true);
 	}
 }
