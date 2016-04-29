@@ -38,6 +38,8 @@ public class RepeatingScheduledFutureTask<V> extends OneShotScheduledFutureTask<
 	 *
 	 * @param runnable
 	 * 	function to run
+	 * @param result
+	 * 	result of future
 	 */
 	public                          RepeatingScheduledFutureTask(final Runnable runnable, V result)
 	{

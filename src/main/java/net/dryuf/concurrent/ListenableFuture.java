@@ -65,6 +65,8 @@ public interface ListenableFuture<V> extends Future<V>
 	 *
 	 * @param listener
 	 * 	listener to be called when future is done, getting the {@link Future} as a parameter
+	 * @param <FT>
+	 * 	type of future
 	 *
 	 * @return this instance
 	 */
@@ -119,6 +121,8 @@ public interface ListenableFuture<V> extends Future<V>
 	 * 	listener to be called when future is done, getting the {@link Future} as a parameter
 	 * @param executor
 	 *      executor which will execute listener
+	 * @param <FT>
+	 * 	type of future
 	 *
 	 * @return this instance
 	 */
