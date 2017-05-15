@@ -6,6 +6,16 @@ The project implements java concurrent (Listenable) Future in very cheap and fle
 
 The performance is for obvious reasons (additional support of listeners) slightly lower than original JDK Future but significantly higher than similar implementations in Guava and Spring.
 
+### Release
+
+```
+<dependency>
+	<groupId>net.dryuf</groupId>
+	<artifactId>dryuf-concurrent</artifactId>
+	<version>1.0.0</version>
+</dependency>
+```
+
 ### Flexibility
 
 Additionally it solves several design issues from which suffer Guava and Spring implementations:
