@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Zbynek Vyskovsky mailto:kvr@centrum.cz http://kvr.znj.cz/ http://github.com/kvr000/
+ * Copyright 2015 Zbynek Vyskovsky mailto:kvr000@gmail.com http://kvr.znj.cz/ http://github.com/kvr000/
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,91 +25,95 @@ import org.openjdk.jmh.annotations.Warmup;
 import org.springframework.util.concurrent.ListenableFutureCallback;
 
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 
-public class MixedListenerBenchmark
+public class DoublePreListenerAsyncBenchmark
 {
 	public static final int         WARMUP_ITERATIONS = BenchmarkSupport.WARMUP_ITERATIONS;
 	public static final int         COUNT = BenchmarkSupport.COUNT;
 
+	@SuppressWarnings("unchecked")
 	@Benchmark
 	@Warmup(iterations = WARMUP_ITERATIONS)
 	@Measurement(iterations = 2, batchSize = 1)
 	@Fork(warmups = 1, value = 1)
 	public void                     benchmarkJdk() throws Exception
 	{
-		for (long i = 0; i < COUNT; ++i) {
-			FutureTask<Integer> future = new FutureTask<Integer>(() -> {
-				return 0;
-			});
-			future.run();
-			future.get();
+		FutureTask[] array = BenchmarkSupport.populateJdkFutureArray(COUNT);
+		for (FutureTask<Integer> f: array) {
+			// nothing to add, no listenable
+		}
+		BenchmarkSupport.threadedRunFutures(array);
+		for (FutureTask<Integer> f: array) {
+			f.get();
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	@Benchmark
 	@Warmup(iterations = WARMUP_ITERATIONS)
-	@Measurement(iterations = 1, batchSize = 1)
+	@Measurement(iterations = 2, batchSize = 1)
 	@Fork(warmups = 1, value = 1)
 	public void                     benchmarkLwFuture() throws ExecutionException, InterruptedException
 	{
-		for (long i = 0; i < COUNT; ++i) {
-			net.dryuf.concurrent.ListenableFutureTask<Integer> future = new net.dryuf.concurrent.ListenableFutureTask<Integer>(() -> {
-				return 0;
-			});
-			future.addListener(new DefaultFutureListener<Integer>());
-			future.run();
-			future.addListener(new DefaultFutureListener<Integer>());
+		net.dryuf.concurrent.ListenableFutureTask[] array = BenchmarkSupport.populateLwFutureArray(COUNT);
+		for (net.dryuf.concurrent.ListenableFutureTask f: array) {
+			f.addListener(new DefaultFutureListener<Integer>());
+			f.addListener(new DefaultFutureListener<Integer>());
 		}
+		BenchmarkSupport.threadedRunFutures(array);
+		// skip futures.get() as we already handled in listeners
 	}
 
+	@SuppressWarnings("unchecked")
 	@Benchmark
 	@Warmup(iterations = WARMUP_ITERATIONS)
-	@Measurement(iterations = 1, batchSize = 1)
+	@Measurement(iterations = 2, batchSize = 1)
 	@Fork(warmups = 1, value = 1)
 	public void                     benchmarkGuava() throws ExecutionException, InterruptedException
 	{
-		for (long i = 0; i < COUNT; ++i) {
-			com.google.common.util.concurrent.ListenableFutureTask<Integer> future = com.google.common.util.concurrent.ListenableFutureTask.create(() -> {
-				return 0;
-			});
-			future.addListener(() -> {
+		Executor directExecutor = MoreExecutors.directExecutor();
+		com.google.common.util.concurrent.ListenableFutureTask[] array = BenchmarkSupport.populateGuavaFutureArray(COUNT);
+		for (com.google.common.util.concurrent.ListenableFutureTask f: array) {
+			final Future<Integer> ff = f;
+			f.addListener(() -> {
 				try {
-					future.get();
+					ff.get();
 				}
 				catch (InterruptedException e) {
 					throw new RuntimeException(e);
 				}
 				catch (ExecutionException e) {
-					throw new RuntimeException(e);
 				}
-			}, MoreExecutors.directExecutor());
-			future.run();
-			future.addListener(() -> {
+			}, directExecutor);
+			f.addListener(() -> {
 				try {
-					future.get();
+					ff.get();
 				}
 				catch (InterruptedException e) {
 					throw new RuntimeException(e);
 				}
 				catch (ExecutionException e) {
-					throw new RuntimeException(e);
+					// ignore
 				}
-			}, MoreExecutors.directExecutor());
+			}, directExecutor);
 		}
+		BenchmarkSupport.threadedRunFutures(array);
+		// skip futures.get() as we already handled in listeners
 	}
 
+	@SuppressWarnings("unchecked")
 	@Benchmark
 	@Warmup(iterations = WARMUP_ITERATIONS)
-	@Measurement(iterations = 1, batchSize = 1)
+	@Measurement(iterations = 2, batchSize = 1)
 	@Fork(warmups = 1, value = 1)
 	public void                     benchmarkSpring() throws ExecutionException, InterruptedException
 	{
-		for (long i = 0; i < COUNT; ++i) {
-			org.springframework.util.concurrent.ListenableFutureTask<Integer> future = new org.springframework.util.concurrent.ListenableFutureTask<Integer>(() -> {
-				return 0;
-			});
-			future.addCallback(new ListenableFutureCallback<Integer>() {
+		org.springframework.util.concurrent.ListenableFutureTask[] array = BenchmarkSupport.populateSpringFutureArray(COUNT);
+		for (org.springframework.util.concurrent.ListenableFutureTask f: array) {
+			f.addCallback(new ListenableFutureCallback<Integer>() {
 				@Override
 				public void onFailure(Throwable ex) {
 				}
@@ -118,8 +122,7 @@ public class MixedListenerBenchmark
 				public void onSuccess(Integer result) {
 				}
 			});
-			future.run();
-			future.addCallback(new ListenableFutureCallback<Integer>() {
+			f.addCallback(new ListenableFutureCallback<Integer>() {
 				@Override
 				public void onFailure(Throwable ex) {
 				}
@@ -129,5 +132,7 @@ public class MixedListenerBenchmark
 				}
 			});
 		}
+		BenchmarkSupport.threadedRunFutures(array);
+		// skip futures.get() as we already handled in listeners
 	}
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Zbynek Vyskovsky mailto:kvr@centrum.cz http://kvr.znj.cz/ http://github.com/kvr000/
+ * Copyright 2015 Zbynek Vyskovsky mailto:kvr000@gmail.com http://kvr.znj.cz/ http://github.com/kvr000/
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ public class BenchmarkSupport
 	public static final int         WARMUP_ITERATIONS = 5;
 	public static final int         COUNT = 100000;
 
+	@SuppressWarnings("unchecked")
 	public static FutureTask<Integer>[] populateJdkFutureArray(int count)
 	{
 		Callable<Integer> func = () -> { return 0; };
@@ -35,6 +36,7 @@ public class BenchmarkSupport
 		return array;
 	}
 
+	@SuppressWarnings("unchecked")
 	public static net.dryuf.concurrent.ListenableFutureTask<Integer>[] populateLwFutureArray(int count)
 	{
 		Callable<Integer> func = () -> { return 0; };
@@ -45,6 +47,7 @@ public class BenchmarkSupport
 		return array;
 	}
 
+	@SuppressWarnings("unchecked")
 	public static org.springframework.util.concurrent.ListenableFutureTask<Integer>[] populateSpringFutureArray(int count)
 	{
 		Callable<Integer> func = () -> { return 0; };
@@ -55,6 +58,7 @@ public class BenchmarkSupport
 		return array;
 	}
 
+	@SuppressWarnings("unchecked")
 	public static com.google.common.util.concurrent.ListenableFutureTask<Integer>[] populateGuavaFutureArray(int count)
 	{
 		Callable<Integer> func = () -> { return 0; };
