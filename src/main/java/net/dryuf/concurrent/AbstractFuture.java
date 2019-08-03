@@ -537,7 +537,7 @@ public class AbstractFuture<V> implements ListenableFuture<V>
 	 *
 	 * @return true
 	 *      if the task was not yet cancelled nor finished
-	 * @return false
+	 * false
 	 *      if the task was already cancelled or finished
 	 */
 	protected boolean         	setRunning()
@@ -558,7 +558,7 @@ public class AbstractFuture<V> implements ListenableFuture<V>
 	 *
 	 * @return true
 	 *      if the reset was successful
-	 * @return false
+	 * false
 	 *      if the task was already cancelled or finished
 	 */
 	protected boolean		setRestart()
@@ -583,7 +583,7 @@ public class AbstractFuture<V> implements ListenableFuture<V>
 	 *
 	 * @return true
 	 *      if the task was not yet cancelled
-	 * @return false
+	 * false
 	 *      if the task was already cancelled
 	 */
 	protected boolean               set(V result)
@@ -606,7 +606,7 @@ public class AbstractFuture<V> implements ListenableFuture<V>
 	 *
 	 * @return true
 	 *      if the task was not yet cancelled
-	 * @return false
+	 * false
 	 *      if the task was already cancelled
 	 */
 	protected boolean               setException(Throwable ex)
@@ -630,7 +630,7 @@ public class AbstractFuture<V> implements ListenableFuture<V>
 	 *
 	 * @return true
 	 *      if the task was not yet cancelled
-	 * @return false
+	 * false
 	 *      if the task was already cancelled
 	 */
 	protected boolean               setCancelled()
