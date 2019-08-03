@@ -26,7 +26,7 @@
 
 	<groupId>net.dryuf</groupId>
 	<artifactId>dryuf-concurrent</artifactId>
-	<version>1.2.0</version>
+	<version>1.2.1-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>Dryuf Concurrent framework</name>
@@ -56,7 +56,7 @@
 		<mockito.version>3.0.0</mockito.version>
 		<hamcrest.version>2.1</hamcrest.version>
 
-		<dryuf-concurrent.version>1.2.0</dryuf-concurrent.version>
+		<dryuf-concurrent.version>1.2.1-SNAPSHOT</dryuf-concurrent.version>
 	</properties>
 
 	<licenses>
