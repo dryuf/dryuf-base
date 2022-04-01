@@ -12,7 +12,7 @@ The performance is for obvious reasons (additional support of listeners) slightl
 <dependency>
 	<groupId>net.dryuf</groupId>
 	<artifactId>dryuf-concurrent</artifactId>
-	<version>1.1.0</version>
+	<version>1.3.0</version>
 </dependency>
 ```
 
@@ -122,12 +122,35 @@ TypeDelegatingFunctionBenchmark.ownerCallerBenchmark       thrpt    2  67.262   
 Done in 1M batches. Apart from convenience and type safety, you can see the callback delegator is about 3 times faster than instanceof based code (the benchmark is based on 5 different classes passed as argument).
 
 
+## Custom Executor
+
+### CloseableExecutor
+
+Interface allowing automatically closing Executor in try-with-resources statements, mostly to simplify unit tests.
+
+### ClosingExecutor
+
+Implementation of the above, wrapping the existing ExecutorService into another Executor and shutting down in `close()` method.
+
+### ResultSerializingExecutor
+
+Executor executing tasks in parallel but serializing the results in the order of submission.
+
+### CapacityResultSerializingExecutor
+
+Executor serializing tasks in parallel but serializing the results in the order of submission.  Additionally, it controls throughput by given capacity and number of parallel tasks.  Typically, the capacity is constrained by memory or disk size or number of connections.
+
+### SingleConsumerQueue
+
+Queue for submitting tasks and consuming them from single consumer, guaranteed to be executed in unique instance.
+
+
 ## License
 
 The code is released under version 2.0 of the [Apache License][].
 
 ## Stay in Touch
 
-Feel free to contact me at kvr000@gmail.com or http://kvr.znj.cz/software/java/ListenableFuture/ and http://github.com/kvr000/ and http://github.com/dryuf/
+Feel free to contact me at kvr000@gmail.com  and http://github.com/kvr000/ and http://github.com/dryuf/
 
 [Apache License]: http://www.apache.org/licenses/LICENSE-2.0
