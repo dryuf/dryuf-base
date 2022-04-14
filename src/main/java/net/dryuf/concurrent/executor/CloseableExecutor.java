@@ -34,5 +34,5 @@ public interface CloseableExecutor extends AutoCloseable, Executor
 	<T> CompletableFuture<T> submit(Callable<T> callable);
 
 	@Override
-	void close() throws InterruptedException;
+	void close();
 }

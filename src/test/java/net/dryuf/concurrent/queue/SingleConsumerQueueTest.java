@@ -16,6 +16,7 @@
 
 package net.dryuf.concurrent.queue;
 
+import net.dryuf.concurrent.DirectExecutor;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
@@ -33,7 +34,7 @@ public class SingleConsumerQueueTest
 	public void testAdd()
 	{
 		Runnable restarter = mock(Runnable.class);
-		SingleConsumerQueue<Integer> subject = new SingleConsumerQueue<>(restarter);
+		SingleConsumerQueue<Integer> subject = new SingleConsumerQueue<>(restarter, DirectExecutor.getInstance());
 		verify(restarter, times(0)).run();
 		subject.add(0);
 		verify(restarter, times(1)).run();
@@ -47,7 +48,7 @@ public class SingleConsumerQueueTest
 	public void testOrder()
 	{
 		Runnable restarter = mock(Runnable.class);
-		SingleConsumerQueue<Integer> subject = new SingleConsumerQueue<>(restarter);
+		SingleConsumerQueue<Integer> subject = new SingleConsumerQueue<>(restarter, DirectExecutor.getInstance());
 		subject.add(0);
 		subject.add(1);
 		subject.add(2);
@@ -64,7 +65,7 @@ public class SingleConsumerQueueTest
 	public void testParallelOrder()
 	{
 		Runnable consumerCallback = mock(Runnable.class);
-		SingleConsumerQueue<Integer> subject = new SingleConsumerQueue<>(consumerCallback);
+		SingleConsumerQueue<Integer> subject = new SingleConsumerQueue<>(consumerCallback, DirectExecutor.getInstance());
 		subject.add(0);
 		subject.add(1);
 		subject.add(2);
@@ -86,7 +87,7 @@ public class SingleConsumerQueueTest
 	public void testPending()
 	{
 		Runnable consumerCallback = mock(Runnable.class);
-		SingleConsumerQueue<Integer> subject = new SingleConsumerQueue<>(consumerCallback);
+		SingleConsumerQueue<Integer> subject = new SingleConsumerQueue<>(consumerCallback, DirectExecutor.getInstance());
 		subject.add(0);
 		subject.add(1);
 		subject.add(2);
@@ -111,7 +112,7 @@ public class SingleConsumerQueueTest
 	public void testNewlyAdded()
 	{
 		Runnable consumerCallback = mock(Runnable.class);
-		SingleConsumerQueue<Integer> subject = new SingleConsumerQueue<>(consumerCallback);
+		SingleConsumerQueue<Integer> subject = new SingleConsumerQueue<>(consumerCallback, DirectExecutor.getInstance());
 		subject.add(0);
 		subject.add(1);
 		subject.add(2);
@@ -138,7 +139,7 @@ public class SingleConsumerQueueTest
 	public void testNextOrClose()
 	{
 		Runnable consumerCallback = mock(Runnable.class);
-		SingleConsumerQueue<Integer> subject = new SingleConsumerQueue<>(consumerCallback);
+		SingleConsumerQueue<Integer> subject = new SingleConsumerQueue<>(consumerCallback, DirectExecutor.getInstance());
 		subject.add(0);
 		subject.add(1);
 		verify(consumerCallback, times(1)).run();

@@ -16,10 +16,11 @@
 
 package net.dryuf.concurrent.executor;
 
+import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
-public class CommonPoolExecutor implements Executor
+public class CommonPoolExecutor implements CloseableExecutor
 {
 	private static final CommonPoolExecutor INSTANCE = new CommonPoolExecutor();
 
@@ -36,5 +37,27 @@ public class CommonPoolExecutor implements Executor
 	public void execute(Runnable runnable)
 	{
 		CompletableFuture.runAsync(runnable);
+	}
+
+	@Override
+	public <T> CompletableFuture<T> submit(Callable<T> callable)
+	{
+		return new CompletableFuture<T>() {
+			{
+				execute(() -> {
+					try {
+						complete(callable.call());
+					}
+					catch (Throwable e) {
+						throw new RuntimeException(e);
+					}
+				});
+			}
+		};
+	}
+
+	@Override
+	public void close()
+	{
 	}
 }

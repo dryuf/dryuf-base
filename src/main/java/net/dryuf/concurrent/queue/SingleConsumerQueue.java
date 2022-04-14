@@ -17,9 +17,14 @@
 package net.dryuf.concurrent.queue;
 
 import lombok.AllArgsConstructor;
+import net.dryuf.concurrent.executor.CloseableExecutor;
+import net.dryuf.concurrent.executor.CommonPoolExecutor;
 
 import java.io.Closeable;
 import java.util.Objects;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 
 
@@ -59,7 +64,9 @@ public class SingleConsumerQueue<T>
 	private static final Node<?> LOCK = new Node<>(null, null);
 
 	/** Function to be called to initiate the consumer. */
-	private final Runnable consumerCallback;
+	private final java.util.function.Consumer<SingleConsumerQueue<T>> consumerCallback;
+
+	private final Executor runExecutor;
 
 	/** Last item added or {@link #LOCK} when consumer holds the lock. */
 	volatile private Node<T> stack;
@@ -69,7 +76,7 @@ public class SingleConsumerQueue<T>
 
 	/**
 	 * Constructs new {@link SingleConsumerQueue}.
-	 **
+	 *
 	 * @param consumerCallback
 	 * 	function to call when item is pending and no consumer is running.  Note it is run directly when either
 	 * 	adding an item or closing the consumer, therefore it is supposed to schedule consumer asynchronously to
@@ -77,7 +84,54 @@ public class SingleConsumerQueue<T>
 	 */
 	public SingleConsumerQueue(Runnable consumerCallback)
 	{
+		this(consumerCallback, CommonPoolExecutor.getInstance());
+	}
+
+	/**
+	 * Constructs new {@link SingleConsumerQueue}.
+	 *
+	 * @param consumerCallback
+	 * 	function to call when item is pending and no consumer is running.  Note it is run directly when either
+	 * 	adding an item or closing the consumer, therefore it is supposed to schedule consumer asynchronously to
+	 * 	avoid recursion.  It can be synchronous only when using {@link Consumer#nextOrClose()}.
+	 * @param runExecutor
+	 * 	the executor to run callback
+	 */
+	public SingleConsumerQueue(Runnable consumerCallback, Executor runExecutor)
+	{
+		this((this0) -> consumerCallback.run(), runExecutor);
+	}
+
+	/**
+	 * Constructs new {@link SingleConsumerQueue}.
+	 *
+	 * @param consumerCallback
+	 * 	function to call when item is pending and no consumer is running.  Note it is run directly when either
+	 * 	adding an item or closing the consumer, therefore it is supposed to schedule consumer asynchronously to
+	 * 	avoid recursion.  It can be synchronous only when using {@link Consumer#nextOrClose()}.
+	 * @param runExecutor
+	 * 	the executor to run callback
+	 */
+	public SingleConsumerQueue(
+			java.util.function.Consumer<SingleConsumerQueue<T>> consumerCallback,
+			Executor runExecutor
+	)
+	{
 		this.consumerCallback = consumerCallback;
+		this.runExecutor = runExecutor;
+	}
+
+	/**
+	 * Constructs new {@link SingleConsumerQueue}.
+	 *
+	 * @param consumerCallback
+	 * 	function to call when item is pending and no consumer is running.  Note it is run directly when either
+	 * 	adding an item or closing the consumer, therefore it is supposed to schedule consumer asynchronously to
+	 * 	avoid recursion.  It can be synchronous only when using {@link Consumer#nextOrClose()}.
+	 */
+	public SingleConsumerQueue(java.util.function.Consumer<SingleConsumerQueue<T>> consumerCallback)
+	{
+		this(consumerCallback, CommonPoolExecutor.getInstance());
 	}
 
 	/**
@@ -105,7 +159,7 @@ public class SingleConsumerQueue<T>
 			Node<T> node = new Node<T>(item, last == LOCK ? null : last);
 			if (STACK_UPDATER.compareAndSet(this, last, node)) {
 				if (last == null) {
-					consumerCallback.run();
+					CompletableFuture.runAsync(() -> consumerCallback.accept(this), runExecutor);
 				}
 				break;
 			}
@@ -190,7 +244,7 @@ public class SingleConsumerQueue<T>
 			if (!closed) {
 				closed = true;
 				if (!STACK_UPDATER.compareAndSet(SingleConsumerQueue.this, LOCK, null)) {
-					consumerCallback.run();
+					consumerCallback.accept(SingleConsumerQueue.this);
 				}
 			}
 		}

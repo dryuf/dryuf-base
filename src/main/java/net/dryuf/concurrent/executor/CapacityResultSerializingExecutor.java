@@ -58,12 +58,23 @@ public class CapacityResultSerializingExecutor implements AutoCloseable
 	}
 
 	@Override
-	public void close() throws InterruptedException
+	public void close()
 	{
+		boolean interrupted = false;
 		synchronized (isEmptySync) {
-			if (!orderedTasks.isEmpty())
-				isEmptySync.wait();
+			for (;;) {
+				try {
+					if (!orderedTasks.isEmpty())
+						isEmptySync.wait();
+					break;
+				}
+				catch (InterruptedException ex) {
+					interrupted = true;
+				}
+			}
 		}
+		if (interrupted)
+			Thread.currentThread().interrupt();
 	}
 
 	private synchronized void addFuture(long capacity, ExecutionFuture<?> future)

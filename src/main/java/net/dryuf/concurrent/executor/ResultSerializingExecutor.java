@@ -75,12 +75,23 @@ public class ResultSerializingExecutor implements CloseableExecutor
 	}
 
 	@Override
-	public void close() throws InterruptedException
+	public void close()
 	{
+		boolean interrupted = false;
 		synchronized (isEmpty) {
-			if (!orderedTasks.isEmpty())
-				isEmpty.wait();
+			for (;;) {
+				try {
+					if (!orderedTasks.isEmpty())
+						isEmpty.wait();
+					break;
+				}
+				catch (InterruptedException ex) {
+					interrupted = true;
+				}
+			}
 		}
+		if (interrupted)
+			Thread.currentThread().interrupt();
 	}
 
 	@SuppressWarnings("unchecked")

@@ -39,10 +39,10 @@ public class ClosingExecutor implements CloseableExecutor
 	public <T> CompletableFuture<T> submit(Callable<T> callable)
 	{
 		return new CompletableFuture<T>() {
-			Future<T> future;
+			Future<?> future;
 
 			{
-				executor.submit(() -> {
+				this.future = executor.submit(() -> {
 					try {
 						complete(callable.call());
 					}
@@ -62,11 +62,21 @@ public class ClosingExecutor implements CloseableExecutor
 	}
 
 	@Override
-	public void close() throws InterruptedException
+	public void close()
 	{
+		boolean interrupted = false;
 		executor.shutdown();
-		while (!executor.awaitTermination(Integer.MAX_VALUE, TimeUnit.SECONDS)) {
+		for (;;) {
+			try {
+				if (executor.awaitTermination(Integer.MAX_VALUE, TimeUnit.SECONDS))
+					break;
+			}
+			catch (InterruptedException e) {
+				interrupted = true;
+			}
 			// just repeat the wait
 		}
+		if (interrupted)
+			Thread.currentThread().interrupt();
 	}
 }
