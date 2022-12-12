@@ -16,9 +16,6 @@
 
 package net.dryuf.concurrent;
 
-import net.dryuf.concurrent.ListeningExecutorService;
-import net.dryuf.concurrent.ListeningExecutors;
-import net.dryuf.concurrent.ListeningScheduledExecutorService;
 import org.testng.AssertJUnit;
 import org.testng.annotations.Test;
 

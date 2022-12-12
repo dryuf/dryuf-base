@@ -17,9 +17,6 @@
 package net.dryuf.concurrent;
 
 import java.util.concurrent.Callable;
-import java.util.concurrent.RunnableFuture;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
 
 
 /**

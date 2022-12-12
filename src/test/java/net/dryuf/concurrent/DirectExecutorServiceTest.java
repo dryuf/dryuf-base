@@ -24,7 +24,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 
 /**
- * Tests for {@link net.dryuf.concurrent.DirectExecutorService DirectExecutorService} class.
+ * Tests for {@link DirectExecutorService DirectExecutorService} class.
  *
  * @author
  * 	Zbynek Vyskovsky, mailto:kvr000@gmail.com http://kvr.znj.cz/software/java/ListenableFuture/ http://github.com/kvr000

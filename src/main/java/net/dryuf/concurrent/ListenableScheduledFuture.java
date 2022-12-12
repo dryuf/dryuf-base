@@ -16,8 +16,6 @@
 
 package net.dryuf.concurrent;
 
-import java.util.concurrent.Executor;
-import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledFuture;
 
 

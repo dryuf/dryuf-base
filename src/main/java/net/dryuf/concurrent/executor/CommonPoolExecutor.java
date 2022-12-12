@@ -16,48 +16,29 @@
 
 package net.dryuf.concurrent.executor;
 
-import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executor;
 
-public class CommonPoolExecutor implements CloseableExecutor
+
+/**
+ * {@link CloseableExecutor} executing items in common pool.  The implementation waits for current executions upon
+ * {@link #close()} .
+ */
+public class CommonPoolExecutor extends AbstractCloseableExecutor
 {
-	private static final CommonPoolExecutor INSTANCE = new CommonPoolExecutor();
-
+	/**
+	 * Gets new instance of common pool executor, not closing the common pool but still waiting for futures.
+	 *
+	 * @return
+	 * 	new {@link CommonPoolExecutor}
+	 */
 	public static CommonPoolExecutor getInstance()
 	{
-		return INSTANCE;
-	}
-
-	private CommonPoolExecutor()
-	{
+		return new CommonPoolExecutor();
 	}
 
 	@Override
-	public void execute(Runnable runnable)
+	protected void execute0(Runnable runnable)
 	{
 		CompletableFuture.runAsync(runnable);
-	}
-
-	@Override
-	public <T> CompletableFuture<T> submit(Callable<T> callable)
-	{
-		return new CompletableFuture<T>() {
-			{
-				execute(() -> {
-					try {
-						complete(callable.call());
-					}
-					catch (Throwable e) {
-						throw new RuntimeException(e);
-					}
-				});
-			}
-		};
-	}
-
-	@Override
-	public void close()
-	{
 	}
 }

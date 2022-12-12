@@ -16,67 +16,88 @@
 
 package net.dryuf.concurrent.executor;
 
-import lombok.AllArgsConstructor;
-import lombok.experimental.Delegate;
-
-import java.util.concurrent.Callable;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 
 /**
- * Closeable Executor, waiting for futures upon finish.
+ * Closeable Executor, waiting for futures upon finish.  Also closing optionally associated resource.
+ *
+ * <pre>
+ *         try (CloseableExecutor executor = new ClosingExecutor(Executors.newCachedThreadPool()), closeableResource) {
+ *                 executor.submit(() -> doCalculation(1));
+ *                 executor.submit(() -> doCalculation(2));
+ *         }
+ *         // at this point, both calculations are executed and finished (successfully or unsuccessfully)
+ *         // executor is shutdown and closeableResource is closed after that
+ * </pre>
  */
-@AllArgsConstructor
-public class ClosingExecutor implements CloseableExecutor
+public class ClosingExecutor extends AbstractCloseableExecutor
 {
-	@Delegate
 	private final ExecutorService executor;
 
-	@Override
-	public <T> CompletableFuture<T> submit(Callable<T> callable)
+	/**
+	 * Constructs the executor with delegating executor and associated resource.
+	 *
+	 * @param executor
+	 * 	delegating executor
+	 * @param resource
+	 * 	associated resource, to be closed after executor is closed.
+	 */
+	public ClosingExecutor(ExecutorService executor, AutoCloseable resource)
 	{
-		return new CompletableFuture<T>() {
-			Future<?> future;
+		super(resource);
+		this.executor = executor;
+	}
 
-			{
-				this.future = executor.submit(() -> {
-					try {
-						complete(callable.call());
-					}
-					catch (Throwable ex) {
-						completeExceptionally(ex);
-					}
-				});
-			}
-
-			@Override
-			public boolean cancel(boolean interrupt)
-			{
-				super.cancel(interrupt);
-				return future.cancel(interrupt);
-			}
-		};
+	/**
+	 * Constructs the executor with delegating executor.
+	 *
+	 * @param executor
+	 * 	delegating executor
+	 */
+	public ClosingExecutor(ExecutorService executor)
+	{
+		this(executor, null);
 	}
 
 	@Override
-	public void close()
+	protected void execute0(Runnable runnable)
 	{
-		boolean interrupted = false;
-		executor.shutdown();
-		for (;;) {
+		executor.execute(runnable);
+	}
+
+	/**
+	 * Closes this executor.
+	 *
+	 * @return
+	 * 	true if executor was closed, false if it was closed already.
+	 */
+	@Override
+	protected boolean closeExecutor()
+	{
+		if (super.closeExecutor()) {
+			executor.shutdown();
+			boolean interrupted = false;
 			try {
-				if (executor.awaitTermination(Integer.MAX_VALUE, TimeUnit.SECONDS))
-					break;
+				for (;;) {
+					try {
+						if (executor.awaitTermination(Integer.MAX_VALUE, TimeUnit.MILLISECONDS)) {
+							break;
+						}
+					}
+					catch (InterruptedException e) {
+						interrupted = true;
+					}
+				}
 			}
-			catch (InterruptedException e) {
-				interrupted = true;
+			finally {
+				if (interrupted) {
+					Thread.currentThread().interrupt();
+				}
 			}
-			// just repeat the wait
+			return true;
 		}
-		if (interrupted)
-			Thread.currentThread().interrupt();
+		return false;
 	}
 }

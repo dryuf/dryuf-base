@@ -12,7 +12,7 @@ The performance is for obvious reasons (additional support of listeners) slightl
 <dependency>
 	<groupId>net.dryuf</groupId>
 	<artifactId>dryuf-concurrent</artifactId>
-	<version>1.3.1</version>
+	<version>1.5.0</version>
 </dependency>
 ```
 
@@ -119,7 +119,8 @@ TypeDelegatingFunctionBenchmark.instanceCallerBenchmark    thrpt    2  67.543   
 TypeDelegatingFunctionBenchmark.ownerCallerBenchmark       thrpt    2  67.262          ops/s
 ```
 
-Done in 1M batches. Apart from convenience and type safety, you can see the callback delegator is about 3 times faster than instanceof based code (the benchmark is based on 5 different classes passed as argument).
+Done in 1M batches. Apart from convenience and type safety, you can see the callback delegator is about 3 times faster
+than instanceof based code (the benchmark is based on 5 different classes passed as argument).
 
 
 ## Custom Executor
@@ -128,9 +129,16 @@ Done in 1M batches. Apart from convenience and type safety, you can see the call
 
 Interface allowing automatically closing Executor in try-with-resources statements, mostly to simplify unit tests.
 
-### ClosingExecutor
+### ClosingExecutor and NotClosingExecutor
 
-Implementation of the above, wrapping the existing ExecutorService into another Executor and shutting down in `close()` method.
+Implementation of the above, wrapping the existing ExecutorService into another Executor and either shutting down in
+`close()` method for ClosingExecutor or not shutting it down for NotClosingExecutor.
+Both of them wait until all submitted tasks are processed.
+
+### ResourceClosingExecutor and ResourceNotClosingExecutor
+
+CloseableExecutor implementations, closing also associated AutoCloseable resource, tying lifecycle of executor together
+with another resource.  Mostly useful in tests or benchmarks where lifecycle of items is limited to scope.
 
 ### ResultSerializingExecutor
 
@@ -138,12 +146,18 @@ Executor executing tasks in parallel but serializing the results in the order of
 
 ### CapacityResultSerializingExecutor
 
-Executor serializing tasks in parallel but serializing the results in the order of submission.  Additionally, it controls throughput by given capacity and number of parallel tasks.  Typically, the capacity is constrained by memory or disk size or number of connections.
+Executor serializing tasks in parallel but serializing the results in the order of submission.  Additionally, it
+controls throughput by given capacity and number of parallel tasks.  Typically, the capacity is constrained by memory or
+disk size or number of connections.
 
 ### SingleConsumerQueue
 
 Queue for submitting tasks and consuming them from single consumer, guaranteed to be executed in unique instance.
 
+### WorkExecutor, SingleWorkExecutor, BatchWorkExecutor
+
+Executor processing work items instead of executing code.  Items are processed either in separate tasks
+(SingleWorkExecutor) or batched into groups to optimize throughput (BatchWorkExecutor).
 
 ## License
 
@@ -154,3 +168,5 @@ The code is released under version 2.0 of the [Apache License][].
 Feel free to contact me at kvr000@gmail.com  and http://github.com/kvr000/ and http://github.com/dryuf/
 
 [Apache License]: http://www.apache.org/licenses/LICENSE-2.0
+
+<!--- vim: set tw=120: --->

@@ -29,7 +29,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 
 /**
- * Tests for {@link net.dryuf.concurrent.ForwardingListeningScheduledExecutorService ForwardingListeningScheduledExecutorService} class.
+ * Tests for {@link ForwardingListeningScheduledExecutorService ForwardingListeningScheduledExecutorService} class.
  *
  * @author
  * 	Zbynek Vyskovsky, mailto:kvr000@gmail.com http://kvr.znj.cz/software/java/ListenableFuture/ http://github.com/kvr000

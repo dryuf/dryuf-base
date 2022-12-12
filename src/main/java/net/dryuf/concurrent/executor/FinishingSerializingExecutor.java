@@ -8,10 +8,14 @@ import java.util.concurrent.Executor;
 
 
 /**
- * Executor which serializes the tasks, executes them in batch and then calls finisher.
+ * Executor which serializes the pending tasks, executes them in a batch and then calls finisher.  The finisher runs
+ * after every batch execution.
  *
  * The implementation is useful for processes where the subtasks must happen serialized and once finished, there is a
  * review to be executed examining current state.  This simplifies usage of {@link SingleConsumerQueue} .
+ *
+ * Underlying Runnable tasks must not fail, otherwise full executor would fail.  The submitted Callable task are
+ * reported via return CompletableFuture.
  *
  * Usage:
  *
@@ -21,6 +25,7 @@ import java.util.concurrent.Executor;
  *
  *      executor.execute(() -> { doTaskOne(); });
  *      executor.execute(() -> { doTaskTwo(); });
+ *      // at this point, finisher might have been executed one or two times (as soon as tasks are finished).
  *
  *      private void finisher()
  *      {
@@ -85,7 +90,11 @@ public class FinishingSerializingExecutor implements CloseableExecutor
 	@Override
 	public <T> CompletableFuture<T> submit(Callable<T> callable)
 	{
-		return null;
+		return new CompletableFutureTask<T>(callable) {
+			{
+				execute(this);
+			}
+		};
 	}
 
 	@Override

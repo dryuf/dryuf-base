@@ -17,8 +17,6 @@
 package net.dryuf.concurrent;
 
 
-import net.dryuf.concurrent.ListenableFutureTask;
-import net.dryuf.concurrent.ListeningExecutors;
 import org.testng.AssertJUnit;
 import org.testng.annotations.Test;
 

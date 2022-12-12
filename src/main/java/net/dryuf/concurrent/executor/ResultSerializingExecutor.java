@@ -26,14 +26,48 @@ import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 
 /**
  * Executor serializing the results.
+ *
+ * The results are completed in submission order and completion handlers executed serialized in this order.
+ *
+ * Usage:
+ *
+ * <pre>
+ *         try (ResultSerializingExecutor executor = new ResultSerializingExecutor()) {
+ *            	CompletableFuture future = executor.submit(() -> 5*5))
+ *            		.thenRun((v) -> System.out.println("Completed: " + v));
+ *              CompletableFuture future = executor.submit(() -> 6*6))
+ *                 	.thenRun((v) -> System.out.println("Completed: " + v));
+ *              // the above will always print 25 and then 36
+ *         }
+ * </pre>
  */
 public class ResultSerializingExecutor implements CloseableExecutor
 {
-	public ResultSerializingExecutor(Executor defaultExecutor)
+	/**
+	 * Creates instance from executor, closing it upon close.
+	 *
+	 * @param executor
+	 * 	underlying executor
+	 */
+	public ResultSerializingExecutor(CloseableExecutor executor)
 	{
-		this.defaultExecutor = defaultExecutor;
+		this.executor = executor;
 	}
 
+	/**
+	 * Creates instance from executor, not closing it upon close.
+	 *
+	 * @param executor
+	 * 	underlying executor
+	 */
+	public ResultSerializingExecutor(Executor executor)
+	{
+		this(new NotClosingExecutor(executor));
+	}
+
+	/**
+	 * Creates instance from common pool executor.
+	 */
 	public ResultSerializingExecutor()
 	{
 		this(CommonPoolExecutor.getInstance());
@@ -42,7 +76,7 @@ public class ResultSerializingExecutor implements CloseableExecutor
 	@Override
 	public void execute(Runnable runnable)
 	{
-		this.defaultExecutor.execute(runnable);
+		this.executor.execute(runnable);
 	}
 
 	@Override
@@ -52,7 +86,7 @@ public class ResultSerializingExecutor implements CloseableExecutor
 
 		try {
 			orderedTasks.put(future);
-			future.execute(callable, defaultExecutor);
+			future.execute(callable, executor);
 		}
 		catch (InterruptedException e) {
 			throw new RuntimeException(e);
@@ -78,20 +112,25 @@ public class ResultSerializingExecutor implements CloseableExecutor
 	public void close()
 	{
 		boolean interrupted = false;
-		synchronized (isEmpty) {
-			for (;;) {
-				try {
-					if (!orderedTasks.isEmpty())
-						isEmpty.wait();
-					break;
-				}
-				catch (InterruptedException ex) {
-					interrupted = true;
+		try {
+			synchronized (isEmpty) {
+				for (; ; ) {
+					try {
+						if (!orderedTasks.isEmpty())
+							isEmpty.wait();
+						break;
+					}
+					catch (InterruptedException ex) {
+						interrupted = true;
+					}
 				}
 			}
 		}
-		if (interrupted)
-			Thread.currentThread().interrupt();
+		finally {
+			executor.close();
+			if (interrupted)
+				Thread.currentThread().interrupt();
+		}
 	}
 
 	@SuppressWarnings("unchecked")
@@ -175,7 +214,7 @@ public class ResultSerializingExecutor implements CloseableExecutor
 		}
 	}
 
-	private final Executor defaultExecutor;
+	private final CloseableExecutor executor;
 
 	private final LinkedBlockingDeque<ExecutionFuture<?>> orderedTasks = new LinkedBlockingDeque<>();
 

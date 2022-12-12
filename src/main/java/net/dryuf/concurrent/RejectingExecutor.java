@@ -19,8 +19,7 @@ package net.dryuf.concurrent;
 
 import java.util.concurrent.Executor;
 import java.util.concurrent.RejectedExecutionException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
 
 /**
  * {@link Executor} which rejects everything.

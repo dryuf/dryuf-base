@@ -16,54 +16,46 @@
 
 package net.dryuf.concurrent.executor;
 
-import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
-
 
 /**
- * Closeable Executor, not actually closing underlying executor.
+ * Closeable Executor, waiting for futures upon finish, closing delegate executor and closing associated resource.
  *
  * <pre>
- *         try (CloseableExecutor executor = new NotClosingExecutor(sharedExecutor), closeableResource) {
+ *         try (CloseableExecutor executor = new ResourceClosingExecutor(delegateExecutor, closeableResource) {
  *                 executor.submit(() -> doCalculation(1));
  *                 executor.submit(() -> doCalculation(2));
  *         }
  *         // at this point, both calculations are executed and finished (successfully or unsuccessfully)
- *         // and closeableResource is closed after that.  sharedExecutor is still running.
+ *         // delegateExecutor is closed and closeableResource is closed after that
  * </pre>
  */
-public class NotClosingExecutor extends AbstractCloseableExecutor
+public class ResourceClosingExecutor extends ResourceNotClosingExecutor
 {
-	private final Executor executor;
-
 	/**
-	 * Constructs new instance from {@link ExecutorService} .
+	 * Constructs the executor with delegating executor and associated resource.
 	 *
 	 * @param executor
-	 * 	delegated {@link ExecutorService}
-	 */
-	public NotClosingExecutor(Executor executor)
-	{
-		this(executor, null);
-	}
-
-	/**
-	 * Constructs new instance from {@link CloseableExecutor} .
-	 *
-	 * @param executor
-	 * 	delegated {@link CloseableExecutor}
+	 * 	delegating executor
 	 * @param resource
-	 * 	associated resource, closed upon close
+	 * 	associated resource, to be closed after executor is closed.
 	 */
-	public NotClosingExecutor(Executor executor, AutoCloseable resource)
+	public ResourceClosingExecutor(CloseableExecutor executor, AutoCloseable resource)
 	{
-		super(resource);
-		this.executor = executor;
+		super(executor, resource);
 	}
 
 	@Override
-	protected void execute0(Runnable runnable)
+	protected boolean closeExecutor()
 	{
-		executor.execute(runnable);
+		boolean closedNow = true;
+		try {
+			closedNow = super.closeExecutor();
+		}
+		finally {
+			if (closedNow) {
+				executor.close();
+			}
+		}
+		return closedNow;
 	}
 }

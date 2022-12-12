@@ -16,10 +16,6 @@
 
 package net.dryuf.concurrent;
 
-import net.dryuf.concurrent.ListenableFuture;
-import net.dryuf.concurrent.ListeningExecutorService;
-import net.dryuf.concurrent.ListeningExecutors;
-import net.dryuf.concurrent.ListeningScheduledExecutorService;
 import org.testng.AssertJUnit;
 import org.testng.annotations.Test;
 
@@ -32,7 +28,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 
 /**
- * Tests for {@link net.dryuf.concurrent.ForwardingListeningExecutorService ForwardingListeningExecutorService} class.
+ * Tests for {@link ForwardingListeningExecutorService ForwardingListeningExecutorService} class.
  *
  * @author
  * 	Zbynek Vyskovsky, mailto:kvr000@gmail.com http://kvr.znj.cz/software/java/ListenableFuture/ http://github.com/kvr000

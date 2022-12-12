@@ -16,6 +16,8 @@
 
 package net.dryuf.concurrent;
 
+import net.dryuf.concurrent.executor.CompletableFutureTask;
+
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
@@ -148,21 +150,16 @@ public class FutureUtil
 	 */
 	public static <T> CompletableFuture<T> submitAsync(Callable<T> callable)
 	{
-		CompletableFuture<T> future = new CompletableFuture<>();
-		try {
-			CompletableFuture.runAsync(() -> {
+		return new CompletableFutureTask<T>(callable) {
+			{
 				try {
-					future.complete(callable.call());
+					CompletableFuture.runAsync(this);
 				}
 				catch (Throwable ex) {
-					future.completeExceptionally(ex);
+					completeExceptionally(ex);
 				}
-			});
-		}
-		catch (Throwable ex) {
-			return exception(ex);
-		}
-		return future;
+			}
+		};
 	}
 
 	/**
@@ -180,21 +177,16 @@ public class FutureUtil
 	 */
 	public static <T> CompletableFuture<T> submitAsync(Callable<T> callable, Executor executor)
 	{
-		CompletableFuture<T> future = new CompletableFuture<>();
-		try {
-			executor.execute(() -> {
+		return new CompletableFutureTask<T>(callable) {
+			{
 				try {
-					future.complete(callable.call());
+					executor.execute(this);
 				}
 				catch (Throwable ex) {
-					future.completeExceptionally(ex);
+					completeExceptionally(ex);
 				}
-			});
-		}
-		catch (Throwable ex) {
-			return exception(ex);
-		}
-		return future;
+			}
+		};
 	}
 
 	/**

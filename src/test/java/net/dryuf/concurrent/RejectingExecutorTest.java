@@ -16,7 +16,6 @@
 
 package net.dryuf.concurrent;
 
-import net.dryuf.concurrent.RejectingExecutor;
 import org.testng.AssertJUnit;
 import org.testng.annotations.Test;
 

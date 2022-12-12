@@ -26,6 +26,7 @@ import java.util.Arrays;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.function.Consumer;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -151,6 +152,14 @@ public class FutureUtilTest
 		CompletableFuture<Integer> future = FutureUtil.submitAsync(() -> { throw new NumberFormatException(); }, DirectExecutor.getInstance());
 		ExecutionException ex = Assert.expectThrows(ExecutionException.class, future::get);
 		MatcherAssert.assertThat(ex.getCause(), IsInstanceOf.instanceOf(NumberFormatException.class));
+	}
+
+	@Test
+	public void submitAsyncExecutor_closed_excepted() throws ExecutionException, InterruptedException
+	{
+		CompletableFuture<Integer> future = FutureUtil.submitAsync(() -> { throw new NumberFormatException(); }, RejectingExecutor.getInstance());
+		ExecutionException ex = Assert.expectThrows(ExecutionException.class, future::get);
+		MatcherAssert.assertThat(ex.getCause(), IsInstanceOf.instanceOf(RejectedExecutionException.class));
 	}
 
 	@Test

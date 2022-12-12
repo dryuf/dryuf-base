@@ -17,12 +17,10 @@
 package net.dryuf.concurrent.queue;
 
 import lombok.AllArgsConstructor;
-import net.dryuf.concurrent.executor.CloseableExecutor;
 import net.dryuf.concurrent.executor.CommonPoolExecutor;
 
 import java.io.Closeable;
 import java.util.Objects;
-import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;

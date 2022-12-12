@@ -25,27 +25,74 @@ import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 
 /**
  * Executor serializing the results and controlling pending items by capacity and count.
+ *
+ * Executor takes item capacity and count as parameters and blocks execution until sufficient resources are available.
+ *
+ * The results are completed in submission order and completion handlers executed serialized in this order.
+ *
+ * Usage:
+ *
+ * <pre>
+ *         // Controlling pending execution by size of available memory and maximum 128 items in queue
+ *         try (CapacityResultSerializingExecutor executor = new CapacityResultSerializingExecutor(Runtime.getRuntime().maxMemory()*7/8, 128)) {
+ *         	byte[] content = getContent();
+ *              CompletableFuture future = executor.submit(content.length, 1);
+ *         }
+ * </pre>
  */
 public class CapacityResultSerializingExecutor implements AutoCloseable
 {
+	/**
+	 * Creates instance from executor, closing it at close.
+	 *
+	 * @param capacity
+	 * 	max capacity of the executor
+	 * @param count
+	 * 	max number of pending items
+	 * @param executor
+	 * 	executor, closed at close
+	 */
+	public CapacityResultSerializingExecutor(long capacity, long count, CloseableExecutor executor)
+	{
+		this.capacity = capacity;
+		this.count = count;
+		this.executor = executor;
+		this.orderedTasks = new LinkedBlockingDeque<>();
+	}
+
+	/**
+	 * Creates instance from common pool.
+	 *
+	 * @param capacity
+	 * 	max capacity of the executor
+	 * @param count
+	 * 	max number of pending items
+	 */
 	public CapacityResultSerializingExecutor(long capacity, long count)
 	{
 		this(capacity, count, CommonPoolExecutor.getInstance());
 	}
 
-	public CapacityResultSerializingExecutor(long capacity, long count, Executor defaultExecutor)
+	/**
+	 * Creates instance from executor, not closing it at close.
+	 *
+	 * @param capacity
+	 * 	max capacity of the executor
+	 * @param count
+	 * 	max number of pending items
+	 * @param executor
+	 * 	executor, closed at close
+	 */
+	public CapacityResultSerializingExecutor(long capacity, long count, Executor executor)
 	{
-		this.capacity = capacity;
-		this.count = count;
-		this.defaultExecutor = defaultExecutor;
-		this.orderedTasks = new LinkedBlockingDeque<>();
+		this(capacity, count, new NotClosingExecutor(executor));
 	}
 
 	public <T> CompletableFuture<T> submit(long capacity, Callable<T> callable)
 	{
 		ExecutionFuture<T> future = new ExecutionFuture<>(capacity);
 		addFuture(capacity, future);
-		future.execute(callable, defaultExecutor);
+		future.execute(callable, executor);
 		return future.wrapping;
 	}
 
@@ -61,20 +108,25 @@ public class CapacityResultSerializingExecutor implements AutoCloseable
 	public void close()
 	{
 		boolean interrupted = false;
-		synchronized (isEmptySync) {
-			for (;;) {
-				try {
-					if (!orderedTasks.isEmpty())
-						isEmptySync.wait();
-					break;
-				}
-				catch (InterruptedException ex) {
-					interrupted = true;
+		try {
+			synchronized (isEmptySync) {
+				for (; ; ) {
+					try {
+						if (!orderedTasks.isEmpty())
+							isEmptySync.wait();
+						break;
+					}
+					catch (InterruptedException ex) {
+						interrupted = true;
+					}
 				}
 			}
 		}
-		if (interrupted)
-			Thread.currentThread().interrupt();
+		finally {
+			executor.close();
+			if (interrupted)
+				Thread.currentThread().interrupt();
+		}
 	}
 
 	private synchronized void addFuture(long capacity, ExecutionFuture<?> future)
@@ -186,7 +238,7 @@ public class CapacityResultSerializingExecutor implements AutoCloseable
 
 	private long count;
 
-	private final Executor defaultExecutor;
+	private final CloseableExecutor executor;
 
 	private final LinkedBlockingDeque<ExecutionFuture<?>> orderedTasks;
 

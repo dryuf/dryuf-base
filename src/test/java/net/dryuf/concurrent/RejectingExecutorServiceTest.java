@@ -16,9 +16,6 @@
 
 package net.dryuf.concurrent;
 
-import net.dryuf.concurrent.ListeningExecutorService;
-import net.dryuf.concurrent.ListeningExecutors;
-import net.dryuf.concurrent.RejectingExecutorService;
 import org.testng.AssertJUnit;
 import org.testng.annotations.Test;
 
@@ -28,7 +25,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 
 /**
- * Tests for {@link net.dryuf.concurrent.RejectingExecutorService RejectingExecutorService} class.
+ * Tests for {@link RejectingExecutorService RejectingExecutorService} class.
  *
  * @author
  * 	Zbynek Vyskovsky, mailto:kvr000@gmail.com http://kvr.znj.cz/software/java/ListenableFuture/ http://github.com/kvr000

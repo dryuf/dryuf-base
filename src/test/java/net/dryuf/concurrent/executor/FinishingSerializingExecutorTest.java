@@ -1,6 +1,5 @@
 package net.dryuf.concurrent.executor;
 
-import net.dryuf.concurrent.queue.SingleConsumerQueue;
 import org.testng.annotations.Test;
 
 import java.util.concurrent.CountDownLatch;
@@ -21,7 +20,8 @@ public class FinishingSerializingExecutorTest
 			catch (InterruptedException e) {
 				throw new RuntimeException(e);
 			}
-			waiter.countDown(); });
+			waiter.countDown();
+		});
 		executor.execute(() -> { waiter.countDown(); });
 		waiter.await();
 	}

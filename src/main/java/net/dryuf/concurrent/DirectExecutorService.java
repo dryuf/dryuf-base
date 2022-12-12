@@ -19,7 +19,6 @@ package net.dryuf.concurrent;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -39,7 +38,7 @@ public class DirectExecutorService extends AbstractListeningExecutorService
 			runnable.run();
 		}
 		catch (RuntimeException ex) {
-			logger.log(Level.SEVERE, "DirectExecutor: Runnable raised RuntimeException while executing Runnable "+runnable, ex);
+			logger.log(Level.SEVERE, "DirectExecutorService: Runnable raised RuntimeException while executing Runnable "+runnable, ex);
 		}
 	}
 
