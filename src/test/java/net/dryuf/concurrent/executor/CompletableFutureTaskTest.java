@@ -136,13 +136,15 @@ public class CompletableFutureTaskTest
 	@Test(timeOut = 10_000L)
 	public void run_overloadInterrupt_cancelled() throws Exception
 	{
-		for (int r = 0; r < 1000; ++r) {
-			int cnt = r < 10 ? 1<<r : 200;
-			List<CompletableFuture<Integer>> futures = IntStream.rangeClosed(0, cnt)
-				.mapToObj(i -> FutureUtil.submitAsync(() -> i*i, executor))
-				.collect(Collectors.toList());
-			futures.forEach(f -> f.cancel(true));
-			futures.forEach(f -> assertTrue(f.isDone()));
+		for (int c = 0; c < 200; ++c) {
+			for (int r = 0; r < 30; ++r) {
+				int cnt = r < 10 ? 1<<r : 200;
+				List<CompletableFuture<Integer>> futures = IntStream.rangeClosed(0, cnt)
+					.mapToObj(i -> FutureUtil.submitAsync(() -> i*i, executor))
+					.collect(Collectors.toList());
+				futures.forEach(f -> f.cancel(true));
+				futures.forEach(f -> assertTrue(f.isDone()));
+			}
 		}
 	}
 }

@@ -132,7 +132,7 @@ public class TypeDelegatingFunctionBenchmark
 	}
 
 	@Benchmark
-	public void			ownerCallerBenchmark(InstanceCallerCacheState state, Blackhole blackhole) throws InterruptedException
+	public void			ownerCallerBenchmark(OwnerCallerCacheState state, Blackhole blackhole) throws InterruptedException
 	{
 		callBulk(state.caller, blackhole);
 	}

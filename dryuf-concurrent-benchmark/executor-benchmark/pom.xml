@@ -10,7 +10,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>net.dryuf</groupId>
-	<artifactId>dryuf-concurrent-futures-benchmark</artifactId>
+	<artifactId>dryuf-concurrent-executor-benchmark</artifactId>
 	<version>1.5.0</version>
 	<packaging>jar</packaging>
 
@@ -24,10 +24,6 @@
 	<properties>
 		<javac.version>1.8</javac.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-
-		<guava.version>31.1-jre</guava.version>
-		<spring.version>5.3.18</spring.version>
-		<jmh.version>1.35</jmh.version>
 	</properties>
 
 	<build>
@@ -35,7 +31,6 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>${maven-compiler-plugin.version}</version>
 				<configuration>
 					<source>${javac.version}</source>
 					<target>${javac.version}</target>
@@ -53,7 +48,7 @@
 							<goal>shade</goal>
 						</goals>
 						<configuration>
-							<finalName>futures-benchmark</finalName>
+							<finalName>executor-benchmark</finalName>
 							<createDependencyReducedPom>false</createDependencyReducedPom>
 							<transformers>
 								<transformer
@@ -66,6 +61,27 @@
 				</executions>
 			</plugin>
 
+			<!-- mvn dryuf-jmh-review:update-benchmarks -->
+			<plugin>
+				<groupId>net.dryuf.maven.plugin</groupId>
+				<artifactId>dryuf-jmh-review-maven-plugin</artifactId>
+				<version>${dryuf-jmh-review-maven-plugin.version}</version>
+				<configuration>
+					<datasets>
+						<dataset>executor</dataset>
+					</datasets>
+					<output>README.md</output>
+				</configuration>
+				<executions>
+					<execution>
+						<phase>none</phase>
+						<goals>
+							<goal>update-benchmarks</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
 		</plugins>
 	</build>
 
@@ -74,29 +90,6 @@
 			<groupId>net.dryuf</groupId>
 			<artifactId>dryuf-concurrent</artifactId>
 			<version>${dryuf-concurrent.version}</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.openjdk.jmh</groupId>
-			<artifactId>jmh-core</artifactId>
-			<version>${jmh.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.openjdk.jmh</groupId>
-			<artifactId>jmh-generator-annprocess</artifactId>
-			<version>${jmh.version}</version>
-		</dependency>
-
-		<dependency>
-			<groupId>com.google.guava</groupId>
-			<artifactId>guava</artifactId>
-			<version>${guava.version}</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-core</artifactId>
-			<version>${spring.version}</version>
 		</dependency>
 
 	</dependencies>

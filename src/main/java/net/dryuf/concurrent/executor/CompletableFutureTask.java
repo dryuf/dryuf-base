@@ -17,11 +17,11 @@ public class CompletableFutureTask<T> extends CompletableFuture<T> implements Ru
 
 	private final boolean delayedCancel;
 
+	/** Execution progress: 0 - not started, 1 - executing, 2 - interrupting, 3 - completed, 4 - cancelled. */
+	private volatile int progress = 0;
+
 	/** Thread executing the task. */
 	private Thread myThread;
-
-	/** Execution progress: 0 - not started, 1 - executing, 2 - interrupting, 3 - completed. */
-	private volatile int progress = 0;
 
 	@SuppressWarnings({ "rawtypes" })
 	private static final AtomicIntegerFieldUpdater<CompletableFutureTask> PROGRESS_UPDATER = AtomicIntegerFieldUpdater.newUpdater(
