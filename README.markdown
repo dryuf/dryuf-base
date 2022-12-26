@@ -12,7 +12,7 @@ The performance is for obvious reasons (additional support of listeners) slightl
 <dependency>
 	<groupId>net.dryuf</groupId>
 	<artifactId>dryuf-concurrent</artifactId>
-	<version>1.5.0</version>
+	<version>1.6.0</version>
 </dependency>
 ```
 
@@ -129,26 +129,42 @@ than instanceof based code (the benchmark is based on 5 different classes passed
 
 Interface allowing automatically closing Executor in try-with-resources statements, mostly to simplify unit tests.
 
-### ClosingExecutor and NotClosingExecutor
+#### ClosingExecutor and NotClosingExecutor
 
 Implementation of the above, wrapping the existing ExecutorService into another Executor and either shutting down in
 `close()` method for ClosingExecutor or not shutting it down for NotClosingExecutor.
 Both of them wait until all submitted tasks are processed.
+
+#### UncontrolledCloseableExecutor
+
+CloseableExecutor not closing delegated executor, neither executions of current tasks.  This is simplified version when
+instance of CloseableExecutor is required but not any additional control because delegated executor is typically shared.
 
 ### ResourceClosingExecutor and ResourceNotClosingExecutor
 
 CloseableExecutor implementations, closing also associated AutoCloseable resource, tying lifecycle of executor together
 with another resource.  Mostly useful in tests or benchmarks where lifecycle of items is limited to scope.
 
-### ResultSerializingExecutor
+### SequencingExecutor
 
-Executor executing tasks in parallel but serializing the results in the order of submission.
+Executor executing tasks in order of submission.  This is useful when tasks are tied to specific resource (such as
+connection) but delegating executor is shared.
 
-### CapacityResultSerializingExecutor
+### ResultSequencingExecutor
 
-Executor serializing tasks in parallel but serializing the results in the order of submission.  Additionally, it
+Executor executing tasks in parallel but finishing the results sequentially in the order of submission.  This is useful
+when the tasks can be parallelized but they write to shared resource at the end.
+
+### CapacityResultSequencingExecutor
+
+Executor running tasks in parallel but finishing the results sequentially in the order of submission.  Additionally, it
 controls throughput by given capacity and number of parallel tasks.  Typically, the capacity is constrained by memory or
 disk size or number of connections.
+
+### FinishingSequencingExecutor
+
+Executor executing tasks in order of submission.  Once there is no tasks pending, it will additionally call `finisher`
+function to review the current state.
 
 ### SingleConsumerQueue
 
@@ -165,7 +181,7 @@ The code is released under version 2.0 of the [Apache License][].
 
 ## Stay in Touch
 
-Feel free to contact me at kvr000@gmail.com  and http://github.com/kvr000/ and http://github.com/dryuf/
+Feel free to contact me at kvr000@gmail.com and http://github.com/kvr000/ and http://github.com/dryuf/ and https://www.linkedin.com/in/zbynek-vyskovsky/
 
 [Apache License]: http://www.apache.org/licenses/LICENSE-2.0
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2022 Zbynek Vyskovsky mailto:kvr000@gmail.com http://github.com/kvr000/
+ * Copyright 2015-2022 Zbynek Vyskovsky mailto:kvr000@gmail.com http://github.com/kvr000/ https://github.com/dryuf/ https://www.linkedin.com/in/zbynek-vyskovsky/
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,23 +24,23 @@ import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 
 /**
- * Executor serializing the results and controlling pending items by capacity and count.
+ * Executor sequencing the results and controlling pending items by capacity and count.
  *
  * Executor takes item capacity and count as parameters and blocks execution until sufficient resources are available.
  *
- * The results are completed in submission order and completion handlers executed serialized in this order.
+ * The results are completed in submission order and completion handlers executed sequentially in this order.
  *
  * Usage:
  *
  * <pre>
  *         // Controlling pending execution by size of available memory and maximum 128 items in queue
- *         try (CapacityResultSerializingExecutor executor = new CapacityResultSerializingExecutor(Runtime.getRuntime().maxMemory()*7/8, 128)) {
+ *         try (CapacityResultSequencingExecutor executor = new CapacityResultSequencingExecutor(Runtime.getRuntime().maxMemory()*7/8, 128)) {
  *         	byte[] content = getContent();
  *              CompletableFuture future = executor.submit(content.length, 1);
  *         }
  * </pre>
  */
-public class CapacityResultSerializingExecutor implements AutoCloseable
+public class CapacityResultSequencingExecutor implements AutoCloseable
 {
 	/**
 	 * Creates instance from executor, closing it at close.
@@ -52,7 +52,7 @@ public class CapacityResultSerializingExecutor implements AutoCloseable
 	 * @param executor
 	 * 	executor, closed at close
 	 */
-	public CapacityResultSerializingExecutor(long capacity, long count, CloseableExecutor executor)
+	public CapacityResultSequencingExecutor(long capacity, long count, CloseableExecutor executor)
 	{
 		this.capacity = capacity;
 		this.count = count;
@@ -68,7 +68,7 @@ public class CapacityResultSerializingExecutor implements AutoCloseable
 	 * @param count
 	 * 	max number of pending items
 	 */
-	public CapacityResultSerializingExecutor(long capacity, long count)
+	public CapacityResultSequencingExecutor(long capacity, long count)
 	{
 		this(capacity, count, CommonPoolExecutor.getInstance());
 	}
@@ -83,7 +83,7 @@ public class CapacityResultSerializingExecutor implements AutoCloseable
 	 * @param executor
 	 * 	executor, closed at close
 	 */
-	public CapacityResultSerializingExecutor(long capacity, long count, Executor executor)
+	public CapacityResultSequencingExecutor(long capacity, long count, Executor executor)
 	{
 		this(capacity, count, new NotClosingExecutor(executor));
 	}
@@ -246,7 +246,7 @@ public class CapacityResultSerializingExecutor implements AutoCloseable
 
 	private final Object isEmptySync = new Object();
 
-	private static final AtomicIntegerFieldUpdater<CapacityResultSerializingExecutor>  PROCESSING_PENDING_UPDATER =
-			AtomicIntegerFieldUpdater.newUpdater(CapacityResultSerializingExecutor.class, "processingPending");
+	private static final AtomicIntegerFieldUpdater<CapacityResultSequencingExecutor>  PROCESSING_PENDING_UPDATER =
+			AtomicIntegerFieldUpdater.newUpdater(CapacityResultSequencingExecutor.class, "processingPending");
 }
 

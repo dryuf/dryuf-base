@@ -10,14 +10,14 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * Executor serializing the results.
  */
-public class CapacityResultSerializingExecutorTest
+public class CapacityResultSequencingExecutorTest
 {
 	@Test(timeOut = 1800L)
 	public void testParallel() throws InterruptedException
 	{
 		AtomicInteger pending = new AtomicInteger();
 		Callable<Void> fun = () -> { Thread.sleep(500); pending.decrementAndGet(); return null; };
-		try (CapacityResultSerializingExecutor executor = new CapacityResultSerializingExecutor(4, 4)) {
+		try (CapacityResultSequencingExecutor executor = new CapacityResultSequencingExecutor(4, 4)) {
 			pending.addAndGet(2); executor.submit(1, fun).thenAccept((r) -> pending.decrementAndGet());
 			pending.addAndGet(2); executor.submit(1, fun).thenAccept((r) -> pending.decrementAndGet());
 			if (Runtime.getRuntime().availableProcessors() >= 4) {
@@ -34,7 +34,7 @@ public class CapacityResultSerializingExecutorTest
 		AtomicInteger pending = new AtomicInteger();
 		Callable<Void> fun = () -> { Thread.sleep(200); pending.decrementAndGet(); return null; };
 		long start = System.currentTimeMillis();
-		try (CapacityResultSerializingExecutor executor = new CapacityResultSerializingExecutor(1, 2)) {
+		try (CapacityResultSequencingExecutor executor = new CapacityResultSequencingExecutor(1, 2)) {
 			pending.addAndGet(2); executor.submit(1, fun).thenAccept((r) -> pending.decrementAndGet());
 			pending.addAndGet(2); executor.submit(1, fun).thenAccept((r) -> pending.decrementAndGet());
 		}
@@ -47,7 +47,7 @@ public class CapacityResultSerializingExecutorTest
 		AtomicInteger pending = new AtomicInteger();
 		Callable<Void> fun = () -> { Thread.sleep(200); pending.decrementAndGet(); return null; };
 		long start = System.currentTimeMillis();
-		try (CapacityResultSerializingExecutor executor = new CapacityResultSerializingExecutor(2, 1)) {
+		try (CapacityResultSequencingExecutor executor = new CapacityResultSequencingExecutor(2, 1)) {
 			pending.addAndGet(2); executor.submit(1, fun).thenAccept((r) -> pending.decrementAndGet());
 			pending.addAndGet(2); executor.submit(1, fun).thenAccept((r) -> pending.decrementAndGet());
 		}

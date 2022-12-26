@@ -8,20 +8,20 @@ import java.util.concurrent.Executor;
 
 
 /**
- * Executor which serializes the pending tasks, executes them in a batch and then calls finisher.  The finisher runs
- * after every batch execution.
+ * Executor which runs the submitted tasks in order of submission.  Once the tasks queue is finished, it calls finisher
+ * function to review the current state.
  *
- * The implementation is useful for processes where the subtasks must happen serialized and once finished, there is a
+ * The implementation is useful for processes where the subtasks must happen sequentially and once finished, there is a
  * review to be executed examining current state.  This simplifies usage of {@link SingleConsumerQueue} .
  *
  * Underlying Runnable tasks must not fail, otherwise full executor would fail.  The submitted Callable task are
- * reported via return CompletableFuture.
+ * reported via returned CompletableFuture.
  *
  * Usage:
  *
  * <pre>{@code
  *
- * 	Executor executor = FinishingSerializingExecutor(this::finisher, CommonPoolExecutor.getInstance());
+ * 	Executor executor = FinishingSequencingExecutor(this::finisher, CommonPoolExecutor.getInstance());
  *
  *      executor.execute(() -> { doTaskOne(); });
  *      executor.execute(() -> { doTaskTwo(); });
@@ -33,14 +33,14 @@ import java.util.concurrent.Executor;
  *      }
  * }</pre>
  */
-public class FinishingSerializingExecutor implements CloseableExecutor
+public class FinishingSequencingExecutor implements CloseableExecutor
 {
 	private final SingleConsumerQueue<Runnable> queue;
 
 	private final CloseableExecutor runExecutor;
 
 	/**
-	 * Creates serializing executor from finisher callback.
+	 * Creates sequencing executor from finisher callback.
 	 *
 	 * @param finisher
 	 * 	callback called after added tasks are consumed
@@ -50,11 +50,11 @@ public class FinishingSerializingExecutor implements CloseableExecutor
 	 */
 	public static Executor createFromFinisher(Runnable finisher)
 	{
-		return new FinishingSerializingExecutor(finisher, CommonPoolExecutor.getInstance());
+		return new FinishingSequencingExecutor(finisher, CommonPoolExecutor.getInstance());
 	}
 
 	/**
-	 * Creates serializing executor from finisher callback.
+	 * Creates sequencing executor from finisher callback.
 	 *
 	 * @param finisher
 	 * 	callback called after added tasks are consumed
@@ -66,10 +66,10 @@ public class FinishingSerializingExecutor implements CloseableExecutor
 	 */
 	public static Executor createFromFinisher(Runnable finisher, CloseableExecutor runExecutor)
 	{
-		return new FinishingSerializingExecutor(finisher, runExecutor);
+		return new FinishingSequencingExecutor(finisher, runExecutor);
 	}
 
-	protected FinishingSerializingExecutor(Runnable finisher, CloseableExecutor runExecutor)
+	protected FinishingSequencingExecutor(Runnable finisher, CloseableExecutor runExecutor)
 	{
 		queue = new SingleConsumerQueue<Runnable>((this0) -> {
 			try (SingleConsumerQueue<Runnable>.Consumer consumer = this0.consume()) {

@@ -12,15 +12,15 @@ import java.util.stream.IntStream;
 
 
 /**
- * Tests for {@link ResultSerializingExecutor}.
+ * Tests for {@link ResultSequencingExecutor}.
  */
-public class ResultSerializingExecutorTest
+public class ResultSequencingExecutorTest
 {
 	@Test
 	public void testShort() throws InterruptedException
 	{
 		for (int t = 0; t < 1024; ++t) {
-			try (ResultSerializingExecutor rse = new ResultSerializingExecutor()) {
+			try (ResultSequencingExecutor rse = new ResultSequencingExecutor()) {
 				for (int i = ThreadLocalRandom.current().nextInt(512); --i >= 0; ) {
 					rse.submit(this::doLittle);
 				}
@@ -34,7 +34,7 @@ public class ResultSerializingExecutorTest
 		List<Integer> expected = IntStream.rangeClosed(0, 1023).boxed().collect(Collectors.toList());
 		List<Integer> result = new ArrayList<>();
 		try (CloseableExecutor executor = new ClosingExecutor(Executors.newCachedThreadPool());
-		     ResultSerializingExecutor rse = new ResultSerializingExecutor(executor)) {
+		     ResultSequencingExecutor rse = new ResultSequencingExecutor(executor)) {
 			for (int i = 0; i < 1024; ++i) {
 				final int i0 = i;
 				rse.submit(() -> { Thread.sleep(ThreadLocalRandom.current().nextInt(10)); return i0; })

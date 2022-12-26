@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2022 Zbynek Vyskovsky mailto:kvr000@gmail.com http://github.com/kvr000/
+ * Copyright 2015-2022 Zbynek Vyskovsky mailto:kvr000@gmail.com http://github.com/kvr000/ https://github.com/dryuf/ https://www.linkedin.com/in/zbynek-vyskovsky/
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,14 +25,14 @@ import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 
 
 /**
- * Executor serializing the results.
+ * Executor sequencing the results.
  *
- * The results are completed in submission order and completion handlers executed serialized in this order.
+ * The results are completed in submission order and completion handlers executed sequentially in this order.
  *
  * Usage:
  *
  * <pre>
- *         try (ResultSerializingExecutor executor = new ResultSerializingExecutor()) {
+ *         try (ResultSequencingExecutor executor = new ResultSequencingExecutor()) {
  *            	CompletableFuture future = executor.submit(() -> 5*5))
  *            		.thenRun((v) -> System.out.println("Completed: " + v));
  *              CompletableFuture future = executor.submit(() -> 6*6))
@@ -41,7 +41,7 @@ import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
  *         }
  * </pre>
  */
-public class ResultSerializingExecutor implements CloseableExecutor
+public class ResultSequencingExecutor implements CloseableExecutor
 {
 	/**
 	 * Creates instance from executor, closing it upon close.
@@ -49,7 +49,7 @@ public class ResultSerializingExecutor implements CloseableExecutor
 	 * @param executor
 	 * 	underlying executor
 	 */
-	public ResultSerializingExecutor(CloseableExecutor executor)
+	public ResultSequencingExecutor(CloseableExecutor executor)
 	{
 		this.executor = executor;
 	}
@@ -60,15 +60,15 @@ public class ResultSerializingExecutor implements CloseableExecutor
 	 * @param executor
 	 * 	underlying executor
 	 */
-	public ResultSerializingExecutor(Executor executor)
+	public ResultSequencingExecutor(Executor executor)
 	{
-		this(new NotClosingExecutor(executor));
+		this(new UncontrolledCloseableExecutor(executor));
 	}
 
 	/**
 	 * Creates instance from common pool executor.
 	 */
-	public ResultSerializingExecutor()
+	public ResultSequencingExecutor()
 	{
 		this(CommonPoolExecutor.getInstance());
 	}
@@ -222,6 +222,6 @@ public class ResultSerializingExecutor implements CloseableExecutor
 
 	private final Object isEmpty = new Object();
 
-	private static final AtomicIntegerFieldUpdater<ResultSerializingExecutor>  PROCESSING_PENDING_UPDATER =
-		AtomicIntegerFieldUpdater.newUpdater(ResultSerializingExecutor.class, "processingPending");
+	private static final AtomicIntegerFieldUpdater<ResultSequencingExecutor>  PROCESSING_PENDING_UPDATER =
+		AtomicIntegerFieldUpdater.newUpdater(ResultSequencingExecutor.class, "processingPending");
 }
