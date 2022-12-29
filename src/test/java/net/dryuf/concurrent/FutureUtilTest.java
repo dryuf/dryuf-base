@@ -33,6 +33,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertTrue;
 
 
 /**
@@ -84,7 +86,7 @@ public class FutureUtilTest
 			)).get();
 		}
 		catch (ExecutionException e) {
-			Assert.assertTrue(one.isCancelled());
+			assertTrue(one.isCancelled());
 			throw e.getCause();
 		}
 	}
@@ -103,8 +105,8 @@ public class FutureUtilTest
 			future.get();
 		}
 		catch (ExecutionException e) {
-			Assert.assertTrue(one.isCancelled());
-			Assert.assertTrue(two.isCancelled());
+			assertTrue(one.isCancelled());
+			assertTrue(two.isCancelled());
 			throw e.getCause();
 		}
 	}
@@ -202,5 +204,53 @@ public class FutureUtilTest
 			.accept(0, null);
 		verify(consumer, times(0))
 			.accept(any(NumberFormatException.class));
+	}
+
+	@Test(timeOut = 10000L)
+	public void waitUninterruptibly_uninterrupted_false()
+	{
+		Object lock = new Object();
+		synchronized (lock) {
+			CompletableFuture.runAsync(() -> { synchronized (lock) { lock.notify(); } });
+			boolean interrupted = FutureUtil.waitUninterruptibly(lock);
+			assertFalse(interrupted);
+		}
+	}
+
+	@Test(timeOut = 10000L)
+	public void waitUninterruptibly_interrupted_true()
+	{
+		Object lock = new Object();
+		Thread.currentThread().interrupt();
+		synchronized (lock) {
+			CompletableFuture.runAsync(() -> { synchronized (lock) { lock.notify(); } });
+			boolean interrupted = FutureUtil.waitUninterruptibly(lock);
+			assertTrue(interrupted);
+		}
+	}
+
+	@Test(timeOut = 10000L)
+	public void waitUninterruptiblyKeepInterrupt_uninterrupted_false()
+	{
+		Object lock = new Object();
+		synchronized (lock) {
+			CompletableFuture.runAsync(() -> { synchronized (lock) { lock.notify(); } });
+			FutureUtil.waitUninterruptiblyKeepInterrupt(lock);
+			boolean interrupted = Thread.interrupted();
+			assertFalse(interrupted);
+		}
+	}
+
+	@Test(timeOut = 10000L)
+	public void waitUninterruptiblyKeepInterrupt_interrupted_true()
+	{
+		Object lock = new Object();
+		Thread.currentThread().interrupt();
+		synchronized (lock) {
+			CompletableFuture.runAsync(() -> { synchronized (lock) { lock.notify(); } });
+			FutureUtil.waitUninterruptiblyKeepInterrupt(lock);
+			boolean interrupted = Thread.interrupted();
+			assertTrue(interrupted);
+		}
 	}
 }

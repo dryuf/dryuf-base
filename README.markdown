@@ -12,7 +12,7 @@ The performance is for obvious reasons (additional support of listeners) slightl
 <dependency>
 	<groupId>net.dryuf</groupId>
 	<artifactId>dryuf-concurrent</artifactId>
-	<version>1.6.0</version>
+	<version>1.6.1</version>
 </dependency>
 ```
 

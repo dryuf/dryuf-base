@@ -233,4 +233,43 @@ public class FutureUtil
 				consumer.accept(ex);
 		};
 	}
+
+	/**
+	 * Waits for object notification uninterruptibly, reporting interrupt via return value.  The object must be
+	 * synchronized upon entry.
+	 *
+	 * @param lock
+	 * 	the lock object
+	 *
+	 * @return
+	 * 	true if wait was interrupted, false otherwise.
+	 */
+	public static boolean waitUninterruptibly(Object lock)
+	{
+		boolean interrupted = false;
+		for (;;) {
+			try {
+				lock.wait();
+				break;
+			}
+			catch (InterruptedException e) {
+				interrupted = true;
+			}
+		}
+		return interrupted;
+	}
+
+	/**
+	 * Waits for object notification uninterruptibly, setting interrupt via Thread.interrupt.  The object must be
+	 * synchronized upon entry.
+	 *
+	 * @param lock
+	 * 	the lock object
+	 */
+	public static void waitUninterruptiblyKeepInterrupt(Object lock)
+	{
+		if (waitUninterruptibly(lock)) {
+			Thread.currentThread().interrupt();
+		}
+	}
 }
