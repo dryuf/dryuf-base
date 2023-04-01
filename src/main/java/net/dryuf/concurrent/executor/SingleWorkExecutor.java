@@ -44,7 +44,7 @@ public class SingleWorkExecutor<T, R> implements WorkExecutor<T, R>
 {
 	private final CloseableExecutor executor;
 
-	private final ThrowingFunction<T, R> processor;
+	private final ThrowingFunction<T, R, ? extends Exception> processor;
 
 	/**
 	 * Creates instance from {@link CloseableExecutor}, closing it upon close.
@@ -54,7 +54,7 @@ public class SingleWorkExecutor<T, R> implements WorkExecutor<T, R>
 	 * @param processor
 	 * 	processing function
 	 */
-	public SingleWorkExecutor(CloseableExecutor executor, ThrowingFunction<T, R> processor)
+	public SingleWorkExecutor(CloseableExecutor executor, ThrowingFunction<T, R, ? extends Exception> processor)
 	{
 		this.executor = executor;
 		this.processor = processor;
@@ -68,7 +68,7 @@ public class SingleWorkExecutor<T, R> implements WorkExecutor<T, R>
 	 * @param processor
 	 * 	processing function
 	 */
-	public SingleWorkExecutor(ExecutorService executor, ThrowingFunction<T, R> processor)
+	public SingleWorkExecutor(ExecutorService executor, ThrowingFunction<T, R, ? extends Exception> processor)
 	{
 		this(new NotClosingExecutor(executor), processor);
 	}

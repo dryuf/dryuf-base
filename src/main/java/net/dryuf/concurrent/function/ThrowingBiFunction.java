@@ -2,13 +2,15 @@ package net.dryuf.concurrent.function;
 
 import lombok.SneakyThrows;
 
-import java.util.function.Function;
+import java.util.function.BiFunction;
 
 
 /**
- * {@link java.util.function.Function} throwing an exception.
+ * {@link BiFunction} throwing an exception.
  *
  * @param <T>
+ *	parameter type
+ * @param <U>
  *	parameter type
  * @param <R>
  *      return type
@@ -19,12 +21,14 @@ import java.util.function.Function;
  * Copyright 2015-2023 Zbynek Vyskovsky mailto:kvr000@gmail.com http://github.com/kvr000/ https://github.com/dryuf/ https://www.linkedin.com/in/zbynek-vyskovsky/
  */
 @FunctionalInterface
-public interface ThrowingFunction<T, R, X extends Exception>
+public interface ThrowingBiFunction<T, U, R, X extends Exception>
 {
 	/**
 	 * Calculates the result from input.
 	 *
-	 * @param input
+	 * @param p0
+	 * 	input parameter
+	 * @param p1
 	 * 	input parameter
 	 *
 	 * @return
@@ -33,12 +37,14 @@ public interface ThrowingFunction<T, R, X extends Exception>
 	 * @throws X
 	 * 	in case of error.
 	 */
-	R apply(T input) throws X;
+	R apply(T p0, U p1) throws X;
 
 	/**
-	 * Calculates the result from input, silently propagating exceptions.
+	 * Calculates the result from input.
 	 *
-	 * @param input
+	 * @param p0
+	 * 	input parameter
+	 * @param p1
 	 * 	input parameter
 	 *
 	 * @return
@@ -48,40 +54,25 @@ public interface ThrowingFunction<T, R, X extends Exception>
 	 * 	in case of error.
 	 */
 	@SneakyThrows
-	default R sneakyApply(T input)
+	default R sneakyApply(T p0, U p1)
 	{
-		return apply(input);
+		return apply(p0, p1);
 	}
 
 	/**
-	 * Converts this into {@link Function}, propagating exceptions silently.
+	 * Converts this into {@link BiFunction}, propagating exceptions silently.
 	 *
 	 * @return
-	 * 	converted {@link Function} object.
+	 * 	converted {@link BiFunction} object.
 	 */
-	default Function<T, R> sneaky()
+	@SneakyThrows
+	default BiFunction<T, U, R> sneaky()
 	{
 		return this::sneakyApply;
 	}
 
 	/**
-	 * Function returning its input parameter as a result.
-	 *
-	 * @return
-	 * 	the input parameter
-	 *
-	 * @param <T>
-	 *     	type of input and output parameter
-	 * @param <X>
-	 *      type of thrown exception
-	 */
-	static <T, X extends Exception> ThrowingFunction<T, T, X> identity()
-	{
-		return v -> v;
-	}
-
-	/**
-	 * Converts {@link Function} to {@link ThrowingFunction} .
+	 * Converts {@link BiFunction} to {@link ThrowingBiFunction} .
 	 *
 	 * @param function
 	 * 	original function
@@ -91,10 +82,14 @@ public interface ThrowingFunction<T, R, X extends Exception>
 	 *
 	 * @param <T>
 	 *     	type of parameter
+	 * @param <U>
+	 *     	type of parameter
 	 * @param <R>
 	 *      type of return
+	 * @param <X>
+	 *      potential exception thrown by original function
 	 */
-	static <T, R> ThrowingFunction<T, R, RuntimeException> of(Function<T, R> function)
+	static <T, U, R, X extends Exception> ThrowingBiFunction<T, U, R, X> of(BiFunction<T, U, R> function)
 	{
 		return function::apply;
 	}
@@ -106,16 +101,18 @@ public interface ThrowingFunction<T, R, X extends Exception>
 	 * 	original function
 	 *
 	 * @return
-	 * 	converted {@link Function} object.
+	 * 	converted {@link BiFunction} object.
 	 *
 	 * @param <T>
 	 *      type of function parameter
+	 * @param <U>
+	 *     	type of parameter
 	 * @param <R>
 	 *      function return type
 	 * @param <X>
 	 *      potential exception thrown by original function
 	 */
-	static <T, R, X extends Exception> Function<T, R> sneaky(ThrowingFunction<T, R, X> function)
+	static <T, U, R, X extends Exception> BiFunction<T, U, R> sneaky(ThrowingBiFunction<T, U, R, X> function)
 	{
 		return function.sneaky();
 	}

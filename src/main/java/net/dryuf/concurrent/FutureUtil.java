@@ -35,6 +35,18 @@ import java.util.function.Consumer;
  */
 public class FutureUtil
 {
+	/**
+	 * Converts ListenableFuture to CompletableFuture.
+	 *
+	 * @param listenable
+	 * 	listenable future
+	 *
+	 * @return
+	 * 	CompletableFuture instance.
+	 *
+	 * @param <T>
+	 *      future return type
+	 */
 	public static <T> CompletableFuture<T> toCompletable(ListenableFuture<T> listenable)
 	{
 		CompletableFuture<T> future = new CompletableFuture<>();

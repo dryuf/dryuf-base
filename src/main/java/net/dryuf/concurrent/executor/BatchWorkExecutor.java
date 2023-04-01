@@ -37,7 +37,7 @@ public class BatchWorkExecutor<T, R> implements WorkExecutor<T, R>
 
 	private final CloseableExecutor executor;
 
-	private final ThrowingFunction<List<T>, List<CompletableFuture<R>>> processor;
+	private final ThrowingFunction<List<T>, List<CompletableFuture<R>>, Exception> processor;
 
 	private final int batchSize;
 
@@ -64,7 +64,7 @@ public class BatchWorkExecutor<T, R> implements WorkExecutor<T, R>
 	 * @param processor
 	 * 	processing function
 	 */
-	public BatchWorkExecutor(ExecutorService executor, int batchSize, ThrowingFunction<List<T>, List<CompletableFuture<R>>> processor)
+	public BatchWorkExecutor(ExecutorService executor, int batchSize, ThrowingFunction<List<T>, List<CompletableFuture<R>>, Exception> processor)
 	{
 		this(new NotClosingExecutor(executor), batchSize, processor);
 	}
@@ -79,7 +79,7 @@ public class BatchWorkExecutor<T, R> implements WorkExecutor<T, R>
 	 * @param processor
 	 * 	processing function
 	 */
-	public BatchWorkExecutor(CloseableExecutor executor, int batchSize, ThrowingFunction<List<T>, List<CompletableFuture<R>>> processor)
+	public BatchWorkExecutor(CloseableExecutor executor, int batchSize, ThrowingFunction<List<T>, List<CompletableFuture<R>>, Exception> processor)
 	{
 		this.executor = executor;
 		this.batchSize = batchSize;

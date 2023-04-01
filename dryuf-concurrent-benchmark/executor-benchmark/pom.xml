@@ -11,13 +11,12 @@
 
 	<groupId>net.dryuf</groupId>
 	<artifactId>dryuf-concurrent-executor-benchmark</artifactId>
-	<version>1.6.1</version>
 	<packaging>jar</packaging>
 
 	<parent>
 		<groupId>net.dryuf</groupId>
 		<artifactId>dryuf-concurrent-benchmark</artifactId>
-		<version>1.6.1</version>
+		<version>1.7.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 

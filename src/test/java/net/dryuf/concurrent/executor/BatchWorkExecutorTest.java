@@ -116,8 +116,8 @@ public class BatchWorkExecutorTest
 				futures.add(executor.submit(i));
 			}
 		}
-		Assert.assertTrue(executions.get() >= futures.size() / Runtime.getRuntime().availableProcessors());
 		Assert.assertEquals(itemsCount.get(), 100_000);
+		Assert.assertTrue(executions.get() >= futures.size() / (BatchWorkExecutor.PENDING_MAX + 1));
 		futures.forEach(f -> {
 			try {
 				f.get(0, TimeUnit.SECONDS);
@@ -149,8 +149,8 @@ public class BatchWorkExecutorTest
 					executor.submit(i);
 				}
 			}
-			Assert.assertTrue(executions.get() >= 100_000 / Runtime.getRuntime().availableProcessors());
 			Assert.assertEquals(itemsCount.get(), 100_000);
+			Assert.assertTrue(executions.get() >= 100_000 / (BatchWorkExecutor.PENDING_MAX + 1));
 		}
 		finally {
 			BatchWorkExecutor.PENDING_MAX = old;

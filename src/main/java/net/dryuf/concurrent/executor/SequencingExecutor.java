@@ -132,7 +132,7 @@ public class SequencingExecutor extends AbstractCloseableExecutor
 		}
 	}
 
-	public void executePending()
+	private void executePending()
 	{
 		synchronized (lock) {
 		}

@@ -31,6 +31,7 @@ package net.dryuf.concurrent.executor;
  */
 public class ResourceNotClosingExecutor extends AbstractCloseableExecutor
 {
+	/** Underlying executor. */
 	protected final CloseableExecutor executor;
 
 	/**
