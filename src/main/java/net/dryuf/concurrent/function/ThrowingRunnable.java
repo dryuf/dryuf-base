@@ -42,7 +42,8 @@ public interface ThrowingRunnable<X extends Exception>
 	 */
 	default Runnable sneaky()
 	{
-		return this::sneakyRun;
+		// Keep this expanded so mock instances still work correctly:
+		return sneaky(this);
 	}
 
 	/**
@@ -73,6 +74,15 @@ public interface ThrowingRunnable<X extends Exception>
 	 */
 	static <X extends Exception> Runnable sneaky(ThrowingRunnable<X> runnable)
 	{
-		return runnable.sneaky();
+		// Keep this expanded so mock instances still work correctly:
+		return new Runnable()
+		{
+			@Override
+			@SneakyThrows
+			public void run()
+			{
+				runnable.run();
+			}
+		};
 	}
 }

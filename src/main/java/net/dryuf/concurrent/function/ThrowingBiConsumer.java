@@ -4,6 +4,7 @@ import lombok.SneakyThrows;
 
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 
 
 /**
@@ -60,7 +61,7 @@ public interface ThrowingBiConsumer<T, U, X extends Exception>
 	 */
 	default BiConsumer<T, U> sneaky()
 	{
-		return this::sneakyAccept;
+		return sneaky(this);
 	}
 
 	/**
@@ -102,6 +103,15 @@ public interface ThrowingBiConsumer<T, U, X extends Exception>
 	 */
 	static <T, U, X extends Exception> BiConsumer<T, U> sneaky(ThrowingBiConsumer<T, U, X> function)
 	{
-		return function.sneaky();
+		// Keep this expanded so mock instances still work correctly:
+		return new BiConsumer<T, U>()
+		{
+			@Override
+			@SneakyThrows
+			public void accept(T t, U u)
+			{
+				function.accept(t, u);
+			}
+		};
 	}
 }

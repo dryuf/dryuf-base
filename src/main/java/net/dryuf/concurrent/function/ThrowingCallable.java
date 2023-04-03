@@ -3,6 +3,7 @@ package net.dryuf.concurrent.function;
 import lombok.SneakyThrows;
 
 import java.util.concurrent.Callable;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 
@@ -63,7 +64,7 @@ public interface ThrowingCallable<R, X extends Exception> extends Callable<R>
 	 */
 	default Supplier<R> sneakySupplier()
 	{
-		return this::sneakyCall;
+		return sneakySupplier(this);
 	}
 
 	/**
@@ -116,7 +117,16 @@ public interface ThrowingCallable<R, X extends Exception> extends Callable<R>
 	 */
 	static <R, X extends Exception> Callable<R> sneaky(ThrowingCallable<R, X> callable)
 	{
-		return callable.sneaky();
+		// Keep this expanded so mock instances still work correctly:
+		return new Callable<R>()
+		{
+			@Override
+			@SneakyThrows
+			public R call()
+			{
+				return callable.call();
+			}
+		};
 	}
 
 	/**
@@ -135,6 +145,15 @@ public interface ThrowingCallable<R, X extends Exception> extends Callable<R>
 	 */
 	static <R, X extends Exception> Supplier<R> sneakySupplier(ThrowingCallable<R, X> callable)
 	{
-		return callable.sneakySupplier();
+		// Keep this expanded so mock instances still work correctly:
+		return new Supplier<R>()
+		{
+			@Override
+			@SneakyThrows
+			public R get()
+			{
+				return callable.call();
+			}
+		};
 	}
 }

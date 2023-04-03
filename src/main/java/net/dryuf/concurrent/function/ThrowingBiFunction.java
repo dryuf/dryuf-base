@@ -3,6 +3,7 @@ package net.dryuf.concurrent.function;
 import lombok.SneakyThrows;
 
 import java.util.function.BiFunction;
+import java.util.function.Function;
 
 
 /**
@@ -68,7 +69,7 @@ public interface ThrowingBiFunction<T, U, R, X extends Exception>
 	@SneakyThrows
 	default BiFunction<T, U, R> sneaky()
 	{
-		return this::sneakyApply;
+		return sneaky(this);
 	}
 
 	/**
@@ -114,6 +115,15 @@ public interface ThrowingBiFunction<T, U, R, X extends Exception>
 	 */
 	static <T, U, R, X extends Exception> BiFunction<T, U, R> sneaky(ThrowingBiFunction<T, U, R, X> function)
 	{
-		return function.sneaky();
+		// Keep this expanded so mock instances still work correctly:
+		return new BiFunction<T, U, R>()
+		{
+			@Override
+			@SneakyThrows
+			public R apply(T t, U u)
+			{
+				return function.apply(t, u);
+			}
+		};
 	}
 }

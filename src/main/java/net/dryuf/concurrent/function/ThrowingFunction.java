@@ -61,7 +61,8 @@ public interface ThrowingFunction<T, R, X extends Exception>
 	 */
 	default Function<T, R> sneaky()
 	{
-		return this::sneakyApply;
+		// Keep this expanded so mock instances still work correctly:
+		return sneaky(this);
 	}
 
 	/**
@@ -117,6 +118,15 @@ public interface ThrowingFunction<T, R, X extends Exception>
 	 */
 	static <T, R, X extends Exception> Function<T, R> sneaky(ThrowingFunction<T, R, X> function)
 	{
-		return function.sneaky();
+		// Keep this expanded so mock instances still work correctly:
+		return new Function<T, R>()
+		{
+			@Override
+			@SneakyThrows
+			public R apply(T v)
+			{
+				return function.apply(v);
+			}
+		};
 	}
 }

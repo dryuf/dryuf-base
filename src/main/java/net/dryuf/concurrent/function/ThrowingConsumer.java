@@ -54,7 +54,7 @@ public interface ThrowingConsumer<T, X extends Exception>
 	 */
 	default Consumer<T> sneaky()
 	{
-		return this::sneakyAccept;
+		return sneaky(this);
 	}
 
 	/**
@@ -92,6 +92,15 @@ public interface ThrowingConsumer<T, X extends Exception>
 	 */
 	static <T, X extends Exception> Consumer<T> sneaky(ThrowingConsumer<T, X> function)
 	{
-		return function.sneaky();
+		// Keep this expanded so mock instances still work correctly:
+		return new Consumer<T>()
+		{
+			@Override
+			@SneakyThrows
+			public void accept(T v)
+			{
+				function.accept(v);
+			}
+		};
 	}
 }

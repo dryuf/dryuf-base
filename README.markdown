@@ -12,7 +12,7 @@ The performance is for obvious reasons (additional support of listeners) slightl
 <dependency>
 	<groupId>net.dryuf</groupId>
 	<artifactId>dryuf-concurrent</artifactId>
-	<version>1.6.1</version>
+	<version>1.7.1</version>
 </dependency>
 ```
 
@@ -174,6 +174,20 @@ Queue for submitting tasks and consuming them from single consumer, guaranteed t
 
 Executor processing work items instead of executing code.  Items are processed either in separate tasks
 (SingleWorkExecutor) or batched into groups to optimize throughput (BatchWorkExecutor).
+
+
+## Synchronization primitives
+
+### RunSingle
+
+Ensures there is only single activity running at the same time.  Typically used when there is repeated activity and new
+one should not be started until previous one finished.
+
+### CountDownRunner
+
+Similar to CountDownLatch but instead of actively waiting, it allows registering callback which is executed once the
+object reaches target.
+
 
 ## License
 

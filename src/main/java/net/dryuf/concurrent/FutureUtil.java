@@ -16,15 +16,27 @@
 
 package net.dryuf.concurrent;
 
+import lombok.SneakyThrows;
 import net.dryuf.concurrent.executor.CompletableFutureTask;
+import net.dryuf.concurrent.function.ThrowingBiConsumer;
+import net.dryuf.concurrent.function.ThrowingConsumer;
+import net.dryuf.concurrent.function.ThrowingFunction;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 
 /**
@@ -238,11 +250,220 @@ public class FutureUtil
 	 * @return
 	 * 	Future.whenComplete BiConsumer calling provided consumer only in case of failure.
 	 */
-	public static <T, X extends Throwable> BiConsumer<T, X> whenException(Consumer<X> consumer)
+	public static <T, X extends Throwable, E extends Exception> BiConsumer<T, X> whenException(ThrowingConsumer<X, E> consumer)
 	{
-		return (v, ex) -> {
+		return ThrowingBiConsumer.sneaky((v, ex) -> {
 			if (ex != null)
 				consumer.accept(ex);
+		});
+	}
+
+	/**
+	 * Gets future result or throws exception cause.
+	 *
+	 * @param future
+	 * 	the future
+	 * @param <V>
+	 *      type of future
+	 *
+	 * @return
+	 * 	future result.
+	 *
+	 * @apiNote
+	 * 	throws causing exception or InterruptedException if waiting was interrupted.
+	 *
+	 */
+	@SneakyThrows
+	public static <V, X extends Exception> V sneakyGet(CompletableFuture<V> future) throws X
+	{
+		try {
+			return future.get();
+		}
+		catch (ExecutionException e) {
+			throw e.getCause();
+		}
+		catch (InterruptedException e) {
+			throw e;
+		}
+	}
+
+	/**
+	 * Gets future result or throws exception cause.
+	 *
+	 * @param future
+	 * 	the future
+	 * @param <V>
+	 *      type of future
+	 *
+	 * @return
+	 * 	future result.
+	 *
+	 * @apiNote
+	 * 	throws causing exception or InterruptedException if waiting was interrupted.
+	 *
+	 */
+	@SneakyThrows
+	public static <V, X extends Exception> V sneakyGetNow(CompletableFuture<V> future, V valueIfAbsent) throws X
+	{
+		try {
+			return future.getNow(valueIfAbsent);
+		}
+		catch (CompletionException e) {
+			throw e.getCause();
+		}
+	}
+
+	/**
+	 * Propagates CompletableFuture to existing CompletableFuture.
+	 *
+	 * @param source
+	 * 	source future
+	 * @param target
+	 * 	target future
+	 * @param <V>
+	 *      type of future
+	 */
+	public static <V> void copy(CompletableFuture<V> source, CompletableFuture<V> target)
+	{
+		source.whenComplete((v, ex) -> FutureUtil.completeOrFail(target, v, ex));
+	}
+
+	/**
+	 * Joins two CompletableFuture objects, propagating first exception or last result.
+	 *
+	 * @param one
+	 * 	first future
+	 * @param two
+	 * 	second future
+	 * @param cancelling
+	 * 	whether to propagate cancellation to original futures
+	 * @param <V>
+	 *      type of futures
+	 *
+	 * @return
+	 * 	type of futures
+	 */
+	public static <V> CompletableFuture<V> join(CompletableFuture<V> one, CompletableFuture<V> two, boolean cancelling)
+	{
+		return new CompletableFuture<V>() {
+			{
+				AtomicInteger count = new AtomicInteger(2);
+				BiConsumer<V, Throwable> listener = (v, ex) -> {
+					if (ex == null) {
+						if (count.decrementAndGet() == 0)
+							complete(v);
+					}
+					else {
+						completeExceptionally(ex);
+						cancel(true);
+					}
+				};
+				one.whenComplete(listener);
+				two.whenComplete(listener);
+			}
+
+			@Override
+			public boolean cancel(boolean interrupt)
+			{
+				if (cancelling) {
+					try {
+						return one.cancel(interrupt)|two.cancel(interrupt);
+					}
+					finally {
+						super.cancel(interrupt);
+					}
+				}
+				else {
+					return super.cancel(interrupt);
+				}
+			}
+		};
+	}
+
+	/**
+	 * Adds handler to CompletableFuture chain, no matter whether it is successful or failed.
+	 *
+	 * @param source
+	 * 	original future
+	 * @param handler
+	 * 	result processing handler
+	 * @param <V>
+	 *      type of original future
+	 * @param <R>
+	 *      type of returned future
+	 *
+	 * @return
+	 * 	CompletableFuture representing either the original exception or return value from handler.
+	 */
+	public static <V, R> CompletableFuture<R> composeAlways(CompletableFuture<V> source, Callable<CompletableFuture<R>> handler)
+	{
+		return new CompletableFuture<R>()
+		{
+			{
+				source.whenComplete((v, ex) -> {
+					try {
+						handler.call().whenComplete((v2, ex2) -> {
+							if (ex != null) {
+								completeExceptionally(ex);
+							}
+							else if (ex2 != null) {
+								completeExceptionally(ex2);
+							}
+							else {
+								complete(v2);
+							}
+						});
+					}
+					catch (Throwable ex2) {
+						completeExceptionally(ex != null ? ex : ex2);
+					}
+				});
+			}
+		};
+	}
+
+	/**
+	 * Adds handler to CompletableFuture chain, no matter whether it is successful or failed.  If original future
+	 * fails, the value passed to handler will be null.
+	 *
+	 * @param source
+	 * 	original future
+	 * @param handler
+	 * 	result processing handler
+	 * @param <V>
+	 *      type of original future
+	 * @param <R>
+	 *      type of returned future
+	 * @param <X>
+	 *      type of thrown exception by handler
+	 *
+	 * @return
+	 * 	CompletableFuture representing either the original exception or return value from handler.
+	 */
+	public static <V, R, X extends Exception> CompletableFuture<R> composeAlways(CompletableFuture<V> source, ThrowingFunction<V, CompletableFuture<R>, X> handler)
+	{
+		return new CompletableFuture<R>()
+		{
+			{
+				source.whenComplete((v, ex) -> {
+					try {
+						handler.apply(v).whenComplete((v2, ex2) -> {
+							if (ex != null) {
+								completeExceptionally(ex);
+							}
+							else if (ex2 != null) {
+								completeExceptionally(ex2);
+							}
+							else {
+								complete(v2);
+							}
+						});
+					}
+					catch (Throwable ex2) {
+						completeExceptionally(ex != null ? ex : ex2);
+					}
+				});
+			}
 		};
 	}
 
@@ -283,5 +504,81 @@ public class FutureUtil
 		if (waitUninterruptibly(lock)) {
 			Thread.currentThread().interrupt();
 		}
+	}
+
+
+	/**
+	 * Converts List of CompletableFuture objects into one CompletableFuture completing once all original futures
+	 * are completed.  It cancels all original futures or closes underlying AutoCloseable when some of them fails.
+	 *
+	 * @param futures
+	 * 	list of futures
+	 * @param <T>
+	 *      type of futures result
+	 *
+	 * @return
+	 * 	future of list containing results of original futures.
+	 */
+	public static <T extends AutoCloseable> CompletableFuture<List<T>> nestedAllOrCancel(List<CompletableFuture<T>> futures)
+	{
+		if (futures.size() == 0) {
+			return CompletableFuture.completedFuture(Collections.emptyList());
+		}
+
+		AtomicInteger remaining = new AtomicInteger(futures.size());
+
+		return new CompletableFuture<List<T>>() {
+			{
+				futures.forEach(f -> {
+					f.whenComplete((v, ex) -> {
+						if (ex != null) {
+							completeExceptionally(ex);
+						}
+						if (remaining.decrementAndGet() == 0) {
+							stepInner();
+						}
+					});
+				});
+				whenComplete((v, ex) -> {
+					if (ex != null) {
+						futures.forEach(f -> {
+							f.cancel(true);
+							f.thenAccept(sf -> {
+								try {
+									sf.close();
+								}
+								catch (Exception e) {
+									// ignore;
+								}
+							});
+						});
+					}
+				});
+			}
+
+			private void stepInner()
+			{
+				complete(futures.stream()
+						.map(CompletableFuture::join)
+						.collect(Collectors.toList())
+				);
+			}
+
+			@Override
+			public boolean cancel(boolean interrupt)
+			{
+				futures.forEach((future) -> {
+					future.cancel(interrupt);
+					future.thenAccept(sf -> {
+						try {
+							sf.close();
+						}
+						catch (Exception e) {
+						}
+					});
+				});
+				return super.cancel(interrupt);
+			}
+		};
 	}
 }
