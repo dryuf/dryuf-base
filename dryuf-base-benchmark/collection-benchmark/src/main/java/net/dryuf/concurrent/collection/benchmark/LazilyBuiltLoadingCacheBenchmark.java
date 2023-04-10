@@ -17,7 +17,7 @@
 package net.dryuf.concurrent.collection.benchmark;
 
 import net.dryuf.base.collection.LazilyBuiltLoadingCache;
-import net.dryuf.base.concurrent.executor.SharedScheduledExecutorInstance;
+import net.dryuf.base.concurrent.future.ScheduledUtil;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.Fork;
 import org.openjdk.jmh.annotations.Level;
@@ -104,7 +104,7 @@ public class LazilyBuiltLoadingCacheBenchmark
 		{
 			cache = populateCache(new LazilyBuiltLoadingCache<>(Function.identity()));
 			try {
-				Thread.sleep((SharedScheduledExecutorInstance.MEMORY_PROPAGATION_DELAY_NS*2)/1_000_000+100);
+				Thread.sleep((ScheduledUtil.MEMORY_PROPAGATION_DELAY_NS*2)/1_000_000+100);
 			}
 			catch (InterruptedException e) {
 				throw new RuntimeException(e);

@@ -72,11 +72,14 @@ public interface ThrowingQuadFunction<T, U, V, W, R, X extends Exception>
 	/**
 	 * Converts this into {@link ThrowingQuadFunction}, propagating exceptions silently.
 	 *
+	 * @param <X>
+	 *      potential exception declared by returned function
+	 *
 	 * @return
 	 * 	converted {@link ThrowingQuadFunction} object.
 	 */
 	@SneakyThrows
-	default ThrowingQuadFunction<T, U, V, W, R, RuntimeException> sneakyThrowing()
+	default <X extends Exception> ThrowingQuadFunction<T, U, V, W, R, X> sneakyThrowing()
 	{
 		return sneakyThrowing(this);
 	}
@@ -91,25 +94,50 @@ public interface ThrowingQuadFunction<T, U, V, W, R, X extends Exception>
 	 * 	converted {@link ThrowingQuadFunction} object.
 	 *
 	 * @param <T>
-	 *      type of function parameter
+	 *	parameter type
 	 * @param <U>
-	 *     	type of parameter
+	 *	parameter type
+	 * @param <V>
+	 *	parameter type
+	 * @param <W>
+	 *	parameter type
 	 * @param <R>
 	 *      function return type
 	 * @param <X>
+	 *      potential exception declared by returned function
+	 * @param <OX>
 	 *      potential exception thrown by original function
 	 */
-	static <T, U, V, W, R, X extends Exception> ThrowingQuadFunction<T, U, V, W, R, RuntimeException> sneakyThrowing(ThrowingQuadFunction<T, U, V, W, R, X> function)
+	@SuppressWarnings("unchecked")
+	static <T, U, V, W, R, X extends Exception, OX extends Exception> ThrowingQuadFunction<T, U, V, W, R, X> sneakyThrowing(ThrowingQuadFunction<T, U, V, W, R, OX> function)
 	{
-		// Keep this expanded so mock instances still work correctly:
-		return new ThrowingQuadFunction<T, U, V, W, R, RuntimeException>()
-		{
-			@Override
-			@SneakyThrows
-			public R apply(T t, U u, V v, W w)
-			{
-				return function.apply(t, u, v, w);
-			}
-		};
+		return (ThrowingQuadFunction<T, U, V, W, R, X>) function;
+	}
+
+	/**
+	 * Converts ThrowingQuadFunction into ThrowingQuadFunction, propagating exceptions silently.
+	 *
+	 * @param function
+	 * 	original function
+	 *
+	 * @return
+	 * 	converted {@link ThrowingQuadFunction} object.
+	 *
+	 * @param <T>
+	 *	parameter type
+	 * @param <U>
+	 *	parameter type
+	 * @param <V>
+	 *	parameter type
+	 * @param <W>
+	 *	parameter type
+	 * @param <R>
+	 *      function return type
+	 * @param <OX>
+	 *      potential exception thrown by original function
+	 */
+	static <T, U, V, W, R, OX extends Exception> ThrowingQuadFunction<T, U, V, W, R, RuntimeException> sneakyRuntime(ThrowingQuadFunction<T, U, V, W, R, OX> function)
+	{
+		return sneakyThrowing(function);
 	}
 }

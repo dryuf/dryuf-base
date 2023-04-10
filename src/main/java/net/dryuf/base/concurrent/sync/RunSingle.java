@@ -4,6 +4,7 @@ import net.dryuf.base.function.ThrowingCallable;
 import net.dryuf.base.function.ThrowingRunnable;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 
 
@@ -22,7 +23,7 @@ public class RunSingle
 	private volatile int running;
 
 	/**
-	 * Runs a runnable if nothing else is running currently.
+	 * Runs a runnable if nothing else is running currently.  It rethrows original exception if supplier failed.
 	 *
 	 * @param runnable
 	 * 	runnable to run
@@ -46,7 +47,7 @@ public class RunSingle
 	}
 
 	/**
-	 * Runs a callable if nothing else is running currently.
+	 * Runs a callable if nothing else is running currently.  It rethrows original exception if supplier failed.
 	 *
 	 * @param callable
 	 * 	callable to run
@@ -77,7 +78,7 @@ public class RunSingle
 
 	/**
 	 * Runs future if there is nothing else running currently.  Returns cancelled future if there was something
-	 * running.
+	 * running.  It rethrows original exception if supplier failed.
 	 *
 	 * @param supplier
 	 * 	future supplier
@@ -98,6 +99,44 @@ public class RunSingle
 		if (RUNNING_UPDATER.compareAndSet(this, 0, 1)) {
 			try {
 				CompletableFuture<R> future = supplier.call();
+				future.whenComplete((v, ex) -> RUNNING_UPDATER.set(this, 0));
+				return future;
+			}
+			catch (Throwable ex) {
+				RUNNING_UPDATER.set(this, 0);
+				throw ex;
+			}
+		}
+		else {
+			CompletableFuture<R> future = new CompletableFuture<>();
+			future.cancel(true);
+			return future;
+		}
+	}
+
+	/**
+	 * Runs future if there is nothing else running currently.  Returns cancelled future if there was something
+	 * running.  It rethrows original exception if supplier failed.
+	 *
+	 * @param supplier
+	 * 	future supplier
+	 *
+	 * @return
+	 * 	CompletableFuture returned by supplier or cancelled future if there was something running.
+	 *
+	 * @param <R>
+	 *      return type
+	 * @param <X>
+	 *      exception thrown by supplier
+	 *
+	 * @throws X
+	 * 	if supplier threw an exception
+	 */
+	public <R, X extends Exception> CompletionStage<R> composeStage(ThrowingCallable<CompletionStage<R>, X> supplier) throws X
+	{
+		if (RUNNING_UPDATER.compareAndSet(this, 0, 1)) {
+			try {
+				CompletionStage<R> future = supplier.call();
 				future.whenComplete((v, ex) -> RUNNING_UPDATER.set(this, 0));
 				return future;
 			}

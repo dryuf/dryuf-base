@@ -52,10 +52,13 @@ public interface ThrowingRunnable<X extends Exception>
 	 * @param runnable
 	 * 	original {@link Runnable}.
 	 *
+	 * @param <X>
+	 *      potential exception declared by returned function
+	 *
 	 * @return
 	 * 	throwing runnable wrapper
 	 */
-	static ThrowingRunnable<RuntimeException> of(Runnable runnable)
+	static <X extends Exception> ThrowingRunnable<X> of(Runnable runnable)
 	{
 		return runnable::run;
 	}
@@ -84,5 +87,44 @@ public interface ThrowingRunnable<X extends Exception>
 				runnable.run();
 			}
 		};
+	}
+
+	/**
+	 * Converts ThrowingRunnable into ThrowingRunnable, propagating exceptions silently.
+	 *
+	 * @param runnable
+	 * 	original runnable
+	 *
+	 * @return
+	 * 	converted {@link Runnable} object.
+	 *
+	 * @param <X>
+	 *      exception declared on returned function
+	 * @param <OX>
+	 *      potential exception thrown by original function
+	 */
+	@SuppressWarnings("unchecked")
+	static <X extends Exception, OX extends Exception> ThrowingRunnable<X> sneakyThrowing(ThrowingRunnable<OX> runnable)
+	{
+		// Keep this expanded so mock instances still work correctly:
+		return (ThrowingRunnable<X>) runnable;
+	}
+
+	/**
+	 * Converts ThrowingRunnable into ThrowingRunnable, propagating exceptions silently.
+	 *
+	 * @param runnable
+	 * 	original runnable
+	 *
+	 * @return
+	 * 	converted {@link Runnable} object.
+	 *
+	 * @param <OX>
+	 *      potential exception thrown by original function
+	 */
+	static <OX extends Exception> ThrowingRunnable<RuntimeException> sneakyRuntime(ThrowingRunnable<OX> runnable)
+	{
+		// Keep this expanded so mock instances still work correctly:
+		return sneakyThrowing(runnable);
 	}
 }

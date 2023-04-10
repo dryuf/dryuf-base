@@ -89,19 +89,22 @@ public interface ThrowingCallable<R, X extends Exception> extends Callable<R>
 	 * @param supplier
 	 * 	original {@link Supplier}.
 	 *
+	 * @param <X>
+	 *      potential exception declared by returned function
+	 *
 	 * @return
 	 * 	throwing runnable wrapper
 	 *
 	 * @param <R>
 	 *      return type
 	 */
-	static <R> ThrowingCallable<R, Exception> ofSupplier(Supplier<R> supplier)
+	static <R, X extends Exception> ThrowingCallable<R, X> ofSupplier(Supplier<R> supplier)
 	{
 		return supplier::get;
 	}
 
 	/**
-	 * Converts ThrowingFunction into Function, propagating exceptions silently.
+	 * Converts ThrowingCallable into Callable, propagating exceptions silently.
 	 *
 	 * @param callable
 	 * 	original function
@@ -117,19 +120,11 @@ public interface ThrowingCallable<R, X extends Exception> extends Callable<R>
 	static <R, X extends Exception> Callable<R> sneaky(ThrowingCallable<R, X> callable)
 	{
 		// Keep this expanded so mock instances still work correctly:
-		return new Callable<R>()
-		{
-			@Override
-			@SneakyThrows
-			public R call()
-			{
-				return callable.call();
-			}
-		};
+		return callable;
 	}
 
 	/**
-	 * Converts ThrowingFunction into Function, propagating exceptions silently.
+	 * Converts ThrowingCallable into Supplier, propagating exceptions silently.
 	 *
 	 * @param callable
 	 * 	original function
@@ -154,5 +149,52 @@ public interface ThrowingCallable<R, X extends Exception> extends Callable<R>
 				return callable.call();
 			}
 		};
+	}
+
+	/**
+	 * Converts ThrowingCallable into ThrowingCallable, propagating exceptions silently.
+	 *
+	 * @param callable
+	 * 	original function
+	 *
+	 * @return
+	 * 	converted {@link Callable} object.
+	 *
+	 * @param <R>
+	 *      function return type
+	 * @param <X>
+	 *      exception declared by returned function
+	 */
+	@SuppressWarnings("unchecked")
+	static <R, X extends Exception> ThrowingCallable<R, X> sneakyThrowing(Callable<R> callable)
+	{
+		// Keep this expanded so mock instances still work correctly:
+		return new ThrowingCallable<R, X>()
+		{
+			@Override
+			@SneakyThrows
+			public R call() throws X
+			{
+				return callable.call();
+			}
+		};
+	}
+
+	/**
+	 * Converts ThrowingCallable into ThrowingCallable, propagating exceptions silently.
+	 *
+	 * @param callable
+	 * 	original function
+	 *
+	 * @return
+	 * 	converted {@link Callable} object.
+	 *
+	 * @param <R>
+	 *      function return type
+	 */
+	@SuppressWarnings("unchecked")
+	static <R> ThrowingCallable<R, RuntimeException> sneakyRuntime(Callable<R> callable)
+	{
+		return sneakyThrowing(callable);
 	}
 }

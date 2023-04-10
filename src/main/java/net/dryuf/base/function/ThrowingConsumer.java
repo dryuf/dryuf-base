@@ -102,4 +102,46 @@ public interface ThrowingConsumer<T, X extends Exception>
 			}
 		};
 	}
+
+	/**
+	 * Converts ThrowingConsumer into ThrowingConsumer, propagating exceptions silently.
+	 *
+	 * @param function
+	 * 	original function
+	 *
+	 * @return
+	 * 	converted {@link Consumer} object.
+	 *
+	 * @param <T>
+	 *      type of function parameter
+	 * @param <X>
+	 *      exception declared on returned function
+	 * @param <OX>
+	 *      potential exception thrown by original function
+	 */
+	@SuppressWarnings("unchecked")
+	static <T, X extends Exception, OX extends Exception> ThrowingConsumer<T, X> sneakyThrowing(ThrowingConsumer<T, OX> function)
+	{
+		return (ThrowingConsumer<T, X>) function;
+	}
+
+	/**
+	 * Converts ThrowingConsumer into ThrowingConsumer, propagating exceptions silently.
+	 *
+	 * @param function
+	 * 	original function
+	 *
+	 * @return
+	 * 	converted {@link Consumer} object.
+	 *
+	 * @param <T>
+	 *      type of function parameter
+	 * @param <OX>
+	 *      potential exception thrown by original function
+	 */
+	@SuppressWarnings("unchecked")
+	static <T, OX extends Exception> ThrowingConsumer<T, RuntimeException> sneakyRuntime(ThrowingConsumer<T, OX> function)
+	{
+		return sneakyThrowing(function);
+	}
 }

@@ -1,7 +1,7 @@
 package net.dryuf.concurrent.collection.benchmark;
 
 
-import net.dryuf.base.concurrent.executor.SharedScheduledExecutorInstance;
+import net.dryuf.base.concurrent.future.ScheduledUtil;
 import net.dryuf.base.function.ThrowingFunction;
 import net.dryuf.base.function.delegate.TypeDelegatingBiFunction2;
 import net.dryuf.base.function.delegate.TypeDelegatingFunction;
@@ -80,7 +80,7 @@ public class TypeDelegatingFunctionBenchmark
 					.add(Fifth.class, callee::calleeFifth)
 					.build();
 			callInner(caller, blackhole);
-			Thread.sleep((SharedScheduledExecutorInstance.MEMORY_PROPAGATION_DELAY_NS*2)/1_000_000+100);
+			Thread.sleep((ScheduledUtil.MEMORY_PROPAGATION_DELAY_NS*2)/1_000_000+100);
 		}
 
 		public ThrowingFunction<Object, Object, RuntimeException> caller;
@@ -110,7 +110,7 @@ public class TypeDelegatingFunctionBenchmark
 						.build();
 			};
 			callInner(caller, blackhole);
-			Thread.sleep((SharedScheduledExecutorInstance.MEMORY_PROPAGATION_DELAY_NS*2)/1_000_000+100);
+			Thread.sleep((ScheduledUtil.MEMORY_PROPAGATION_DELAY_NS*2)/1_000_000+100);
 		}
 
 		public ThrowingFunction<Object, Object, RuntimeException> caller;

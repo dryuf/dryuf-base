@@ -58,10 +58,13 @@ public interface ThrowingTriConsumer<T, U, V, X extends Exception>
 	/**
 	 * Converts this into {@link ThrowingTriConsumer}, propagating exceptions silently.
 	 *
+	 * @param <X>
+	 *      potential exception declared by returned function
+	 *
 	 * @return
 	 * 	converted {@link ThrowingTriConsumer} object.
 	 */
-	default ThrowingTriConsumer<T, U, V, RuntimeException> sneakyThrowing()
+	default <X extends Exception> ThrowingTriConsumer<T, U, V, X> sneakyThrowing()
 	{
 		return sneakyThrowing(this);
 	}
@@ -82,19 +85,37 @@ public interface ThrowingTriConsumer<T, U, V, X extends Exception>
 	 * @param <V>
 	 *     	type of parameter
 	 * @param <X>
+	 *      potential exception declared by returned function
+	 * @param <OX>
 	 *      potential exception thrown by original function
 	 */
-	static <T, U, V, X extends Exception> ThrowingTriConsumer<T, U, V, RuntimeException> sneakyThrowing(ThrowingTriConsumer<T, U, V, X> function)
+	@SuppressWarnings("unchecked")
+	static <T, U, V, X extends Exception, OX extends Exception> ThrowingTriConsumer<T, U, V, X> sneakyThrowing(ThrowingTriConsumer<T, U, V, OX> function)
 	{
-		// Keep this expanded so mock instances still work correctly:
-		return new ThrowingTriConsumer<T, U, V, RuntimeException>()
-		{
-			@Override
-			@SneakyThrows
-			public void accept(T t, U u, V v)
-			{
-				function.accept(t, u, v);
-			}
-		};
+		return (ThrowingTriConsumer<T, U, V, X>) function;
+	}
+
+	/**
+	 * Converts ThrowingTriConsumer into ThrowingTriConsumer, propagating exceptions silently.
+	 *
+	 * @param function
+	 * 	original function
+	 *
+	 * @return
+	 * 	converted {@link ThrowingTriConsumer} object.
+	 *
+	 * @param <T>
+	 *      type of function parameter
+	 * @param <U>
+	 *     	type of parameter
+	 * @param <V>
+	 *     	type of parameter
+	 * @param <OX>
+	 *      potential exception thrown by original function
+	 */
+	@SuppressWarnings("unchecked")
+	static <T, U, V, OX extends Exception> ThrowingTriConsumer<T, U, V, RuntimeException> sneakyRuntime(ThrowingTriConsumer<T, U, V, OX> function)
+	{
+		return sneakyThrowing(function);
 	}
 }

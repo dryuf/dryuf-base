@@ -95,7 +95,7 @@ public interface ThrowingBiFunction<T, U, R, X extends Exception>
 	}
 
 	/**
-	 * Converts ThrowingFunction into Function, propagating exceptions silently.
+	 * Converts ThrowingBiFunction into {@link BiFunction}, propagating exceptions silently.
 	 *
 	 * @param function
 	 * 	original function
@@ -124,5 +124,55 @@ public interface ThrowingBiFunction<T, U, R, X extends Exception>
 				return function.apply(t, u);
 			}
 		};
+	}
+
+	/**
+	 * Converts ThrowingBiFunction into {@link ThrowingBiFunction}, propagating exceptions silently.
+	 *
+	 * @param function
+	 * 	original function
+	 *
+	 * @return
+	 * 	converted {@link ThrowingBiFunction} object.
+	 *
+	 * @param <T>
+	 *      type of function parameter
+	 * @param <U>
+	 *     	type of parameter
+	 * @param <R>
+	 *      function return type
+	 * @param <X>
+	 *      exception declared on returned function
+	 * @param <OX>
+	 *      potential exception thrown by original function
+	 */
+	@SuppressWarnings("unchecked")
+	static <T, U, R, X extends Exception, OX extends Exception> ThrowingBiFunction<T, U, R, X> sneakyThrowing(ThrowingBiFunction<T, U, R, OX> function)
+	{
+		return (ThrowingBiFunction<T, U, R, X>) function;
+	}
+
+	/**
+	 * Converts ThrowingBiFunction into {@link ThrowingBiFunction}, propagating exceptions silently.
+	 *
+	 * @param function
+	 * 	original function
+	 *
+	 * @return
+	 * 	converted {@link ThrowingBiFunction} object.
+	 *
+	 * @param <T>
+	 *      type of function parameter
+	 * @param <U>
+	 *     	type of parameter
+	 * @param <R>
+	 *      function return type
+	 * @param <OX>
+	 *      potential exception thrown by original function
+	 */
+	@SuppressWarnings("unchecked")
+	static <T, U, R, OX extends Exception> ThrowingBiFunction<T, U, R, RuntimeException> sneakyRuntime(ThrowingBiFunction<T, U, R, OX> function)
+	{
+		return sneakyThrowing(function);
 	}
 }

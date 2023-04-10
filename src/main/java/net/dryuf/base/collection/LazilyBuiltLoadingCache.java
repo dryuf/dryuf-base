@@ -16,7 +16,7 @@
 
 package net.dryuf.base.collection;
 
-import net.dryuf.base.concurrent.executor.SharedScheduledExecutorInstance;
+import net.dryuf.base.concurrent.future.ScheduledUtil;
 
 import java.lang.ref.SoftReference;
 import java.util.Collections;
@@ -93,7 +93,7 @@ public class LazilyBuiltLoadingCache<K, V> implements Function<K, V>
 	 */
 	private void			scheduleUpdate(long delayMs)
 	{
-		SharedScheduledExecutorInstance.getScheduledExecutorService().schedule(
+		ScheduledUtil.sharedExecutor().schedule(
 				() -> snapshotBuilder(new SoftReference<>(LazilyBuiltLoadingCache.this)),
 				delayMs,
 				TimeUnit.NANOSECONDS
@@ -177,10 +177,10 @@ public class LazilyBuiltLoadingCache<K, V> implements Function<K, V>
 
 	/** Delay until snapshotMap is set from pendingMap. Must be long enough to propagate (invalidate) pendingMap
 	 * content among caches. */
-	static final long		UPDATE_DELAY_NS = SharedScheduledExecutorInstance.MEMORY_PROPAGATION_DELAY_NS;
+	static final long		UPDATE_DELAY_NS = ScheduledUtil.MEMORY_PROPAGATION_DELAY_NS;
 
 	/** Delay until pendingMap is built from work data. */
-	static final long		BUILD_DELAY_NS = Math.min(1000, Math.max(SharedScheduledExecutorInstance.MEMORY_PROPAGATION_DELAY_NS/10, 1));
+	static final long		BUILD_DELAY_NS = Math.min(1000, Math.max(ScheduledUtil.MEMORY_PROPAGATION_DELAY_NS/10, 1));
 
 	/** Updater to snapshotStatus instance variable. */
 	private static final AtomicIntegerFieldUpdater<LazilyBuiltLoadingCache> snapshotStatusUpdater = AtomicIntegerFieldUpdater.newUpdater(LazilyBuiltLoadingCache.class, "snapshotStatus");

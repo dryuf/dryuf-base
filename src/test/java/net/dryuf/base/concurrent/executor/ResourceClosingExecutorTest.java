@@ -1,9 +1,6 @@
 package net.dryuf.base.concurrent.executor;
 
-import net.dryuf.base.concurrent.executor.SharedScheduledExecutorInstance;
-import net.dryuf.base.concurrent.executor.CloseableExecutor;
-import net.dryuf.base.concurrent.executor.ResourceClosingExecutor;
-import net.dryuf.base.concurrent.executor.ResourceNotClosingExecutor;
+import net.dryuf.base.concurrent.future.ScheduledUtil;
 import org.mockito.Mockito;
 import org.testng.Assert;
 import org.testng.annotations.Test;
@@ -147,7 +144,7 @@ public class ResourceClosingExecutorTest
 				List<Runnable> tasksCopy = new ArrayList<>(tasks);
 				tasks.clear();
 				long time = System.currentTimeMillis();
-				SharedScheduledExecutorInstance.getScheduledExecutorService()
+				ScheduledUtil.sharedExecutor()
 					.schedule(() -> tasksCopy.forEach(Runnable::run), 100, TimeUnit.MILLISECONDS);
 				CompletableFuture<Void> f1 = CompletableFuture.runAsync(() -> executor.execute(() -> {}));
 				CompletableFuture<Void> f2 = CompletableFuture.runAsync(() -> executor.execute(() -> {}));

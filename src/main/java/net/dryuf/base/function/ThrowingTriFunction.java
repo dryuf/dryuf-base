@@ -66,11 +66,14 @@ public interface ThrowingTriFunction<T, U, V, R, X extends Exception>
 	/**
 	 * Converts this into {@link ThrowingTriFunction}, propagating exceptions silently.
 	 *
+	 * @param <X>
+	 *      potential exception declared by returned function
+	 *
 	 * @return
 	 * 	converted {@link ThrowingTriFunction} object.
 	 */
 	@SneakyThrows
-	default ThrowingTriFunction<T, U, V, R, RuntimeException> sneakyThrowing()
+	default <X extends Exception> ThrowingTriFunction<T, U, V, R, X> sneakyThrowing()
 	{
 		return sneakyThrowing(this);
 	}
@@ -91,19 +94,36 @@ public interface ThrowingTriFunction<T, U, V, R, X extends Exception>
 	 * @param <R>
 	 *      function return type
 	 * @param <X>
+	 *      potential exception declared by returned function
+	 * @param <OX>
 	 *      potential exception thrown by original function
 	 */
-	static <T, U, V, R, X extends Exception> ThrowingTriFunction<T, U, V, R, RuntimeException> sneakyThrowing(ThrowingTriFunction<T, U, V,	R, X> function)
+	@SuppressWarnings("unchecked")
+	static <T, U, V, R, X extends Exception, OX extends Exception> ThrowingTriFunction<T, U, V, R, X> sneakyThrowing(ThrowingTriFunction<T, U, V, R, OX> function)
 	{
-		// Keep this expanded so mock instances still work correctly:
-		return new ThrowingTriFunction<T, U, V, R, RuntimeException>()
-		{
-			@Override
-			@SneakyThrows
-			public R apply(T t, U u, V v)
-			{
-				return function.apply(t, u, v);
-			}
-		};
+		return (ThrowingTriFunction<T, U, V, R, X>) function;
+	}
+
+	/**
+	 * Converts ThrowingFunction into Function, propagating exceptions silently.
+	 *
+	 * @param function
+	 * 	original function
+	 *
+	 * @return
+	 * 	converted {@link ThrowingTriFunction} object.
+	 *
+	 * @param <T>
+	 *      type of function parameter
+	 * @param <U>
+	 *     	type of parameter
+	 * @param <R>
+	 *      function return type
+	 * @param <OX>
+	 *      potential exception thrown by original function
+	 */
+	static <T, U, V, R, OX extends Exception> ThrowingTriFunction<T, U, V, R, RuntimeException> sneakyRuntime(ThrowingTriFunction<T, U, V, R, OX> function)
+	{
+		return sneakyThrowing(function);
 	}
 }

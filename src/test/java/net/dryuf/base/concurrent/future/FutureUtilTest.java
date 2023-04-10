@@ -16,9 +16,7 @@
 
 package net.dryuf.base.concurrent.future;
 
-import com.google.common.collect.ImmutableList;
 import net.dryuf.base.concurrent.executor.DirectExecutor;
-import net.dryuf.base.concurrent.future.FutureUtil;
 import net.dryuf.base.concurrent.executor.RejectingExecutor;
 import net.dryuf.base.function.ThrowingConsumer;
 import net.dryuf.base.function.ThrowingFunction;
@@ -468,12 +466,12 @@ public class FutureUtilTest
 	{
 		AutoCloseable c0 = mock(AutoCloseable.class);
 		AutoCloseable c1 = mock(AutoCloseable.class);
-		CompletableFuture<List<AutoCloseable>> result = FutureUtil.nestedAllOrCancel(ImmutableList.of(
+		CompletableFuture<List<AutoCloseable>> result = FutureUtil.nestedAllOrCancel(Arrays.asList(
 				CompletableFuture.completedFuture(c0),
 				CompletableFuture.completedFuture(c1)
 		));
 
-		assertEquals(result.get(), ImmutableList.of(c0, c1));
+		assertEquals(result.get(), Arrays.asList(c0, c1));
 		verify(c0, times(0))
 			.close();
 		verify(c1, times(0))
@@ -485,7 +483,7 @@ public class FutureUtilTest
 	{
 		AutoCloseable c0 = mock(AutoCloseable.class);
 		AutoCloseable c1 = mock(AutoCloseable.class);
-		CompletableFuture<List<AutoCloseable>> result = FutureUtil.nestedAllOrCancel(ImmutableList.of(
+		CompletableFuture<List<AutoCloseable>> result = FutureUtil.nestedAllOrCancel(Arrays.asList(
 				CompletableFuture.completedFuture(c0),
 				FutureUtil.exception(new NumberFormatException()),
 				CompletableFuture.completedFuture(c1)
@@ -502,7 +500,7 @@ public class FutureUtilTest
 	{
 		AutoCloseable c0 = mock(AutoCloseable.class);
 		CompletableFuture<AutoCloseable> c1 = mock(CompletableFuture.class);
-		CompletableFuture<List<AutoCloseable>> result = FutureUtil.nestedAllOrCancel(ImmutableList.of(
+		CompletableFuture<List<AutoCloseable>> result = FutureUtil.nestedAllOrCancel(Arrays.asList(
 				CompletableFuture.completedFuture(c0),
 				FutureUtil.exception(new NumberFormatException()),
 				c1

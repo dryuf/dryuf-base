@@ -64,10 +64,13 @@ public interface ThrowingQuadConsumer<T, U, V, W, X extends Exception>
 	/**
 	 * Converts this into {@link ThrowingQuadConsumer}, propagating exceptions silently.
 	 *
+	 * @param <X>
+	 *      potential exception declared by returned function
+	 *
 	 * @return
 	 * 	converted {@link ThrowingQuadConsumer} object.
 	 */
-	default ThrowingQuadConsumer<T, U, V, W, RuntimeException> sneakyThrowing()
+	default <X extends Exception> ThrowingQuadConsumer<T, U, V, W, X> sneakyThrowing()
 	{
 		return sneakyThrowing(this);
 	}
@@ -90,19 +93,38 @@ public interface ThrowingQuadConsumer<T, U, V, W, X extends Exception>
 	 * @param <W>
 	 *     	type of parameter
 	 * @param <X>
+	 *      potential exception declared by returned function
+	 * @param <OX>
 	 *      potential exception thrown by original function
 	 */
-	static <T, U, V, W, X extends Exception> ThrowingQuadConsumer<T, U, V, W, RuntimeException> sneakyThrowing(ThrowingQuadConsumer<T, U, V, W, X> function)
+	@SuppressWarnings("unchecked")
+	static <T, U, V, W, X extends Exception, OX extends Exception> ThrowingQuadConsumer<T, U, V, W, X> sneakyThrowing(ThrowingQuadConsumer<T, U, V, W, OX> function)
 	{
-		// Keep this expanded so mock instances still work correctly:
-		return new ThrowingQuadConsumer<T, U, V, W, RuntimeException>()
-		{
-			@Override
-			@SneakyThrows
-			public void accept(T t, U u, V v, W w)
-			{
-				function.accept(t, u, v, w);
-			}
-		};
+		return (ThrowingQuadConsumer<T, U, V, W, X>) function;
+	}
+
+	/**
+	 * Converts ThrowingQuadConsumer into ThrowingQuadConsumer, propagating exceptions silently.
+	 *
+	 * @param function
+	 * 	original function
+	 *
+	 * @return
+	 * 	converted {@link ThrowingQuadConsumer} object.
+	 *
+	 * @param <T>
+	 *      type of function parameter
+	 * @param <U>
+	 *     	type of parameter
+	 * @param <V>
+	 *     	type of parameter
+	 * @param <W>
+	 *     	type of parameter
+	 * @param <OX>
+	 *      potential exception thrown by original function
+	 */
+	static <T, U, V, W, OX extends Exception> ThrowingQuadConsumer<T, U, V, W, RuntimeException> sneakyRuntime(ThrowingQuadConsumer<T, U, V, W, OX> function)
+	{
+		return sneakyThrowing(function);
 	}
 }

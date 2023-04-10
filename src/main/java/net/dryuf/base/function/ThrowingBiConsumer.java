@@ -84,7 +84,7 @@ public interface ThrowingBiConsumer<T, U, X extends Exception>
 	}
 
 	/**
-	 * Converts ThrowingFunction into Function, propagating exceptions silently.
+	 * Converts ThrowingFunction into {@link BiConsumer}, propagating exceptions silently.
 	 *
 	 * @param function
 	 * 	original function
@@ -111,5 +111,51 @@ public interface ThrowingBiConsumer<T, U, X extends Exception>
 				function.accept(t, u);
 			}
 		};
+	}
+
+	/**
+	 * Converts ThrowingFunction into {@link BiConsumer}, propagating exceptions silently.
+	 *
+	 * @param function
+	 * 	original function
+	 *
+	 * @return
+	 * 	converted {@link BiConsumer} object.
+	 *
+	 * @param <T>
+	 *      type of function parameter
+	 * @param <U>
+	 *     	type of parameter
+	 * @param <X>
+	 *      exception declared on returned function
+	 * @param <OX>
+	 *      potential exception thrown by original function
+	 */
+	@SuppressWarnings("unchecked")
+	static <T, U, X extends Exception, OX extends Exception> ThrowingBiConsumer<T, U, X> sneakyThrowing(ThrowingBiConsumer<T, U, OX> function)
+	{
+		return (ThrowingBiConsumer<T, U, X>) function;
+	}
+
+	/**
+	 * Converts ThrowingFunction into {@link BiConsumer}, propagating exceptions silently.
+	 *
+	 * @param function
+	 * 	original function
+	 *
+	 * @return
+	 * 	converted {@link BiConsumer} object.
+	 *
+	 * @param <T>
+	 *      type of function parameter
+	 * @param <U>
+	 *     	type of parameter
+	 * @param <OX>
+	 *      potential exception thrown by original function
+	 */
+	@SuppressWarnings("unchecked")
+	static <T, U, OX extends Exception> ThrowingBiConsumer<T, U, RuntimeException> sneakyRuntime(ThrowingBiConsumer<T, U, OX> function)
+	{
+		return sneakyThrowing(function);
 	}
 }

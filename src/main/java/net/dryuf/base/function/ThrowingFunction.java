@@ -95,7 +95,7 @@ public interface ThrowingFunction<T, R, X extends Exception>
 	 * @param <R>
 	 *      type of return
 	 */
-	static <T, R> ThrowingFunction<T, R, RuntimeException> of(Function<T, R> function)
+	static <T, R, X extends Exception> ThrowingFunction<T, R, X> of(Function<T, R> function)
 	{
 		return function::apply;
 	}
@@ -128,5 +128,50 @@ public interface ThrowingFunction<T, R, X extends Exception>
 				return function.apply(v);
 			}
 		};
+	}
+
+	/**
+	 * Converts ThrowingFunction into ThrowingFunction, propagating exceptions silently.
+	 *
+	 * @param function
+	 * 	original function
+	 *
+	 * @return
+	 * 	converted {@link ThrowingFunction} object.
+	 *
+	 * @param <T>
+	 *      type of function parameter
+	 * @param <R>
+	 *      function return type
+	 * @param <X>
+	 *      exception declared on returned function
+	 * @param <OX>
+	 *      potential exception thrown by original function
+	 */
+	@SuppressWarnings("unchecked")
+	static <T, R, X extends Exception, OX extends Exception> ThrowingFunction<T, R, X> sneakyThrowing(ThrowingFunction<T, R, OX> function)
+	{
+		return (ThrowingFunction<T, R, X>) function;
+	}
+
+	/**
+	 * Converts ThrowingFunction into ThrowingFunction, propagating exceptions silently.
+	 *
+	 * @param function
+	 * 	original function
+	 *
+	 * @return
+	 * 	converted {@link ThrowingFunction} object.
+	 *
+	 * @param <T>
+	 *      type of function parameter
+	 * @param <R>
+	 *      function return type
+	 * @param <OX>
+	 *      potential exception thrown by original function
+	 */
+	static <T, R, OX extends Exception> ThrowingFunction<T, R, RuntimeException> sneakyRuntime(ThrowingFunction<T, R, OX> function)
+	{
+		return sneakyThrowing(function);
 	}
 }

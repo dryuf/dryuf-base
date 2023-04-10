@@ -26,17 +26,14 @@
 
 	<groupId>net.dryuf</groupId>
 	<artifactId>dryuf-base</artifactId>
-	<version>1.7.2</version>
+	<version>1.7.3</version>
 	<packaging>jar</packaging>
 
 	<name>Dryuf Concurrent framework</name>
 	<url>https://github.com/dryuf/dryuf-base</url>
 	<description>
-		Dryuf Concurrent is enhancement over original Java Concurrent Future design. Apart from providing
-		ListenableFuture functionality, it provides flexibility how to handle cancel() operations, can delay the
-		notifications. It allows various types of notification listeners, distinguishing among successful end,
-		failure and end due to cancel request. Last but not least, it has very low memory footprint and
-		excellent performance, even outperforming JDK Future without listener support.
+                Dryuf Base is addition of various utilities related to collections, functions, concurrency or others to
+                Java base libraries.
 	</description>
 
 	<properties>
@@ -53,8 +50,8 @@
 
 		<lombok.version>1.18.22</lombok.version>
 
-		<testng.version>7.3.0</testng.version>
-		<mockito.version>4.4.0</mockito.version>
+		<testng.version>7.7.1</testng.version>
+		<mockito.version>5.2.0</mockito.version>
 		<hamcrest.version>2.2</hamcrest.version>
 
 		<dryuf-base.version>${project.version}</dryuf-base.version>
@@ -81,12 +78,6 @@
 				<artifactId>maven-surefire-plugin</artifactId>
 				<version>${maven-surefire-plugin.version}</version>
 				<configuration>
-					<!--
-						Not that we could not do it, the tests are ready for parallel testing.
-						But we want cause as much thread concurrency as possible in single test
-						to discover any race condition in the code.
-					-->
-					<parallel>method</parallel>
 				</configuration>
 			</plugin>
 
