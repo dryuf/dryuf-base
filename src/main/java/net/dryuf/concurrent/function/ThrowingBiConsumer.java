@@ -3,8 +3,6 @@ package net.dryuf.concurrent.function;
 import lombok.SneakyThrows;
 
 import java.util.function.BiConsumer;
-import java.util.function.BiFunction;
-import java.util.function.Function;
 
 
 /**
@@ -54,10 +52,10 @@ public interface ThrowingBiConsumer<T, U, X extends Exception>
 	}
 
 	/**
-	 * Converts this into {@link BiFunction}, propagating exceptions silently.
+	 * Converts this into {@link BiConsumer}, propagating exceptions silently.
 	 *
 	 * @return
-	 * 	converted {@link BiFunction} object.
+	 * 	converted {@link BiConsumer} object.
 	 */
 	default BiConsumer<T, U> sneaky()
 	{
@@ -65,7 +63,7 @@ public interface ThrowingBiConsumer<T, U, X extends Exception>
 	}
 
 	/**
-	 * Converts {@link BiFunction} to {@link ThrowingBiConsumer} .
+	 * Converts {@link BiConsumer} to {@link ThrowingBiConsumer} .
 	 *
 	 * @param function
 	 * 	original function
@@ -92,7 +90,7 @@ public interface ThrowingBiConsumer<T, U, X extends Exception>
 	 * 	original function
 	 *
 	 * @return
-	 * 	converted {@link BiFunction} object.
+	 * 	converted {@link BiConsumer} object.
 	 *
 	 * @param <T>
 	 *      type of function parameter

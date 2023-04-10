@@ -2,15 +2,17 @@ package net.dryuf.concurrent.function;
 
 import lombok.SneakyThrows;
 
-import java.util.function.BiFunction;
-
 
 /**
- * {@link BiFunction} throwing an exception.
+ * Four arguments function throwing an exception.
  *
  * @param <T>
  *	parameter type
  * @param <U>
+ *	parameter type
+ * @param <V>
+ *	parameter type
+ * @param <W>
  *	parameter type
  * @param <R>
  *      return type
@@ -21,7 +23,7 @@ import java.util.function.BiFunction;
  * Copyright 2015-2023 Zbynek Vyskovsky mailto:kvr000@gmail.com http://github.com/kvr000/ https://github.com/dryuf/ https://www.linkedin.com/in/zbynek-vyskovsky/
  */
 @FunctionalInterface
-public interface ThrowingBiFunction<T, U, R, X extends Exception>
+public interface ThrowingQuadFunction<T, U, V, W, R, X extends Exception>
 {
 	/**
 	 * Calculates the result from input.
@@ -30,6 +32,10 @@ public interface ThrowingBiFunction<T, U, R, X extends Exception>
 	 * 	input parameter
 	 * @param p1
 	 * 	input parameter
+	 * @param p2
+	 * 	input parameter
+	 * @param p3
+	 * 	input parameter
 	 *
 	 * @return
 	 * 	result.
@@ -37,7 +43,7 @@ public interface ThrowingBiFunction<T, U, R, X extends Exception>
 	 * @throws X
 	 * 	in case of error.
 	 */
-	R apply(T p0, U p1) throws X;
+	R apply(T p0, U p1, V p2, W p3) throws X;
 
 	/**
 	 * Calculates the result from input.
@@ -45,6 +51,10 @@ public interface ThrowingBiFunction<T, U, R, X extends Exception>
 	 * @param p0
 	 * 	input parameter
 	 * @param p1
+	 * 	input parameter
+	 * @param p2
+	 * 	input parameter
+	 * @param p3
 	 * 	input parameter
 	 *
 	 * @return
@@ -54,54 +64,31 @@ public interface ThrowingBiFunction<T, U, R, X extends Exception>
 	 * 	in case of error.
 	 */
 	@SneakyThrows
-	default R sneakyApply(T p0, U p1)
+	default R sneakyApply(T p0, U p1, V p2, W p3)
 	{
-		return apply(p0, p1);
+		return apply(p0, p1, p2, p3);
 	}
 
 	/**
-	 * Converts this into {@link BiFunction}, propagating exceptions silently.
+	 * Converts this into {@link ThrowingQuadFunction}, propagating exceptions silently.
 	 *
 	 * @return
-	 * 	converted {@link BiFunction} object.
+	 * 	converted {@link ThrowingQuadFunction} object.
 	 */
 	@SneakyThrows
-	default BiFunction<T, U, R> sneaky()
+	default ThrowingQuadFunction<T, U, V, W, R, RuntimeException> sneakyThrowing()
 	{
-		return sneaky(this);
+		return sneakyThrowing(this);
 	}
 
 	/**
-	 * Converts {@link BiFunction} to {@link ThrowingBiFunction} .
+	 * Converts ThrowingQuadFunction into ThrowingQuadFunction, propagating exceptions silently.
 	 *
 	 * @param function
 	 * 	original function
 	 *
 	 * @return
-	 * 	throwing function wrapper
-	 *
-	 * @param <T>
-	 *     	type of parameter
-	 * @param <U>
-	 *     	type of parameter
-	 * @param <R>
-	 *      type of return
-	 * @param <X>
-	 *      potential exception thrown by original function
-	 */
-	static <T, U, R, X extends Exception> ThrowingBiFunction<T, U, R, X> of(BiFunction<T, U, R> function)
-	{
-		return function::apply;
-	}
-
-	/**
-	 * Converts ThrowingFunction into Function, propagating exceptions silently.
-	 *
-	 * @param function
-	 * 	original function
-	 *
-	 * @return
-	 * 	converted {@link BiFunction} object.
+	 * 	converted {@link ThrowingQuadFunction} object.
 	 *
 	 * @param <T>
 	 *      type of function parameter
@@ -112,16 +99,16 @@ public interface ThrowingBiFunction<T, U, R, X extends Exception>
 	 * @param <X>
 	 *      potential exception thrown by original function
 	 */
-	static <T, U, R, X extends Exception> BiFunction<T, U, R> sneaky(ThrowingBiFunction<T, U, R, X> function)
+	static <T, U, V, W, R, X extends Exception> ThrowingQuadFunction<T, U, V, W, R, RuntimeException> sneakyThrowing(ThrowingQuadFunction<T, U, V, W, R, X> function)
 	{
 		// Keep this expanded so mock instances still work correctly:
-		return new BiFunction<T, U, R>()
+		return new ThrowingQuadFunction<T, U, V, W, R, RuntimeException>()
 		{
 			@Override
 			@SneakyThrows
-			public R apply(T t, U u)
+			public R apply(T t, U u, V v, W w)
 			{
-				return function.apply(t, u);
+				return function.apply(t, u, v, w);
 			}
 		};
 	}

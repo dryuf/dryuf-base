@@ -3,7 +3,6 @@ package net.dryuf.concurrent.function;
 import lombok.SneakyThrows;
 
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 
 /**

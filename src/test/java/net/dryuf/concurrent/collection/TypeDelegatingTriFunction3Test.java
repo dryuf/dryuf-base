@@ -24,16 +24,19 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 
 /**
- * Tests for {@link TypeDelegatingFunction}.
+ * Tests for {@link TypeDelegatingTriFunction3}.
  */
-public class TypeDelegatingFunctionTest
+public class TypeDelegatingTriFunction3Test
 {
 	@Test(expectedExceptions = IllegalArgumentException.class)
 	public void			testUndefined()
 	{
-		Fixture<Object, Object> fixture =
-			new Fixture<>(TypeDelegatingFunction.<Object, Object, RuntimeException>callbacksBuilder().build());
-		fixture.call(new Object());
+		Fixture<Object, Object, Object, Object, RuntimeException> fixture =
+			new Fixture<>(TypeDelegatingTriFunction3.<Object, Object, Object, Object,
+					RuntimeException>callbacksBuilder()
+				.build()
+		);
+		fixture.call(this, new Object(), new Object());
 	}
 
 	@Test
@@ -42,12 +45,14 @@ public class TypeDelegatingFunctionTest
 		AtomicInteger firstCount = new AtomicInteger();
 		AtomicInteger secondCount = new AtomicInteger();
 
-		Fixture<Object, Object> fixture = new Fixture<>(TypeDelegatingFunction.<Object, Object, RuntimeException>callbacksBuilder()
-				.add(FirstImpl.class, (First o) -> firstCount.incrementAndGet())
-				.add(SecondImpl.class, (Second o) -> secondCount.incrementAndGet())
+		Fixture<Object, Object, Object, Object, RuntimeException> fixture =
+			new Fixture<>(TypeDelegatingTriFunction3.<Object, Object, Object, Object,
+					RuntimeException>callbacksBuilder()
+				.add(FirstImpl.class, (Object o, Object p1, First i) -> firstCount.incrementAndGet())
+				.add(SecondImpl.class, (Object o, Object p2, Second i) -> secondCount.incrementAndGet())
 				.build()
 		);
-		fixture.call(new FirstImpl());
+		fixture.call(this, new Object(), new FirstImpl());
 
 		AssertJUnit.assertEquals(1, firstCount.get());
 		AssertJUnit.assertEquals(0, secondCount.get());
@@ -59,12 +64,14 @@ public class TypeDelegatingFunctionTest
 		AtomicInteger firstCount = new AtomicInteger();
 		AtomicInteger secondCount = new AtomicInteger();
 
-		Fixture<Object, Object> fixture = new Fixture<>(TypeDelegatingFunction.<Object, Object, RuntimeException>callbacksBuilder()
-				.add(FirstImpl.class, (First o) -> firstCount.incrementAndGet())
-				.add(SecondImpl.class, (Second o) -> secondCount.incrementAndGet())
+		Fixture<Object, Object, Object, Object, RuntimeException> fixture =
+			new Fixture<>(TypeDelegatingTriFunction3.<Object, Object, Object, Object,
+					RuntimeException>callbacksBuilder()
+				.add(FirstImpl.class, (Object o, Object p1, First i) -> firstCount.incrementAndGet())
+				.add(SecondImpl.class, (Object o, Object p2, Second i) -> secondCount.incrementAndGet())
 				.build()
 		);
-		fixture.call(new SecondImpl());
+		fixture.call(this, new Object(), new SecondImpl());
 
 		AssertJUnit.assertEquals(0, firstCount.get());
 		AssertJUnit.assertEquals(1, secondCount.get());
@@ -76,12 +83,14 @@ public class TypeDelegatingFunctionTest
 		AtomicInteger firstCount = new AtomicInteger();
 		AtomicInteger secondCount = new AtomicInteger();
 
-		Fixture<Object, Object> fixture = new Fixture<>(TypeDelegatingFunction.<Object, Object, RuntimeException>callbacksBuilder()
-				.add(First.class, (First o) -> firstCount.incrementAndGet())
-				.add(Second.class, (Second o) -> secondCount.incrementAndGet())
+		Fixture<Object, Object, Object, Object, RuntimeException> fixture =
+			new Fixture<>(TypeDelegatingTriFunction3.<Object, Object, Object, Object,
+					RuntimeException>callbacksBuilder()
+				.add(First.class, (Object o, Object p1, First i) -> firstCount.incrementAndGet())
+				.add(Second.class, (Object o, Object p2, Second i) -> secondCount.incrementAndGet())
 				.build()
 		);
-		fixture.call(new FirstImpl());
+		fixture.call(this, new Object(), new FirstImpl());
 
 		AssertJUnit.assertEquals(1, firstCount.get());
 		AssertJUnit.assertEquals(0, secondCount.get());
@@ -93,31 +102,33 @@ public class TypeDelegatingFunctionTest
 		AtomicInteger firstCount = new AtomicInteger();
 		AtomicInteger secondCount = new AtomicInteger();
 
-		Fixture<Object, Object> fixture =
-			new Fixture<>(TypeDelegatingFunction.<Object, Object, RuntimeException>callbacksBuilder()
-				.add(First.class, (First o) -> firstCount.incrementAndGet())
-				.add(Second.class, (Second o) -> secondCount.incrementAndGet())
+		Fixture<Object, Object, Object, Object, RuntimeException> fixture =
+			new Fixture<>(TypeDelegatingTriFunction3.<Object, Object, Object, Object,
+					RuntimeException>callbacksBuilder()
+				.add(First.class, (Object o, Object p1, First i) -> firstCount.incrementAndGet())
+				.add(Second.class, (Object o, Object p2, Second i) -> secondCount.incrementAndGet())
 				.build()
 		);
-		fixture.call(new BothImpl());
+		fixture.call(this, new Object(), new BothImpl());
 
 		AssertJUnit.assertEquals(1, firstCount.get());
 		AssertJUnit.assertEquals(0, secondCount.get());
 	}
 
-	private class Fixture<I, R>
+	private class Fixture<O, T, U, R, X extends Exception>
 	{
-		public 				Fixture(TypeDelegatingFunction<? super I, ? extends R, RuntimeException> callbacks)
+		public 				Fixture(
+			TypeDelegatingTriFunction3<O, ? super T, ? super U, ? extends R, RuntimeException> callbacks)
 		{
-			this.callbacks = callbacks;
+			this.callback = callbacks;
 		}
 
-		public R call(I input)
+		public R			call(O owner, T p1, U p2)
 		{
-			return callbacks.apply(input);
+			return callback.apply(owner, p1, p2);
 		}
 
-		private final TypeDelegatingFunction<? super I, ? extends R, RuntimeException> callbacks;
+		private final TypeDelegatingTriFunction3<O, ? super T, ? super U, ? extends R, RuntimeException> callback;
 	}
 
 	private static interface Input
@@ -167,25 +178,25 @@ public class TypeDelegatingFunctionTest
 	 */
 	public static class MyProcessor
 	{
-		private static final TypeDelegatingFunction<Input, Result, RuntimeException> processingFunctions =
-			TypeDelegatingFunction.<Input, Result, RuntimeException>callbacksBuilder()
-				.add(First.class, MyProcessor::processFirst)
-				.add(Second.class, MyProcessor::processSecond)
-				.build();
+		private static final TypeDelegatingTriFunction3<MyProcessor, Additional, Input, Result, RuntimeException> processingFunctions =
+				TypeDelegatingTriFunction3.<MyProcessor, Additional, Input, Result, RuntimeException>callbacksBuilder()
+					.add(First.class, MyProcessor::processFirst)
+					.add(Second.class, MyProcessor::processSecond)
+					.build();
 
-		public Result process(Input input)
+		public Result process(Additional p1, Input input)
 		{
-			return processingFunctions.apply(input);
+			return processingFunctions.apply(this, p1, input);
 		}
 
 		// The First can be also FirstImpl implements First
-		private static Result processFirst(First input)
+		private Result processFirst(Additional p1, First input)
 		{
 			return new Result(input.getFirstValue());
 		}
 
 		// The Second can be also SecondImpl implements Second
-		private static Result processSecond(Second input)
+		private Result processSecond(Additional p1, Second input)
 		{
 			return new Result(input.getSecondValue());
 		}

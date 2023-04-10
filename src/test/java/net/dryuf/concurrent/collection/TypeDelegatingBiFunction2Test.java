@@ -16,23 +16,23 @@
 
 package net.dryuf.concurrent.collection;
 
+import lombok.RequiredArgsConstructor;
 import org.testng.AssertJUnit;
 import org.testng.annotations.Test;
 
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.BiFunction;
 
 
 /**
- * Tests for {@link TypeDelegatingOwnerBiFunction}.
+ * Tests for {@link TypeDelegatingBiFunction2}.
  */
-public class TypeDelegatingOwnerBiFunctionTest
+public class TypeDelegatingBiFunction2Test
 {
 	@Test(expectedExceptions = IllegalArgumentException.class)
 	public void			testUndefined()
 	{
-		Fixture<Object, Object, Object> fixture = new Fixture<>(TypeDelegatingOwnerBiFunction.callbacksBuilder()
+		Fixture<Object, Object, Object> fixture =
+			new Fixture<>(TypeDelegatingBiFunction2.<Object, Object, Object, RuntimeException>callbacksBuilder()
 				.build()
 		);
 		fixture.call(this, new Object());
@@ -44,7 +44,8 @@ public class TypeDelegatingOwnerBiFunctionTest
 		AtomicInteger firstCount = new AtomicInteger();
 		AtomicInteger secondCount = new AtomicInteger();
 
-		Fixture<Object, Object, Object> fixture = new Fixture<>(TypeDelegatingOwnerBiFunction.callbacksBuilder()
+		Fixture<Object, Object, Object> fixture =
+			new Fixture<>(TypeDelegatingBiFunction2.<Object, Object, Object, RuntimeException>callbacksBuilder()
 				.add(FirstImpl.class, (Object o, First i) -> firstCount.incrementAndGet())
 				.add(SecondImpl.class, (Object o, Second i) -> secondCount.incrementAndGet())
 				.build()
@@ -61,7 +62,8 @@ public class TypeDelegatingOwnerBiFunctionTest
 		AtomicInteger firstCount = new AtomicInteger();
 		AtomicInteger secondCount = new AtomicInteger();
 
-		Fixture<Object, Object, Object> fixture = new Fixture<>(TypeDelegatingOwnerBiFunction.callbacksBuilder()
+		Fixture<Object, Object, Object> fixture =
+			new Fixture<>(TypeDelegatingBiFunction2.<Object, Object, Object, RuntimeException>callbacksBuilder()
 				.add(FirstImpl.class, (Object o, First i) -> firstCount.incrementAndGet())
 				.add(SecondImpl.class, (Object o, Second i) -> secondCount.incrementAndGet())
 				.build()
@@ -78,7 +80,8 @@ public class TypeDelegatingOwnerBiFunctionTest
 		AtomicInteger firstCount = new AtomicInteger();
 		AtomicInteger secondCount = new AtomicInteger();
 
-		Fixture<Object, Object, Object> fixture = new Fixture<>(TypeDelegatingOwnerBiFunction.callbacksBuilder()
+		Fixture<Object, Object, Object> fixture =
+			new Fixture<>(TypeDelegatingBiFunction2.<Object, Object, Object, RuntimeException>callbacksBuilder()
 				.add(First.class, (Object o, First i) -> firstCount.incrementAndGet())
 				.add(Second.class, (Object o, Second i) -> secondCount.incrementAndGet())
 				.build()
@@ -95,7 +98,8 @@ public class TypeDelegatingOwnerBiFunctionTest
 		AtomicInteger firstCount = new AtomicInteger();
 		AtomicInteger secondCount = new AtomicInteger();
 
-		Fixture<Object, Object, Object> fixture = new Fixture<>(TypeDelegatingOwnerBiFunction.callbacksBuilder()
+		Fixture<Object, Object, Object> fixture =
+			new Fixture<>(TypeDelegatingBiFunction2.<Object, Object, Object, RuntimeException>callbacksBuilder()
 				.add(First.class, (Object o, First i) -> firstCount.incrementAndGet())
 				.add(Second.class, (Object o, Second i) -> secondCount.incrementAndGet())
 				.build()
@@ -108,9 +112,9 @@ public class TypeDelegatingOwnerBiFunctionTest
 
 	private class Fixture<O, I, R>
 	{
-		public 				Fixture(Map<Class<? extends I>, BiFunction<O, ? super I, ? extends R>> callbacks)
+		public 				Fixture(TypeDelegatingBiFunction2<O, ? super I, ? extends R, RuntimeException> callbacks)
 		{
-			this.callback = new TypeDelegatingOwnerBiFunction<O, I, R>(callbacks);
+			this.callback = callbacks;
 		}
 
 		public R			call(O owner, I input)
@@ -118,15 +122,27 @@ public class TypeDelegatingOwnerBiFunctionTest
 			return callback.apply(owner, input);
 		}
 
-		private final TypeDelegatingOwnerBiFunction<O, I, R> callback;
+		private final TypeDelegatingBiFunction2<O, ? super I, ? extends R, RuntimeException> callback;
 	}
 
-	private static interface First
+	private static interface Input
 	{
 	}
 
-	private static interface Second
+	private static interface First extends Input
 	{
+		default int getFirstValue()
+		{
+			return 1;
+		}
+	}
+
+	private static interface Second extends Input
+	{
+		default int getSecondValue()
+		{
+			return 2;
+		}
 	}
 
 	private static class FirstImpl implements First
@@ -139,5 +155,44 @@ public class TypeDelegatingOwnerBiFunctionTest
 
 	private static class BothImpl implements First, Second
 	{
+	}
+
+	private static class Additional
+	{
+	}
+
+	@RequiredArgsConstructor
+	private static class Result
+	{
+		private final int value;
+	}
+
+	/**
+	 * This serves as javadoc example only:
+	 */
+	public static class MyProcessor
+	{
+		private static final TypeDelegatingBiFunction2<MyProcessor, Input, Result, RuntimeException> processingFunctions =
+			TypeDelegatingBiFunction2.<MyProcessor, Input, Result, RuntimeException>callbacksBuilder()
+				.add(First.class, MyProcessor::processFirst)
+				.add(Second.class, MyProcessor::processSecond)
+				.build();
+
+		public Result process(Input input)
+		{
+			return processingFunctions.apply(this, input);
+		}
+
+		// The First can be also FirstImpl implements First
+		private Result processFirst(First input)
+		{
+			return new Result(input.getFirstValue());
+		}
+
+		// The Second can be also SecondImpl implements Second
+		private Result processSecond(Second input)
+		{
+			return new Result(input.getSecondValue());
+		}
 	}
 }
