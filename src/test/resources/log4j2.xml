@@ -6,7 +6,7 @@
 		</console>
 	</appenders>
 	<loggers>
-		<logger name="cz.znj.kvr.sw.pof.concurrent" level="DEBUG" />
+		<logger name="net.dryuf.base" level="DEBUG" />
 
 		<root level="DEBUG">
 			<appenderRef ref="Console" />

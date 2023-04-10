@@ -25,12 +25,12 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>net.dryuf</groupId>
-	<artifactId>dryuf-concurrent</artifactId>
+	<artifactId>dryuf-base</artifactId>
 	<version>1.7.2</version>
 	<packaging>jar</packaging>
 
 	<name>Dryuf Concurrent framework</name>
-	<url>https://github.com/dryuf/dryuf-concurrent</url>
+	<url>https://github.com/dryuf/dryuf-base</url>
 	<description>
 		Dryuf Concurrent is enhancement over original Java Concurrent Future design. Apart from providing
 		ListenableFuture functionality, it provides flexibility how to handle cancel() operations, can delay the
@@ -57,7 +57,7 @@
 		<mockito.version>4.4.0</mockito.version>
 		<hamcrest.version>2.2</hamcrest.version>
 
-		<dryuf-concurrent.version>${project.version}</dryuf-concurrent.version>
+		<dryuf-base.version>${project.version}</dryuf-base.version>
 	</properties>
 
 	<licenses>
@@ -223,8 +223,8 @@
 	</dependencies>
 
 	<scm>
-		<connection>scm:git:git@github.com:dryuf/dryuf-concurrent.git</connection>
-		<url>https://github.com/dryuf/dryuf-concurrent.git</url>
+		<connection>scm:git:git@github.com:dryuf/dryuf-base.git</connection>
+		<url>https://github.com/dryuf/dryuf-base.git</url>
 	</scm>
 
 	<developers>
