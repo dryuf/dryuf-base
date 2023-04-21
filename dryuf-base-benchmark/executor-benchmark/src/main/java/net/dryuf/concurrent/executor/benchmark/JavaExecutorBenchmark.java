@@ -19,7 +19,7 @@ import java.util.concurrent.TimeUnit;
 
 
 /**
- * Benchmark for TypeDelegatingFunction implementations.
+ * Benchmark for Java Executor.
  */
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.NANOSECONDS)

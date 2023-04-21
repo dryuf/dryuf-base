@@ -60,6 +60,27 @@
 				</executions>
 			</plugin>
 
+			<!-- mvn dryuf-jmh-review:update-benchmarks -->
+			<plugin>
+				<groupId>net.dryuf.maven.plugin</groupId>
+				<artifactId>dryuf-jmh-review-maven-plugin</artifactId>
+				<version>${dryuf-jmh-review-maven-plugin.version}</version>
+				<configuration>
+					<datasets>
+						<dataset>collection</dataset>
+					</datasets>
+					<output>README.md</output>
+				</configuration>
+				<executions>
+					<execution>
+						<phase>none</phase>
+						<goals>
+							<goal>update-benchmarks</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
 		</plugins>
 	</build>
 

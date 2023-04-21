@@ -19,14 +19,18 @@ package net.dryuf.concurrent.collection.benchmark;
 import net.dryuf.base.collection.LazilyBuiltLoadingCache;
 import net.dryuf.base.concurrent.future.ScheduledUtil;
 import org.openjdk.jmh.annotations.Benchmark;
+import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Fork;
 import org.openjdk.jmh.annotations.Level;
 import org.openjdk.jmh.annotations.Measurement;
+import org.openjdk.jmh.annotations.Mode;
+import org.openjdk.jmh.annotations.OutputTimeUnit;
 import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.TearDown;
 import org.openjdk.jmh.annotations.Warmup;
+import org.openjdk.jmh.infra.Blackhole;
 
 import java.lang.reflect.Field;
 import java.util.Map;
@@ -37,7 +41,9 @@ import java.util.function.Function;
 
 
 @Warmup(iterations = 2, time = 1, timeUnit = TimeUnit.SECONDS)
-@Measurement(iterations = 2, time = 1, timeUnit = TimeUnit.SECONDS, batchSize = 1)
+@Measurement(iterations = 3, time = 1, timeUnit = TimeUnit.SECONDS, batchSize = 1)
+@OutputTimeUnit(TimeUnit.NANOSECONDS)
+@BenchmarkMode(Mode.AverageTime)
 @Fork(value = 1)
 public class LazilyBuiltLoadingCacheBenchmark
 {
@@ -112,7 +118,7 @@ public class LazilyBuiltLoadingCacheBenchmark
 			Field snapshotMapField = LazilyBuiltLoadingCache.class.getDeclaredField("snapshotMap");
 			snapshotMapField.setAccessible(true);
 			Map<?, ?> snapshotMap = (Map<?, ?>) snapshotMapField.get(cache);
-			if (snapshotMap.size() != 128) {
+			if (snapshotMap.size() != 100) {
 				throw new IllegalStateException("Warm cache not fully populated");
 			}
 		}
@@ -121,34 +127,38 @@ public class LazilyBuiltLoadingCacheBenchmark
 	}
 
 	@Benchmark
-	public void			directConcurrentBenchmark(DirectConcurrentCacheState state)
+	public void			directConcurrentBenchmark(Blackhole blackhole, DirectConcurrentCacheState state)
 	{
-		lookupCacheBulk(state.cache);
+		lookupCacheBulk(blackhole, state.cache);
 	}
 
 	@Benchmark
-	public void			coldLazilyBuiltLoadingCacheBenchmark(ColdCacheState state)
+	public void			coldLazilyBuiltLoadingCacheBenchmark(Blackhole blackhole, ColdCacheState state)
 	{
-		lookupCacheBulk(state.cache);
+		lookupCacheBulk(blackhole, state.cache);
 	}
 
 	@Benchmark
-	public void			warmLazilyBuiltLoadingCacheBenchmark(WarmCacheState state)
+	public void			warmLazilyBuiltLoadingCacheBenchmark(Blackhole blackhole, WarmCacheState state)
 	{
-		lookupCacheBulk(state.cache);
+		lookupCacheBulk(blackhole, state.cache);
 	}
 
-	private static void		lookupCacheBulk(Function<Integer, Integer> cache)
+	private static void		lookupCacheBulk(Blackhole blackhole, Function<Integer, Integer> cache)
 	{
-		for (int i = 0; i < 7812; ++i) {
-			lookupCacheInner(cache);
+		int x = 0;
+		for (int i = 0; i < 10; ++i) {
+			x += lookupCacheInner(cache);
 		}
+		blackhole.consume(x);
 	}
 
-	private static void		lookupCacheInner(Function<Integer, Integer> cache)
+	private static int		lookupCacheInner(Function<Integer, Integer> cache)
 	{
-		for (int i = 0; i < 128; ++i) {
-			cache.apply(i);
+		int x = 0;
+		for (int i = 0; i < 100; ++i) {
+			x += cache.apply(i);
 		}
+		return x;
 	}
 }

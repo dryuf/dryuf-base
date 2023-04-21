@@ -125,7 +125,7 @@ public class CopyOnWriteWeakLeakingCollection<E> extends AbstractCollection<E>
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public void clear()
+	public synchronized void clear()
 	{
 		items = (WeakReference<E>[]) EMPTY_ARRAY;
 	}

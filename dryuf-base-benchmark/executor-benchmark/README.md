@@ -1,11 +1,14 @@
 # Comparing CloseableExecutor to core Java Executor
 
-<!--- benchmark:table:executor:key=class&multipy=0.001&order=JavaExecutorBenchmark&order=ClosingExecutorBenchmark&compare=JavaExecutorBenchmark: --->
+<!--- benchmark:table:executor:key=class&multiply=0.001&order=JavaExecutorBenchmark&order=ClosingExecutorBenchmark&compare=JavaExecutorBenchmark: --->
 
 |Benchmark |Mode|Units|JavaExecutorBenchmark|ClosingExecutorBenchmark|JavaExecutorBenchmark%|ClosingExecutorBenchmark%|
 |:---------|:---|:----|--------------------:|-----------------------:|---------------------:|------------------------:|
-|b0_execute|avgt|ns/op|            66697.839|               78107.811|                    +0|                      +17|
-|b0_submit |avgt|ns/op|           117384.907|              128351.491|                    +0|                       +9|
+|b0_execute|avgt|ns/op|               66.698|                  78.108|                    +0|                      +17|
+|b0_submit |avgt|ns/op|              117.385|                 128.351|                    +0|                       +9|
+
+
+# Raw data
 
 <!--- benchmark:data:executor:all:: --->
 

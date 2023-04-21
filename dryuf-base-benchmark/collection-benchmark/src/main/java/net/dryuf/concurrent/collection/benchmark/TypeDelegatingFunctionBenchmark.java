@@ -6,9 +6,12 @@ import net.dryuf.base.function.ThrowingFunction;
 import net.dryuf.base.function.delegate.TypeDelegatingBiFunction2;
 import net.dryuf.base.function.delegate.TypeDelegatingFunction;
 import org.openjdk.jmh.annotations.Benchmark;
+import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Fork;
 import org.openjdk.jmh.annotations.Level;
 import org.openjdk.jmh.annotations.Measurement;
+import org.openjdk.jmh.annotations.Mode;
+import org.openjdk.jmh.annotations.OutputTimeUnit;
 import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
@@ -23,7 +26,9 @@ import java.util.function.Function;
  * Benchmark for TypeDelegatingFunction implementations.
  */
 @Warmup(iterations = 2, time = 1, timeUnit = TimeUnit.SECONDS)
-@Measurement(iterations = 2, time = 1, timeUnit = TimeUnit.SECONDS, batchSize = 1)
+@Measurement(iterations = 3, time = 1, timeUnit = TimeUnit.SECONDS, batchSize = 1)
+@OutputTimeUnit(TimeUnit.NANOSECONDS)
+@BenchmarkMode(Mode.AverageTime)
 @Fork(value = 1)
 public class TypeDelegatingFunctionBenchmark
 {
@@ -137,9 +142,7 @@ public class TypeDelegatingFunctionBenchmark
 
 	private static void		callBulk(ThrowingFunction<Object, Object, RuntimeException> caller, Blackhole blackhole)
 	{
-		for (int i = 0; i < 200000; ++i) {
-			callInner(caller, blackhole);
-		}
+		callInner(caller, blackhole);
 	}
 
 	private static void		callInner(ThrowingFunction<Object, Object, RuntimeException> caller, Blackhole blackhole)
@@ -151,27 +154,27 @@ public class TypeDelegatingFunctionBenchmark
 
 	public static class Callee
 	{
-		public Object calleeFirst (First o)
+		public Object calleeFirst(First o)
 		{
 			return o;
 		}
 
-		private Object calleeSecond (Second o)
+		private Object calleeSecond(Second o)
 		{
 			return o;
 		}
 
-		private Object calleeThird (Third o)
+		private Object calleeThird(Third o)
 		{
 			return o;
 		}
 
-		private Object calleeFourth (Fourth o)
+		private Object calleeFourth(Fourth o)
 		{
 			return o;
 		}
 
-		private Object calleeFifth (Fifth o)
+		private Object calleeFifth(Fifth o)
 		{
 			return o;
 		}
