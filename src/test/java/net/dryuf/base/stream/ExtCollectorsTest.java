@@ -41,4 +41,13 @@ public class ExtCollectorsTest
 
 		assertEquals(result, Arrays.<Integer>asList(1, 0, 2, 3, 4, 5, 6, 7, 8));
 	}
+
+	@Test
+	public void toStableSortedList_whenConflicting_thenKeepOrder()
+	{
+		List<Integer> result = Stream.<Integer>of(1, 0, 2, 3, 8, 4, 5, 6, 7)
+			.collect(ExtCollectors.toStableSortedList(EVEN_COMPARATOR));
+
+		assertEquals(result, Arrays.<Integer>asList(1, 0, 2, 3, 4, 5, 6, 7, 8));
+	}
 }
