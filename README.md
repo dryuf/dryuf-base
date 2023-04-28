@@ -8,7 +8,7 @@ Set of common utilities related to collections, functions and concurrency servic
 <dependency>
 	<groupId>net.dryuf</groupId>
 	<artifactId>dryuf-base</artifactId>
-	<version>1.7.4</version>
+	<version>1.7.5</version>
 </dependency>
 ```
 
