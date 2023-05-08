@@ -16,6 +16,11 @@
 
 package net.dryuf.base.concurrent.executor;
 
+import lombok.RequiredArgsConstructor;
+import net.dryuf.base.concurrent.future.FutureUtil;
+import net.dryuf.base.function.ThrowingFunction;
+
+import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -28,16 +33,25 @@ import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
  *
  * Executor takes item capacity and count as parameters and blocks execution until sufficient resources are available.
  *
- * The results are completed in submission order and completion handlers executed sequentially in this order.
+ * The results are completed in submission order and completor executed sequentially in this order.
+ *
+ * While the completors are executed sequentially, the same is not true for returned CompletableFuture handlers, as
+ * the handlers may be added after the future is already completed and executed in parallel with executor thread
+ * pools.  Therefore this Executor does not provide standard submit and execute methods to avoid confusion.
  *
  * Usage:
  *
  * <pre>
  *         // Controlling pending execution by size of available memory and maximum 128 items in queue
  *         try (CapacityResultSequencingExecutor executor = new CapacityResultSequencingExecutor(Runtime.getRuntime().maxMemory()*7/8, 128)) {
- *         	byte[] content = getContent();
- *              CompletableFuture future = executor.submit(content.length, 1);
+ *         	byte[] content1 = getContent1();
+ *              CompletableFuture future1 = executor.submit(content1.length, () -> processContent(content1), result -> writeResult(result));
+ *         	byte[] content2 = getContent2();
+ *              CompletableFuture future2 = executor.submit(content2.length, () -> processContent(content2), result -> writeResult(result));
  *         }
+ *         // The above execution will be limited by content lengths - if both fit within the limit, they will execute in parallel.
+ *         // While both tasks may execute in parallel, the writeResult calls will be called sequentially, with content1 first,
+ *         // even if processContent for content1 completed later
  * </pre>
  */
 public class CapacityResultSequencingExecutor implements AutoCloseable
@@ -88,17 +102,14 @@ public class CapacityResultSequencingExecutor implements AutoCloseable
 		this(capacity, count, new NotClosingExecutor(executor));
 	}
 
-	public <T> CompletableFuture<T> submit(long capacity, Callable<T> callable)
+	public <T, R, X extends Exception> CompletableFuture<R> submit(
+		long capacity,
+		Callable<T> callable,
+		ThrowingFunction<T, R, X> completor)
 	{
-		ExecutionFuture<T> future = new ExecutionFuture<>(capacity);
-		addFuture(capacity, future);
-		future.execute(callable, executor);
-		return future.wrapping;
-	}
-
-	public <T> CompletableFuture<T> submit(long capacity, Callable<T> callable, Executor executor)
-	{
-		ExecutionFuture<T> future = new ExecutionFuture<>(capacity);
+		Objects.requireNonNull(callable, "callable");
+		Objects.requireNonNull(completor, "completor");
+		ExecutionFuture<T, R, X> future = new ExecutionFuture<>(completor, capacity);
 		addFuture(capacity, future);
 		future.execute(callable, executor);
 		return future.wrapping;
@@ -129,7 +140,7 @@ public class CapacityResultSequencingExecutor implements AutoCloseable
 		}
 	}
 
-	private synchronized void addFuture(long capacity, ExecutionFuture<?> future)
+	private synchronized void addFuture(long capacity, ExecutionFuture<?, ?, ?> future)
 	{
 		for (;;) {
 			if ((this.count <= 0 || capacity > this.capacity) && !orderedTasks.isEmpty()) {
@@ -155,7 +166,7 @@ public class CapacityResultSequencingExecutor implements AutoCloseable
 	}
 
 	@SuppressWarnings("unchecked")
-	private void processPending(ExecutionFuture<?> future)
+	private void processPending(ExecutionFuture<?, ?, ?> future)
 	{
 		if (orderedTasks.peek() != future)
 			return;
@@ -164,10 +175,11 @@ public class CapacityResultSequencingExecutor implements AutoCloseable
 				return;
 
 			for (;;) {
-				ExecutionFuture<Object> item = (ExecutionFuture<Object>) orderedTasks.peek();
+				ExecutionFuture<Object, Object, Exception> item =
+					(ExecutionFuture<Object, Object, Exception>) orderedTasks.peek();
 				if (item == null || !item.isDone()) {
 					PROCESSING_PENDING_UPDATER.set(this, 0);
-					item = (ExecutionFuture<Object>) orderedTasks.peek();
+					item = (ExecutionFuture<Object, Object, Exception>) orderedTasks.peek();
 					if (item != null && item.isDone()) {
 						break;
 					}
@@ -179,12 +191,10 @@ public class CapacityResultSequencingExecutor implements AutoCloseable
 					return;
 				}
 				try {
-					item.wrapping.complete(item.get());
+					Object taskResult = FutureUtil.sneakyGet(item);
+					item.wrapping.complete(item.completor.apply(taskResult));
 				}
-				catch (ExecutionException e) {
-					item.wrapping.completeExceptionally(e.getCause());
-				}
-				catch (InterruptedException e) {
+				catch (Throwable e) {
 					item.wrapping.completeExceptionally(e);
 				}
 				finally {
@@ -199,13 +209,16 @@ public class CapacityResultSequencingExecutor implements AutoCloseable
 		}
 	}
 
-	private class ExecutionFuture<T> extends CompletableFuture<T>
+	@RequiredArgsConstructor
+	private class ExecutionFuture<T, R, X extends Exception> extends CompletableFuture<T>
 	{
+		private final ThrowingFunction<T, R, X> completor;
+
 		private final long capacity;
 
 		private CompletableFuture<Void> underlying;
 
-		private final CompletableFuture<T> wrapping = new CompletableFuture<T>() {
+		private final CompletableFuture<R> wrapping = new CompletableFuture<R>() {
 			@Override
 			public boolean cancel(boolean interrupt)
 			{
@@ -213,24 +226,20 @@ public class CapacityResultSequencingExecutor implements AutoCloseable
 			}
 		};
 
-		public ExecutionFuture(long capacity)
+		public void execute(Callable<T> callable, CloseableExecutor executor)
 		{
-			this.capacity = capacity;
-		}
-
-		public void execute(Callable<T> callable, Executor executor)
-		{
-			underlying = CompletableFuture.runAsync(() -> {
-				try {
-					complete(callable.call());
-				}
-				catch (Throwable e) {
-					completeExceptionally(e);
-				}
-				finally {
-					processPending(ExecutionFuture.this);
-				}
-			}, executor);
+			underlying = executor.submit(() -> {
+					try {
+						complete(callable.call());
+					}
+					catch (Throwable e) {
+						completeExceptionally(e);
+					}
+					finally {
+						processPending(ExecutionFuture.this);
+					}
+					return null;
+				});
 		}
 	}
 
@@ -240,7 +249,7 @@ public class CapacityResultSequencingExecutor implements AutoCloseable
 
 	private final CloseableExecutor executor;
 
-	private final LinkedBlockingDeque<ExecutionFuture<?>> orderedTasks;
+	private final LinkedBlockingDeque<ExecutionFuture<?, ?, ?>> orderedTasks;
 
 	private volatile int processingPending = 0;
 

@@ -1,7 +1,5 @@
 package net.dryuf.base.concurrent.executor;
 
-import net.dryuf.base.concurrent.executor.ResultSequencingExecutor;
-import net.dryuf.base.concurrent.executor.SequencingExecutor;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
@@ -20,7 +18,7 @@ import static org.testng.AssertJUnit.assertNull;
 
 
 /**
- * Tests for {@link ResultSequencingExecutor}.
+ * Tests for {@link SequencingExecutor}.
  */
 public class SequencingExecutorTest
 {

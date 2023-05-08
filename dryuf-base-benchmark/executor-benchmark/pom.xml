@@ -16,7 +16,7 @@
 	<parent>
 		<groupId>net.dryuf</groupId>
 		<artifactId>dryuf-base-benchmark</artifactId>
-		<version>1.7.4</version>
+		<version>1.8.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
