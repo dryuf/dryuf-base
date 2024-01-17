@@ -8,7 +8,7 @@ Set of common utilities related to collections, functions and concurrency servic
 <dependency>
 	<groupId>net.dryuf</groupId>
 	<artifactId>dryuf-base</artifactId>
-	<version>1.8.1</version>
+	<version>1.8.2</version>
 </dependency>
 ```
 
@@ -45,6 +45,19 @@ public Callee
 	...
 }
 ```
+
+
+## Collections
+
+### CountingMap
+
+Map that provides count of items before or after specified keys with log2(n) complexity.
+
+### LazilyBuiltLoadingCache
+
+Map lazily built during runtime, optimized for performance - similar to `ConcurrentHashMap.computeIfAbsent` but faster
+after items are populated.
+
 
 ## Custom Executor
 
