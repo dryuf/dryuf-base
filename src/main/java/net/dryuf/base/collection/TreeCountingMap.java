@@ -25,26 +25,29 @@ import java.util.SortedMap;
  *
  * Submap operations (subMap, headMap, tailMap) are currently not supported.
  *
+ * Map does not support null for values.
+ *
  * @param <K>
+ *      type of key
  * @param <V>
+ *      type of value
  */
 public class TreeCountingMap<K, V> extends AbstractMap<K, V> implements CountingMap<K, V>
 {
 	@Getter
 	@Accessors(fluent = true)
-	private final Comparator<K> comparator;
+	private final Comparator<? super K> comparator;
 
 	Node<K, V> root;
 
 	int version;
 
-	@SuppressWarnings("unchecked")
 	public TreeCountingMap()
 	{
-		this((Comparator<K>) Comparator.naturalOrder());
+		this((Comparator<? super K>) null);
 	}
 
-	public TreeCountingMap(Comparator<K> comparator)
+	public TreeCountingMap(Comparator<? super K> comparator)
 	{
 		this.comparator = comparator;
 	}
@@ -66,9 +69,7 @@ public class TreeCountingMap<K, V> extends AbstractMap<K, V> implements Counting
 	@Override
 	public boolean containsKey(Object key)
 	{
-		return Optional.ofNullable(findParentNode((K) key))
-			.map(n -> n.balance == 0)
-			.isPresent();
+		return get(key) != null;
 	}
 
 	@Override
@@ -82,17 +83,42 @@ public class TreeCountingMap<K, V> extends AbstractMap<K, V> implements Counting
 	@Override
 	public V get(Object key)
 	{
-		@SuppressWarnings("unchecked")
-		FindResult<K, V> found = findParentNode((K) key);
-		if (found == null || found.balance != 0) {
-			return null;
+		Comparator<? super K> comparator = comparator();
+		if (comparator != null) {
+			@SuppressWarnings("unchecked")
+			K k = (K) key;
+			for (Node<K, V> current = root; current != null; ) {
+				int cmp = comparator.compare(k, current.key);
+				if (cmp < 0) {
+					current = current.left;
+				} else if (cmp > 0) {
+					current = current.right;
+				} else {
+					return current.value;
+				}
+			}
 		}
-		return found.node.value;
+		else {
+			@SuppressWarnings("unchecked")
+			Comparable<? super K> k = (Comparable<? super K>) key;
+			for (Node<K, V> current = root; current != null; ) {
+				int cmp = k.compareTo(current.key);
+				if (cmp < 0) {
+					current = current.left;
+				} else if (cmp > 0) {
+					current = current.right;
+				} else {
+					return current.value;
+				}
+			}
+		}
+		return null;
 	}
 
 	@Override
 	public V put(K key, V value)
 	{
+		Objects.requireNonNull(value, "value must not be null");
 		FindResult<K, V> result = findParentNode(key);
 		if (result == null) {
 			root = new Node<>(null, key, value);
@@ -319,22 +345,43 @@ public class TreeCountingMap<K, V> extends AbstractMap<K, V> implements Counting
 		if (root == null) {
 			return null;
 		}
-		for (Node<K, V> current = root; ; ) {
-			int compare = comparator().compare(key, current.key);
-			if (compare < 0) {
-				if (current.left == null) {
-					return FindResult.of((byte) -1, current);
+		Comparator<? super K> comparator = comparator();
+		if (comparator != null) {
+			for (Node<K, V> current = root; ; ) {
+				int cmp = comparator.compare(key, current.key);
+				if (cmp < 0) {
+					if (current.left == null) {
+						return FindResult.of((byte) -1, current);
+					}
+					current = current.left;
+				} else if (cmp > 0) {
+					if (current.right == null) {
+						return FindResult.of((byte) 1, current);
+					}
+					current = current.right;
+				} else {
+					return FindResult.of((byte) 0, current);
 				}
-				current = current.left;
 			}
-			else if (compare > 0) {
-				if (current.right == null) {
-					return FindResult.of((byte) 1, current);
+		}
+		else {
+			@SuppressWarnings("unchecked")
+			Comparable<? super K> k = (Comparable<? super K>) key;
+			for (Node<K, V> current = root; ; ) {
+				int cmp = k.compareTo(current.key);
+				if (cmp < 0) {
+					if (current.left == null) {
+						return FindResult.of((byte) -1, current);
+					}
+					current = current.left;
+				} else if (cmp > 0) {
+					if (current.right == null) {
+						return FindResult.of((byte) 1, current);
+					}
+					current = current.right;
+				} else {
+					return FindResult.of((byte) 0, current);
 				}
-				current = current.right;
-			}
-			else {
-				return FindResult.of((byte) 0, current);
 			}
 		}
 	}

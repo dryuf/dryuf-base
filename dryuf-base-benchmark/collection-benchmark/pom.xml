@@ -68,6 +68,7 @@
 				<configuration>
 					<datasets>
 						<dataset>collection</dataset>
+						<dataset>CountingMap</dataset>
 					</datasets>
 					<output>README.md</output>
 				</configuration>

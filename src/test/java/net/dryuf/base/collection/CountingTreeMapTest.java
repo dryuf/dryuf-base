@@ -599,6 +599,23 @@ public class CountingTreeMapTest
 		assertEquals(keys, Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9));
 	}
 
+	@Test
+	public void any_withComparator_keptBalanced()
+	{
+		int[] items = new int[]{ 10, 5, 3, 1, 2, 6, 7, 8, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 20 };
+		TreeCountingMap<Integer, Integer> tree = new TreeCountingMap<>(Comparator.reverseOrder());
+		for (int i: items) {
+			tree.put(i, i*2);
+		}
+
+		assertEquals(tree.get(1), 2);
+		assertEquals(tree.get(10), 20);
+		assertEquals(tree.get(20), 40);
+		assertEquals(tree.get(21), null);
+	}
+
+
+
 	private static <K, V> void checkConsistency(TreeCountingMap<K, V> tree)
 	{
 		assertTrue(tree.root == null || tree.root.parent == null);
