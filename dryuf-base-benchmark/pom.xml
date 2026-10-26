@@ -11,7 +11,7 @@
 
 	<groupId>net.dryuf</groupId>
 	<artifactId>dryuf-base-benchmark</artifactId>
-	<version>1.8.2</version>
+	<version>1.8.3</version>
 	<packaging>pom</packaging>
 
 	<properties>
@@ -44,6 +44,14 @@
 				<configuration>
 					<source>${javac.version}</source>
 					<target>${javac.version}</target>
+					<!-- JDK 23+ no longer runs annotation processors found on classpath implicitly -->
+					<annotationProcessorPaths>
+						<path>
+							<groupId>org.openjdk.jmh</groupId>
+							<artifactId>jmh-generator-annprocess</artifactId>
+							<version>${jmh.version}</version>
+						</path>
+					</annotationProcessorPaths>
 				</configuration>
 			</plugin>
 

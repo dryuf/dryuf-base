@@ -26,7 +26,7 @@
 
 	<groupId>net.dryuf</groupId>
 	<artifactId>dryuf-base</artifactId>
-	<version>1.8.2</version>
+	<version>1.8.3</version>
 	<packaging>jar</packaging>
 
 	<name>Dryuf Concurrent framework</name>
@@ -48,10 +48,10 @@
 		<nexus-staging-maven-plugin>1.6.12</nexus-staging-maven-plugin>
 		<maven-release-plugin.version>3.0.0-M5</maven-release-plugin.version>
 
-		<lombok.version>1.18.30</lombok.version>
+		<lombok.version>1.18.42</lombok.version>
 
 		<testng.version>7.7.1</testng.version>
-		<mockito.version>5.7.0</mockito.version>
+		<mockito.version>5.20.0</mockito.version>
 		<hamcrest.version>2.2</hamcrest.version>
 
 		<dryuf-base.version>${project.version}</dryuf-base.version>
@@ -91,6 +91,14 @@
 					<compilerArgs>
 						<arg>-Xlint:all</arg>
 					</compilerArgs>
+					<!-- JDK 23+ no longer runs annotation processors found on classpath implicitly -->
+					<annotationProcessorPaths>
+						<path>
+							<groupId>org.projectlombok</groupId>
+							<artifactId>lombok</artifactId>
+							<version>${lombok.version}</version>
+						</path>
+					</annotationProcessorPaths>
 				</configuration>
 			</plugin>
 
