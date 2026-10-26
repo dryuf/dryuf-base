@@ -37,7 +37,7 @@
 	</description>
 
 	<properties>
-		<javac.version>8</javac.version>
+		<javac.version>17</javac.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
 		<maven-compiler-plugin.version>3.10.0</maven-compiler-plugin.version>
