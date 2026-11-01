@@ -26,7 +26,7 @@ public class FixedIdentityContextTest
 	private static final Permission READ = new RuntimePermission("read");
 	private static final Permission WRITE = new RuntimePermission("write");
 
-	private static final LocaleContext BASIC_LOCALE = BasicLocaleContext.builder().locale(Locale.ROOT).timeZone(ZoneOffset.UTC).currency(Currency.getInstance("EUR")).domain("default").build();
+	private static final LocaleContext BASIC_LOCALE = BasicLocaleContext.builder().locale(Locale.ROOT).timezone(ZoneOffset.UTC).currency(Currency.getInstance("EUR")).domain("default").build();
 	@Test
 	public void constructor_basic_defaultsEmpty()
 	{

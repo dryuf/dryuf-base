@@ -26,7 +26,7 @@ public class BasicLocaleContext implements LocaleContext
        private Locale locale;
 
        @NonNull
-       private ZoneId timeZone;
+       private ZoneId timezone;
 
        @NonNull
        private Currency currency;
@@ -34,8 +34,8 @@ public class BasicLocaleContext implements LocaleContext
        @NonNull
        private String domain;
 
-       public BasicLocaleContext of(@NonNull Locale locale, @NonNull ZoneId timeZone, @NonNull Currency currency) {
-              return of(locale, timeZone, currency, DEFAULT_DOMAIN);
+       public static BasicLocaleContext of(@NonNull Locale locale, @NonNull ZoneId timezone, @NonNull Currency currency) {
+              return of(locale, timezone, currency, DEFAULT_DOMAIN);
        }
 
        @Override
@@ -43,7 +43,7 @@ public class BasicLocaleContext implements LocaleContext
        {
               return Map.of(
                      "locale", locale.toLanguageTag(),
-                     "timeZone", timeZone.getId(),
+                     "timezone", timezone.getId(),
                      "currency", currency.getCurrencyCode(),
                      "domain", domain
               );
@@ -55,8 +55,8 @@ public class BasicLocaleContext implements LocaleContext
               switch (name) {
               case "locale":
                       return Optional.of(locale.toLanguageTag());
-              case "timeZone":
-                      return Optional.of(timeZone.getId());
+              case "timezone":
+                      return Optional.of(timezone.getId());
               case "currency":
                       return Optional.of(currency.getCurrencyCode());
               case "domain":

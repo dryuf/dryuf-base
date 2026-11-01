@@ -26,7 +26,7 @@ public class RolesIdentityContextTest
 
 	private final FixedIdentityContext parent = new FixedIdentityContext(
 		PRINCIPAL,
-		BasicLocaleContext.builder().locale(Locale.ROOT).timeZone(ZoneOffset.UTC).currency(Currency.getInstance("EUR")).domain("default").build(),
+		BasicLocaleContext.builder().locale(Locale.ROOT).timezone(ZoneOffset.UTC).currency(Currency.getInstance("EUR")).domain("default").build(),
 		Set.of("user"),
 		true,
 		Map.of("age", 42),

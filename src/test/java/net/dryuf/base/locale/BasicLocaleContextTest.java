@@ -23,7 +23,7 @@ public class BasicLocaleContextTest
 	public void accessors_values_returned()
 	{
 		assertEquals(context.locale(), Locale.forLanguageTag("cs-CZ"));
-		assertEquals(context.timeZone(), ZoneId.of("Europe/Prague"));
+		assertEquals(context.timezone(), ZoneId.of("Europe/Prague"));
 		assertEquals(context.currency(), CZK);
 		assertEquals(context.domain(), "retail");
 	}
@@ -33,7 +33,7 @@ public class BasicLocaleContextTest
 	{
 		assertEquals(context.attributes(), Map.of(
 			"locale", "cs-CZ",
-			"timeZone", "Europe/Prague",
+			"timezone", "Europe/Prague",
 			"currency", "CZK",
 			"domain", "retail"
 		));
@@ -56,6 +56,6 @@ public class BasicLocaleContextTest
 	public void builder_missingField_throws()
 	{
 		expectThrows(NullPointerException.class, () -> BasicLocaleContext.builder()
-			.locale(Locale.ROOT).timeZone(ZoneId.of("UTC")).currency(CZK).build());
+			.locale(Locale.ROOT).timezone(ZoneId.of("UTC")).currency(CZK).build());
 	}
 }

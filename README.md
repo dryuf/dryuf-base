@@ -8,7 +8,7 @@ Set of common utilities related to collections, functions and concurrency servic
 <dependency>
 	<groupId>net.dryuf</groupId>
 	<artifactId>dryuf-base</artifactId>
-	<version>1.8.3</version>
+	<version>1.8.4</version>
 </dependency>
 ```
 
@@ -45,6 +45,22 @@ public Callee
 	...
 }
 ```
+
+
+## Locale
+
+### LocaleContext
+
+Enhanced Locale, providing Locale, TimeZone, Currency, Domain attributes.
+
+The purpose is to have sufficient information about client for localization.
+
+
+## Security
+
+### IdentityContext
+
+Reusable information about user, combining Identity and Locale information.
 
 
 ## Collections

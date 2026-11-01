@@ -30,7 +30,7 @@ public interface LocaleContext
         * @return
         *      the timezone.
         */
-       ZoneId timeZone();
+       ZoneId timezone();
 
        /**
         * Preferred currency, for presenting monetary amounts.
