@@ -1,9 +1,13 @@
 package net.dryuf.base.security.identity;
 
+import net.dryuf.base.locale.BasicLocaleContext;
+import net.dryuf.base.locale.LocaleContext;
 import org.testng.annotations.Test;
 
 import java.security.Permission;
 import java.security.Principal;
+import java.time.ZoneOffset;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -21,10 +25,11 @@ public class FixedIdentityContextTest
 	private static final Permission READ = new RuntimePermission("read");
 	private static final Permission WRITE = new RuntimePermission("write");
 
+	private static final LocaleContext BASIC_LOCALE = BasicLocaleContext.builder().locale(Locale.ROOT).timeZone(ZoneOffset.UTC).build();
 	@Test
 	public void constructor_basic_defaultsEmpty()
 	{
-		FixedIdentityContext identity = new FixedIdentityContext(PRINCIPAL, Set.of("user"), false);
+		FixedIdentityContext identity = new FixedIdentityContext(PRINCIPAL, BASIC_LOCALE, Set.of("user"), false);
 
 		assertSame(identity.getPrincipal(), PRINCIPAL);
 		assertEquals(identity.getRoles(), Set.of("user"));
@@ -36,7 +41,7 @@ public class FixedIdentityContextTest
 	@Test
 	public void isAnonymous_anonymous_true()
 	{
-		FixedIdentityContext identity = new FixedIdentityContext(PRINCIPAL, Set.of(), true);
+		FixedIdentityContext identity = new FixedIdentityContext(PRINCIPAL, BASIC_LOCALE, Set.of(), true);
 
 		assertTrue(identity.isAnonymous());
 	}
@@ -44,7 +49,7 @@ public class FixedIdentityContextTest
 	@Test
 	public void getPrincipal_matchingClass_returned()
 	{
-		FixedIdentityContext identity = new FixedIdentityContext(PRINCIPAL, Set.of(), false);
+		FixedIdentityContext identity = new FixedIdentityContext(PRINCIPAL, BASIC_LOCALE, Set.of(), false);
 
 		UserPrincipal principal = identity.getPrincipal(UserPrincipal.class);
 
@@ -55,7 +60,7 @@ public class FixedIdentityContextTest
 	@Test
 	public void getPrincipal_otherClass_throws()
 	{
-		FixedIdentityContext identity = new FixedIdentityContext(PRINCIPAL, Set.of(), false);
+		FixedIdentityContext identity = new FixedIdentityContext(PRINCIPAL, BASIC_LOCALE, Set.of(), false);
 
 		expectThrows(ClassCastException.class, () -> identity.getPrincipal(OtherPrincipal.class));
 	}
@@ -63,7 +68,7 @@ public class FixedIdentityContextTest
 	@Test
 	public void hasRole_presentAndMissing_matched()
 	{
-		FixedIdentityContext identity = new FixedIdentityContext(PRINCIPAL, Set.of("user", "admin"), false);
+		FixedIdentityContext identity = new FixedIdentityContext(PRINCIPAL, BASIC_LOCALE, Set.of("user", "admin"), false);
 
 		assertTrue(identity.hasRole("user"));
 		assertTrue(identity.hasRole("admin"));
@@ -73,7 +78,7 @@ public class FixedIdentityContextTest
 	@Test
 	public void getAttribute_present_returnedTyped()
 	{
-		FixedIdentityContext identity = new FixedIdentityContext(PRINCIPAL, Set.of(), false, Map.of("age", 42, "name", "Joe"), Set.of());
+		FixedIdentityContext identity = new FixedIdentityContext(PRINCIPAL, BASIC_LOCALE, Set.of(), false, Map.of("age", 42, "name", "Joe"), Set.of());
 
 		Integer age = identity.getAttribute("age");
 		String name = identity.getAttribute("name");
@@ -86,7 +91,7 @@ public class FixedIdentityContextTest
 	@Test
 	public void getAttribute_missing_null()
 	{
-		FixedIdentityContext identity = new FixedIdentityContext(PRINCIPAL, Set.of(), false, Map.of("age", 42), Set.of());
+		FixedIdentityContext identity = new FixedIdentityContext(PRINCIPAL, BASIC_LOCALE, Set.of(), false, Map.of("age", 42), Set.of());
 
 		assertNull(identity.getAttribute("name"));
 	}
@@ -94,7 +99,7 @@ public class FixedIdentityContextTest
 	@Test
 	public void getAttribute_wrongType_throwsOnUse()
 	{
-		FixedIdentityContext identity = new FixedIdentityContext(PRINCIPAL, Set.of(), false, Map.of("age", 42), Set.of());
+		FixedIdentityContext identity = new FixedIdentityContext(PRINCIPAL, BASIC_LOCALE, Set.of(), false, Map.of("age", 42), Set.of());
 
 		expectThrows(ClassCastException.class, () -> {
 			String age = identity.getAttribute("age");
@@ -104,7 +109,7 @@ public class FixedIdentityContextTest
 	@Test
 	public void checkPermission_granted_true()
 	{
-		FixedIdentityContext identity = new FixedIdentityContext(PRINCIPAL, Set.of(), false, Map.of(), Set.of(READ));
+		FixedIdentityContext identity = new FixedIdentityContext(PRINCIPAL, BASIC_LOCALE, Set.of(), false, Map.of(), Set.of(READ));
 
 		assertTrue(identity.checkPermission(new RuntimePermission("read")).toCompletableFuture().join());
 		assertTrue(identity.checkPermissionBlocking(READ));
@@ -113,7 +118,7 @@ public class FixedIdentityContextTest
 	@Test
 	public void checkPermission_notGranted_false()
 	{
-		FixedIdentityContext identity = new FixedIdentityContext(PRINCIPAL, Set.of(), false, Map.of(), Set.of(READ));
+		FixedIdentityContext identity = new FixedIdentityContext(PRINCIPAL, BASIC_LOCALE, Set.of(), false, Map.of(), Set.of(READ));
 
 		assertFalse(identity.checkPermission(WRITE).toCompletableFuture().join());
 		assertFalse(identity.checkPermissionBlocking(WRITE));
@@ -122,7 +127,7 @@ public class FixedIdentityContextTest
 	@Test
 	public void checkPermission_noPermissions_false()
 	{
-		FixedIdentityContext identity = new FixedIdentityContext(PRINCIPAL, Set.of("admin"), false);
+		FixedIdentityContext identity = new FixedIdentityContext(PRINCIPAL, BASIC_LOCALE, Set.of("admin"), false);
 
 		assertFalse(identity.checkPermissionBlocking(READ));
 	}

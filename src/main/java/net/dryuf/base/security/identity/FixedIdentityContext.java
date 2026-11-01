@@ -2,6 +2,7 @@ package net.dryuf.base.security.identity;
 
 import lombok.Getter;
 import lombok.NonNull;
+import net.dryuf.base.locale.LocaleContext;
 
 import java.security.Permission;
 import java.security.Principal;
@@ -17,6 +18,9 @@ import java.util.concurrent.CompletionStage;
 public class FixedIdentityContext implements IdentityContext
 {
 	@Getter
+	final LocaleContext localeContext;
+
+	@Getter
 	final Principal principal;
 
 	@Getter
@@ -31,17 +35,24 @@ public class FixedIdentityContext implements IdentityContext
 	@Getter
 	final Set<Permission> permissions;
 
-	public FixedIdentityContext(final Principal principal, @NonNull Set<String> roles, final boolean isAnonymous,
-	                            @NonNull Map<String, Object> attributes, @NonNull Set<Permission> permissions) {
+	public FixedIdentityContext(
+		final Principal principal,
+		@NonNull LocaleContext localeContext,
+		@NonNull Set<String> roles,
+		final boolean isAnonymous,
+		@NonNull Map<String, Object> attributes,
+		@NonNull Set<Permission> permissions
+	) {
 		this.principal = principal;
+		this.localeContext = localeContext;
 		this.roles = roles;
 		this.isAnonymous = isAnonymous;
 		this.attributes = attributes;
 		this.permissions = permissions;
 	}
 
-	public FixedIdentityContext(final Principal principal, @NonNull Set<String> roles, final boolean isAnonymous) {
-		this(principal, roles, isAnonymous, Map.of(), Set.of());
+	public FixedIdentityContext(final Principal principal, @NonNull LocaleContext localeContext, @NonNull Set<String> roles, final boolean isAnonymous) {
+		this(principal, localeContext, roles, isAnonymous, Map.of(), Set.of());
 	}
 
 	public boolean hasRole(@NonNull String role) {

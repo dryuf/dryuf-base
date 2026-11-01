@@ -1,4 +1,4 @@
-package net.dryuf.base.util;
+package net.dryuf.base.locale;
 
 import java.time.ZoneId;
 import java.util.Locale;

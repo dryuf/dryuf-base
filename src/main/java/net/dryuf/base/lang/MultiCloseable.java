@@ -36,17 +36,15 @@ public class MultiCloseable<X extends Exception> implements AutoCloseable
 	 */
 	public MultiCloseable(List<AutoCloseable> objects) throws X
 	{
+		boolean success = false;
 		try {
 			this.stored = new ArrayList<>(objects);
+			success = true;
 		}
-		catch (Throwable ex) {
-			try {
+		finally {
+			if (!success) {
 				closeList(objects);
 			}
-			catch (Throwable more) {
-				ex.addSuppressed(more);
-			}
-			throw ex;
 		}
 	}
 
@@ -62,17 +60,15 @@ public class MultiCloseable<X extends Exception> implements AutoCloseable
 	 */
 	public MultiCloseable(AutoCloseable... objects) throws X
 	{
+		boolean success = false;
 		try {
 			this.stored = new ArrayList<>(Arrays.asList(objects));
+			success = true;
 		}
-		catch (Throwable ex) {
-			try {
+		finally {
+			if (!success) {
 				closeArray(objects);
 			}
-			catch (Throwable more) {
-				ex.addSuppressed(more);
-			}
-			throw ex;
 		}
 	}
 

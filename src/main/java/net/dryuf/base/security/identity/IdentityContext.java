@@ -1,5 +1,7 @@
 package net.dryuf.base.security.identity;
 
+import net.dryuf.base.locale.LocaleContext;
+
 import java.security.Permission;
 import java.security.Principal;
 import java.util.Map;
@@ -93,4 +95,6 @@ public interface IdentityContext
 	default boolean checkPermissionBlocking(Permission permission) {
 		return checkPermission(permission).toCompletableFuture().join();
 	}
+
+	LocaleContext getLocaleContext();
 }
