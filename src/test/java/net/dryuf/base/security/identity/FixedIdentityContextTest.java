@@ -7,6 +7,7 @@ import org.testng.annotations.Test;
 import java.security.Permission;
 import java.security.Principal;
 import java.time.ZoneOffset;
+import java.util.Currency;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
@@ -25,7 +26,7 @@ public class FixedIdentityContextTest
 	private static final Permission READ = new RuntimePermission("read");
 	private static final Permission WRITE = new RuntimePermission("write");
 
-	private static final LocaleContext BASIC_LOCALE = BasicLocaleContext.builder().locale(Locale.ROOT).timeZone(ZoneOffset.UTC).build();
+	private static final LocaleContext BASIC_LOCALE = BasicLocaleContext.builder().locale(Locale.ROOT).timeZone(ZoneOffset.UTC).currency(Currency.getInstance("EUR")).domain("default").build();
 	@Test
 	public void constructor_basic_defaultsEmpty()
 	{

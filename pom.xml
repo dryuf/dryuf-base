@@ -29,7 +29,7 @@
 	<version>1.8.4</version>
 	<packaging>jar</packaging>
 
-	<name>Dryuf Concurrent framework</name>
+	<name>Dryuf framework - base</name>
 	<url>https://github.com/dryuf/dryuf-base</url>
 	<description>
                 Dryuf Base is addition of various utilities related to collections, functions, concurrency or others to

@@ -6,6 +6,7 @@ import org.testng.annotations.Test;
 import java.security.Permission;
 import java.security.Principal;
 import java.time.ZoneOffset;
+import java.util.Currency;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
@@ -25,7 +26,7 @@ public class RolesIdentityContextTest
 
 	private final FixedIdentityContext parent = new FixedIdentityContext(
 		PRINCIPAL,
-		BasicLocaleContext.builder().locale(Locale.ROOT).timeZone(ZoneOffset.UTC).build(),
+		BasicLocaleContext.builder().locale(Locale.ROOT).timeZone(ZoneOffset.UTC).currency(Currency.getInstance("EUR")).domain("default").build(),
 		Set.of("user"),
 		true,
 		Map.of("age", 42),

@@ -1,6 +1,7 @@
 package net.dryuf.base.locale;
 
 import java.time.ZoneId;
+import java.util.Currency;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
@@ -13,6 +14,8 @@ import java.util.Optional;
  */
 public interface LocaleContext
 {
+       String DEFAULT_DOMAIN = "";
+
        /**
         * Locale.
         *
@@ -28,6 +31,27 @@ public interface LocaleContext
         *      the timezone.
         */
        ZoneId timeZone();
+
+       /**
+        * Preferred currency, for presenting monetary amounts.
+        *
+        * Note this is client preference for display, not currency of business data (account, order, etc.).
+        *
+        * @return
+        *      the currency.
+        */
+       Currency currency();
+
+       /**
+        * Business domain, identifying business context (e.g. brand, product line or tenant), which may change
+        * translations and other presentation.
+        *
+        * Always non-null, with empty string as default value.
+        *
+        * @return
+        *      the domain.
+        */
+       String domain();
 
        /**
         * All defined attributes.
